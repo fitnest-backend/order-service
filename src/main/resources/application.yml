@@ -20,9 +20,9 @@ spring:
   application:
     name: order-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://order-db:5432/order_db}
-    username: ${SPRING_DATASOURCE_USERNAME:user}
-    password: ${SPRING_DATASOURCE_PASSWORD:password}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgresql-order:5432/fitnest_order}
+    username: ${SPRING_DATASOURCE_USERNAME:fitnest_order}
+    password: ${SPRING_DATASOURCE_PASSWORD:order_password_123}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 30000
