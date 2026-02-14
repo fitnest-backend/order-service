@@ -142,6 +142,5 @@ springdoc:
 
 logging:
   level:
-    az.fitnest.order: DEBUG
-    feign.Logger: DEBUG
-
+    az.fitnest.order: NONE
+    feign.Logger: NONE
