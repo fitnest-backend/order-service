@@ -142,5 +142,5 @@ springdoc:
 
 logging:
   level:
-    az.fitnest.order: NONE
-    feign.Logger: NONE
+    az.fitnest.order: OFF
+    feign.Logger: OFF
