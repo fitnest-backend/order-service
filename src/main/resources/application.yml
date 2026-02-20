@@ -101,15 +101,15 @@ jwt:
 
 identity:
   service:
-    url: ${IDENTITY_SERVICE_URL:http://identity-service:8080}
+    url: ${IDENTITY_SERVICE_URL:http://identity-service:9090}
 
 marketplace:
   service:
-    url: ${MARKETPLACE_SERVICE_URL:http://marketplace-service:8080}
+    url: ${MARKETPLACE_SERVICE_URL:http://marketplace-service:9090}
 
 payment:
   service:
-    url: ${PAYMENT_SERVICE_URL:http://payment-service:8080}
+    url: ${PAYMENT_SERVICE_URL:http://payment-service:9090}
 
 management:
   endpoints:
