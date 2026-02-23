@@ -103,9 +103,9 @@ identity:
   service:
     url: ${IDENTITY_SERVICE_URL:http://identity-service:8080}
 
-marketplace:
+catalog:
   service:
-    url: ${MARKETPLACE_SERVICE_URL:http://marketplace-service:8080}
+    url: ${CATALOG_SERVICE_URL:http://catalog-service:8080}
 
 payment:
   service:
