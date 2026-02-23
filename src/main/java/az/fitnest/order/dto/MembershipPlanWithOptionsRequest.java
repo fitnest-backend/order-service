@@ -1,6 +1,5 @@
 package az.fitnest.order.dto;
 
-import az.fitnest.order.enums.SubscriptionType;
 import az.fitnest.order.enums.BillingPeriod;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MembershipPlanWithOptionsRequest {
-    private SubscriptionType subscriptionType;
     private String name;
     private String currency;
     private BillingPeriod billingPeriod;

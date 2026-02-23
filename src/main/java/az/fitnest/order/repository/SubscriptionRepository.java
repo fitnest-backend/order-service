@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
     Optional<Subscription> findByUserIdAndStatus(Long userId, String status);
+
+    Optional<Subscription> findByUserIdAndGymIdAndStatus(Long userId, Long gymId, String status);
 }

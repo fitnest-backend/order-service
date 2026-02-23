@@ -38,7 +38,7 @@ public class PackageCatalogController {
             @ApiResponse(responseCode = "404", description = "Package not found")
     })
     @GetMapping("/{packageId}")
-    public ResponseEntity<SubscriptionPackageDto> getPackageById(@PathVariable String packageId) {
+    public ResponseEntity<SubscriptionPackageDto> getPackageById(@PathVariable Long packageId) {
         return ResponseEntity.ok(packageCatalogService.getPackageById(packageId));
     }
 }

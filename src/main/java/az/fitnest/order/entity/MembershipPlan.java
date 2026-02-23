@@ -39,6 +39,9 @@ public class MembershipPlan extends BaseAuditableEntity {
     @CollectionTable(name = "membership_plan_benefits", joinColumns = @JoinColumn(name = "plan_id"))
     private List<PlanBenefit> benefits = new ArrayList<>();
 
+    @Column(name = "service_discount_percent")
+    private BigDecimal serviceDiscountPercent;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 

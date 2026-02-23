@@ -144,3 +144,7 @@ logging:
   level:
     az.fitnest.order: OFF
     feign.Logger: OFF
+
+grpc:
+  server:
+    port: 9090

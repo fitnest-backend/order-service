@@ -24,12 +24,7 @@ public class MembershipPlanAdminService {
     public void addPlanWithOptions(Long gymId, MembershipPlanWithOptionsRequest request) {
         MembershipPlan plan = new MembershipPlan();
         plan.setGymId(gymId);
-        
-        if (request.getSubscriptionType() != null) {
-            plan.setName(request.getSubscriptionType().name().substring(0,1) + request.getSubscriptionType().name().substring(1).toLowerCase());
-        } else {
-            plan.setName(request.getName());
-        }
+        plan.setName(request.getName());
         plan.setCurrency(request.getCurrency() != null ? request.getCurrency() : "AZN");
         if (request.getBillingPeriod() != null) {
             plan.setBillingPeriod(request.getBillingPeriod());
@@ -76,11 +71,6 @@ public class MembershipPlanAdminService {
                 .orElseThrow(() -> new RuntimeException("Plan not found for the specified gym"));
 
         plan.setName(request.getName());
-        if (request.getSubscriptionType() != null) {
-            plan.setName(request.getSubscriptionType().name().substring(0,1) + request.getSubscriptionType().name().substring(1).toLowerCase());
-        } else {
-            plan.setName(request.getName());
-        }
         plan.setCurrency(request.getCurrency() != null ? request.getCurrency() : plan.getCurrency());
         if (request.getBillingPeriod() != null) {
             plan.setBillingPeriod(request.getBillingPeriod());
