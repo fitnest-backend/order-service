@@ -1,6 +1,7 @@
 package az.fitnest.order.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +23,9 @@ import java.sql.ResultSet;
 public class ApplicationWarmupConfig {
 
     private final DataSource dataSource;
-    private final RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired(required = false)
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Value("${app.warmup.enabled:true}")
     private boolean warmupEnabled;
@@ -30,9 +33,8 @@ public class ApplicationWarmupConfig {
     @Value("${app.warmup.db:true}")
     private boolean warmupDb;
 
-    public ApplicationWarmupConfig(DataSource dataSource, RedisTemplate<String, Object> redisTemplate) {
+    public ApplicationWarmupConfig(DataSource dataSource) {
         this.dataSource = dataSource;
-        this.redisTemplate = redisTemplate;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -69,6 +71,11 @@ public class ApplicationWarmupConfig {
     }
 
     private void warmupRedis() {
+        if (redisTemplate == null) {
+            log.debug("No RedisTemplate bean found, skipping Redis warmup.");
+            return;
+        }
+
         try {
             log.debug("Warming up Redis connection...");
             long start = System.currentTimeMillis();
