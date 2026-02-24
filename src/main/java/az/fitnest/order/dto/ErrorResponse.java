@@ -1,11 +1,13 @@
 package az.fitnest.order.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 @Data
@@ -13,31 +15,22 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ErrorResponse {
-    
-    private String message;
-    
-    private String code;
-    
-    private LocalDateTime timestamp;
-    
-    private String path;
-    
-    private Map<String, Object> details;
-    
-    public static ErrorResponse of(String message, String code) {
-        return ErrorResponse.builder()
-                .message(message)
-                .code(code)
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
-    
-    public static ErrorResponse of(String message, String code, String path) {
-        return ErrorResponse.builder()
-                .message(message)
-                .code(code)
-                .path(path)
-                .timestamp(LocalDateTime.now())
-                .build();
+
+    @JsonProperty("error")
+    private ErrorDetail error;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class ErrorDetail {
+        private String code;
+        private String message;
+        private Integer status;
+        private String path;
+        @Builder.Default
+        private OffsetDateTime timestamp = OffsetDateTime.now();
+        private Map<String, Object> details;
     }
 }

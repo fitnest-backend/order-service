@@ -1,5 +1,6 @@
 package az.fitnest.order.exception;
 
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,9 +22,11 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(BaseException.class)
 	public ResponseEntity<ErrorResponse> handleBaseException(BaseException exception, WebRequest request) {
 
-		ErrorResponse.ErrorResponseBuilder builder = ErrorResponse.builder()
+		ErrorResponse.ErrorDetail.ErrorDetailBuilder detailBuilder = ErrorResponse.ErrorDetail.builder()
 				.message(exception.getMessage())
 				.code(exception.getErrorCode())
+				.status(exception.getHttpStatus().value())
+				.timestamp(OffsetDateTime.now())
 				.path(request.getDescription(false).replace("uri=", ""));
 		
 		if (exception instanceof ValidationException) {
@@ -36,11 +39,11 @@ public class GlobalExceptionHandler {
 					validationErrors.put(error.getField(), error.getDefaultMessage());
 				}
 				details.put("validationErrors", validationErrors);
-				builder.details(details);
+				detailBuilder.details(details);
 			}
 		}
 		
-		ErrorResponse errorResponse = builder.build();
+		ErrorResponse errorResponse = ErrorResponse.builder().error(detailBuilder.build()).build();
 		return ResponseEntity.status(exception.getHttpStatus()).body(errorResponse);
 	}
 	
@@ -57,10 +60,14 @@ public class GlobalExceptionHandler {
 		details.put("validationErrors", validationErrors);
 		
 		ErrorResponse errorResponse = ErrorResponse.builder()
-				.message("Validation failed")
-				.code("VALIDATION_ERROR")
-				.path(request.getDescription(false).replace("uri=", ""))
-				.details(details)
+				.error(ErrorResponse.ErrorDetail.builder()
+					.message("Validation failed")
+					.code("VALIDATION_ERROR")
+					.status(HttpStatus.BAD_REQUEST.value())
+					.timestamp(OffsetDateTime.now())
+					.path(request.getDescription(false).replace("uri=", ""))
+					.details(details)
+					.build())
 				.build();
 		
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
@@ -70,9 +77,13 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception, WebRequest request) {
 
 		ErrorResponse errorResponse = ErrorResponse.builder()
-				.message("Invalid request format")
-				.code("HTTP_MESSAGE_NOT_READABLE")
-				.path(request.getDescription(false).replace("uri=", ""))
+				.error(ErrorResponse.ErrorDetail.builder()
+					.message("Invalid request format")
+					.code("HTTP_MESSAGE_NOT_READABLE")
+					.status(HttpStatus.BAD_REQUEST.value())
+					.timestamp(OffsetDateTime.now())
+					.path(request.getDescription(false).replace("uri=", ""))
+					.build())
 				.build();
 		
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
@@ -82,9 +93,13 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex, WebRequest request) {
 
 		ErrorResponse errorResponse = ErrorResponse.builder()
-				.message("Internal server error")
-				.code("RUNTIME_EXCEPTION")
-				.path(request.getDescription(false).replace("uri=", ""))
+				.error(ErrorResponse.ErrorDetail.builder()
+					.message("Internal server error")
+					.code("RUNTIME_EXCEPTION")
+					.status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+					.timestamp(OffsetDateTime.now())
+					.path(request.getDescription(false).replace("uri=", ""))
+					.build())
 				.build();
 		
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
@@ -94,9 +109,13 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, WebRequest request) {
 
 		ErrorResponse errorResponse = ErrorResponse.builder()
-				.message("Internal server error")
-				.code("INTERNAL_SERVER_ERROR")
-				.path(request.getDescription(false).replace("uri=", ""))
+				.error(ErrorResponse.ErrorDetail.builder()
+					.message("Internal server error")
+					.code("INTERNAL_SERVER_ERROR")
+					.status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+					.timestamp(OffsetDateTime.now())
+					.path(request.getDescription(false).replace("uri=", ""))
+					.build())
 				.build();
 		
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
