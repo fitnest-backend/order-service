@@ -8,7 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/admin/gyms/{gymId}/plans")
+@RequestMapping("/api/v1/admin/plans")
 @RequiredArgsConstructor
 public class MembershipPlanAdminController {
 
@@ -16,15 +16,15 @@ public class MembershipPlanAdminController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> createPlan(@PathVariable Long gymId, @RequestBody MembershipPlanWithOptionsRequest request) {
-        membershipPlanAdminService.addPlanWithOptions(gymId, request);
+    public ResponseEntity<Void> createPlan(@RequestBody MembershipPlanWithOptionsRequest request) {
+        membershipPlanAdminService.addPlanWithOptions(request);
         return ResponseEntity.status(201).build();
     }
 
     @PutMapping("/{planId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> updatePlan(@PathVariable Long gymId, @PathVariable Long planId, @RequestBody MembershipPlanWithOptionsRequest request) {
-        membershipPlanAdminService.updatePlanWithOptions(gymId, planId, request);
+    public ResponseEntity<Void> updatePlan(@PathVariable Long planId, @RequestBody MembershipPlanWithOptionsRequest request) {
+        membershipPlanAdminService.updatePlanWithOptions(planId, request);
         return ResponseEntity.noContent().build();
     }
 

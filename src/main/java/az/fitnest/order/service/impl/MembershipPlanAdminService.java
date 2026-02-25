@@ -21,9 +21,8 @@ public class MembershipPlanAdminService {
     private final MembershipPlanRepository membershipPlanRepository;
 
     @Transactional
-    public void addPlanWithOptions(Long gymId, MembershipPlanWithOptionsRequest request) {
+    public void addPlanWithOptions(MembershipPlanWithOptionsRequest request) {
         MembershipPlan plan = new MembershipPlan();
-        plan.setGymId(gymId);
         plan.setName(request.getName());
         plan.setCurrency(request.getCurrency() != null ? request.getCurrency() : "AZN");
         if (request.getBillingPeriod() != null) {
@@ -65,10 +64,9 @@ public class MembershipPlanAdminService {
     }
 
     @Transactional
-    public void updatePlanWithOptions(Long gymId, Long planId, MembershipPlanWithOptionsRequest request) {
+    public void updatePlanWithOptions(Long planId, MembershipPlanWithOptionsRequest request) {
         MembershipPlan plan = membershipPlanRepository.findById(planId)
-                .filter(p -> p.getGymId().equals(gymId))
-                .orElseThrow(() -> new RuntimeException("Plan not found for the specified gym"));
+                .orElseThrow(() -> new RuntimeException("Plan not found"));
 
         plan.setName(request.getName());
         plan.setCurrency(request.getCurrency() != null ? request.getCurrency() : plan.getCurrency());

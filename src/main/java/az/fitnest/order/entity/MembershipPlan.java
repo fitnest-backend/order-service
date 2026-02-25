@@ -28,8 +28,6 @@ public class MembershipPlan extends BaseAuditableEntity {
     @Column(name = "currency", nullable = false)
     private String currency = "AZN";
 
-    @Column(name = "gym_id")
-    private Long gymId; // Added to tie it back to a Gym since we don't have the Gym entity here
 
     @Enumerated(EnumType.STRING)
     @Column(name = "billing_period", nullable = false)
