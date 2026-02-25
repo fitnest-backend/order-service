@@ -20,6 +20,39 @@ public class UserSubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
     private final MembershipPlanRepository planRepository;
+    private final az.fitnest.order.repository.GymVisitRepository gymVisitRepository;
+
+    @Transactional
+    public boolean checkIn(Long userId, Long gymId) {
+        Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
+                .orElseThrow(() -> new RuntimeException("No active subscription found"));
+
+        if (subscription.getEndAt() != null && subscription.getEndAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Subscription is expired");
+        }
+
+        if (subscription.getGymId() != null && !subscription.getGymId().equals(gymId)) {
+            throw new RuntimeException("Subscription is not valid for this gym");
+        }
+
+        if (subscription.getRemainingLimit() != null) {
+            if (subscription.getRemainingLimit() <= 0) {
+                throw new RuntimeException("No remaining visits on this subscription");
+            }
+            subscription.setRemainingLimit(subscription.getRemainingLimit() - 1);
+            subscriptionRepository.save(subscription);
+        }
+
+        az.fitnest.order.entity.GymVisit visit = az.fitnest.order.entity.GymVisit.builder()
+                .userId(userId)
+                .gymId(gymId)
+                .subscriptionId(subscription.getSubscriptionId())
+                .checkedInAt(LocalDateTime.now())
+                .build();
+        gymVisitRepository.save(visit);
+
+        return true;
+    }
 
     @Transactional(readOnly = true)
     public ActiveSubscriptionResponse getActiveSubscription(Long userId) {

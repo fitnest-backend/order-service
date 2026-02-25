@@ -13,6 +13,24 @@ import net.devh.boot.grpc.server.service.GrpcService;
 public class MembershipPlanGrpcServiceImpl extends MembershipPlanServiceGrpc.MembershipPlanServiceImplBase {
 
     private final MembershipPlanRepository planRepository;
+    private final az.fitnest.order.service.impl.UserSubscriptionService userSubscriptionService;
+
+    @Override
+    public void checkIn(az.fitnest.order.grpc.CheckInRequest request, StreamObserver<az.fitnest.order.grpc.CheckInResponse> responseObserver) {
+        try {
+            boolean success = userSubscriptionService.checkIn(request.getUserId(), request.getGymId());
+            responseObserver.onNext(az.fitnest.order.grpc.CheckInResponse.newBuilder()
+                    .setSuccess(success)
+                    .setMessage("Checked in successfully")
+                    .build());
+        } catch (Exception e) {
+            responseObserver.onNext(az.fitnest.order.grpc.CheckInResponse.newBuilder()
+                    .setSuccess(false)
+                    .setMessage(e.getMessage() != null ? e.getMessage() : "Check-in failed")
+                    .build());
+        }
+        responseObserver.onCompleted();
+    }
 
     @Override
     public void getGymPlans(GetGymPlansRequest request, StreamObserver<GetGymPlansResponse> responseObserver) {
