@@ -16,14 +16,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/subscription-packages")
 @RequiredArgsConstructor
-@Tag(name = "Subscription Packages", description = "Endpoints for browsing available subscription packages")
+@Tag(name = "Subscription Packages", description = "Mövcud abunəlik paketlərinə baxmaq üçün ucluqlar")
 public class PackageCatalogController {
 
     private final PackageCatalogService packageCatalogService;
 
-    @Operation(summary = "Get all packages", description = "Returns a list of all subscription packages.")
+    @Operation(summary = "Bütün paketləri əldə edin", description = "Bütün abunəlik paketlərinin siyahısını qaytarır.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Packages retrieved successfully",
+            @ApiResponse(responseCode = "200", description = "Paketlər uğurla əldə edildi",
                     content = @Content(schema = @Schema(implementation = PackageListResponse.class)))
     })
     @GetMapping
@@ -31,11 +31,11 @@ public class PackageCatalogController {
         return ResponseEntity.ok(packageCatalogService.getAllPackages(active_only));
     }
 
-    @Operation(summary = "Get package by ID", description = "Returns details of a specific subscription package.")
+    @Operation(summary = "Paketi ID vasitəsilə əldə edin", description = "Xüsusi abunəlik paketinin təfərrüatlarını qaytarır.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Package found",
+            @ApiResponse(responseCode = "200", description = "Paket tapıldı",
                     content = @Content(schema = @Schema(implementation = SubscriptionPackageDto.class))),
-            @ApiResponse(responseCode = "404", description = "Package not found")
+            @ApiResponse(responseCode = "404", description = "Paket tapılmadı")
     })
     @GetMapping("/{packageId}")
     public ResponseEntity<SubscriptionPackageDto> getPackageById(@PathVariable Long packageId) {

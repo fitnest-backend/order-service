@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-@Tag(name = "Check-In", description = "Gym QR code check-in endpoints")
+@Tag(name = "Check-In", description = "İdman zalına QR kodla giriş (check-in) ucluqları")
 public class CheckInController {
 
     private final CheckInService checkInService;
@@ -29,14 +29,14 @@ public class CheckInController {
     @PostMapping("/checkin")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(
-            summary = "Check in at a gym",
-            description = "Scans the gym QR code and records a check-in. " +
-                    "Validates the user's active membership for the gym and decrements the visit count."
+            summary = "İdman zalına giriş edin",
+            description = "İdman zalının QR kodunu skan edir və girişi qeydə alır. " +
+                    "İstifadəçinin idman zalı üçün aktiv abunəliyini yoxlayır və ziyarət sayını azaldır."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Check-in result",
+            @ApiResponse(responseCode = "200", description = "Giriş nəticəsi",
                     content = @Content(schema = @Schema(implementation = CheckInResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "401", description = "İcazə verilmədi")
     })
     public ResponseEntity<CheckInResponse> checkIn(@RequestBody CheckInRequest request) {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

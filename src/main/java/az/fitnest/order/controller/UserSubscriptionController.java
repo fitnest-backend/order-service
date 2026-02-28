@@ -23,16 +23,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/me/subscriptions")
 @RequiredArgsConstructor
-@Tag(name = "User Subscriptions", description = "Endpoints for managing the authenticated user's subscriptions")
+@Tag(name = "User Subscriptions", description = "Autentifikasiya olunmuş istifadəçinin abunəliklərini idarə etmək üçün ucluqlar")
 public class UserSubscriptionController {
 
     private final UserSubscriptionService subscriptionService;
 
-    @Operation(summary = "Get active subscription", description = "Returns the active subscription details for the current user.")
+    @Operation(summary = "Aktiv abunəliyi əldə edin", description = "Cari istifadəçi üçün aktiv abunəlik təfərrüatlarını qaytarır.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Active subscription retrieved",
+            @ApiResponse(responseCode = "200", description = "Aktiv abunəlik əldə edildi",
                     content = @Content(schema = @Schema(implementation = ActiveSubscriptionResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "401", description = "İcazə verilmədi")
     })
     @GetMapping("/active")
     public ResponseEntity<ActiveSubscriptionResponse> getActiveSubscription() {

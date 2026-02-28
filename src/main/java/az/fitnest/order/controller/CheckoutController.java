@@ -22,23 +22,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/checkout")
 @RequiredArgsConstructor
-@Tag(name = "Checkout", description = "Endpoints for purchasing subscriptions and gym packages")
+@Tag(name = "Checkout", description = "Abunəliklər və idman paketləri almaq üçün ucluqlar")
 public class CheckoutController {
 
     private final CheckoutService checkoutService;
 
-    @Operation(summary = "Process checkout", description = "Initiates a checkout process for a specific package. The user must be authenticated.")
+    @Operation(summary = "Ödəniş prosesini icra edin", description = "Xüsusi paket üçün ödəniş prosesini başladır. İstifadəçi autentifikasiyadan keçməlidir.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Checkout initiated successfully",
+            @ApiResponse(responseCode = "201", description = "Ödəniş uğurla başladıldı",
                     content = @Content(schema = @Schema(implementation = CheckoutResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Validation error"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - User must be logged in to purchase"),
-            @ApiResponse(responseCode = "404", description = "Package not found")
+            @ApiResponse(responseCode = "400", description = "Doğrulama xətası"),
+            @ApiResponse(responseCode = "401", description = "İcazə verilmədi - Satınalma üçün istifadəçi daxil olmalıdır"),
+            @ApiResponse(responseCode = "404", description = "Paket tapılmadı")
     })
     @PostMapping
     public ResponseEntity<CheckoutResponse> checkout(
             @AuthenticationPrincipal Object principal,
-            @Parameter(description = "Payment and package details for checkout") @Valid @RequestBody CheckoutRequest request) {
+            @Parameter(description = "Ödəniş üçün paket və ödəniş təfərrüatları") @Valid @RequestBody CheckoutRequest request) {
         Long userId = extractUserId(principal);
         if (userId == null) {
              throw new RuntimeException("User must be authenticated");
