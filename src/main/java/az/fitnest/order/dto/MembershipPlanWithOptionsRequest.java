@@ -1,6 +1,6 @@
 package az.fitnest.order.dto;
 
-import az.fitnest.order.enums.BillingPeriod;
+import az.fitnest.order.model.enums.BillingPeriod;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

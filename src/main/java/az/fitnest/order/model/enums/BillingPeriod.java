@@ -1,4 +1,4 @@
-package az.fitnest.order.enums;
+package az.fitnest.order.model.enums;
 
 public enum BillingPeriod {
     MONTHLY,

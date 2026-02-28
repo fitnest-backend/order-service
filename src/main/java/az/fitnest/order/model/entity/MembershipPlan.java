@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import az.fitnest.order.enums.BillingPeriod;
+import az.fitnest.order.model.enums.BillingPeriod;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

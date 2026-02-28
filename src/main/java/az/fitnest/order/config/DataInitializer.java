@@ -1,7 +1,7 @@
 package az.fitnest.order.config;
 
 import az.fitnest.order.model.entity.*;
-import az.fitnest.order.enums.BillingPeriod;
+import az.fitnest.order.model.enums.BillingPeriod;
 import az.fitnest.order.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;

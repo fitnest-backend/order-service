@@ -3,7 +3,7 @@ package az.fitnest.order.service.impl;
 import az.fitnest.order.repository.MembershipPlanRepository;
 import az.fitnest.order.dto.DurationOptionEntityDto;
 import az.fitnest.order.dto.MembershipPlanWithOptionsRequest;
-import az.fitnest.order.enums.BillingPeriod;
+import az.fitnest.order.model.enums.BillingPeriod;
 import az.fitnest.order.model.entity.DurationOption;
 import az.fitnest.order.model.entity.MembershipPlan;
 import lombok.RequiredArgsConstructor;
