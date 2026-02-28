@@ -1,6 +1,6 @@
 package az.fitnest.order.config;
 
-import az.fitnest.order.entity.*;
+import az.fitnest.order.model.entity.*;
 import az.fitnest.order.enums.BillingPeriod;
 import az.fitnest.order.repository.*;
 import lombok.RequiredArgsConstructor;

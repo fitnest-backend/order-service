@@ -1,8 +1,8 @@
 package az.fitnest.order.service.impl;
 
 import az.fitnest.order.dto.CheckInResponse;
-import az.fitnest.order.entity.GymVisit;
-import az.fitnest.order.entity.Subscription;
+import az.fitnest.order.model.entity.GymVisit;
+import az.fitnest.order.model.entity.Subscription;
 import az.fitnest.order.repository.GymVisitRepository;
 import az.fitnest.order.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;

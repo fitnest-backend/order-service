@@ -3,7 +3,7 @@ package az.fitnest.order.controller;
 import az.fitnest.order.dto.UpgradeCheckoutRequest;
 import az.fitnest.order.dto.UpgradeCheckoutResponse;
 import az.fitnest.order.dto.UpgradeOptionsResponse;
-import az.fitnest.order.entity.Order;
+import az.fitnest.order.model.entity.Order;
 import az.fitnest.order.service.impl.UpgradeService;
 import az.fitnest.order.dto.PaymentResultDto;
 import io.swagger.v3.oas.annotations.Operation;

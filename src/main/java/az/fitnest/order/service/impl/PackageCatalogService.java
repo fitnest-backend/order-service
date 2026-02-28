@@ -1,7 +1,7 @@
 package az.fitnest.order.service.impl;
 
 import az.fitnest.order.dto.*;
-import az.fitnest.order.entity.*;
+import az.fitnest.order.model.entity.*;
 import az.fitnest.order.repository.MembershipPlanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

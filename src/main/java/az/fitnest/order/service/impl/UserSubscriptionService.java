@@ -2,9 +2,9 @@ package az.fitnest.order.service.impl;
 
 import az.fitnest.order.dto.ActiveSubscriptionResponse;
 import az.fitnest.order.dto.SubscriptionDetailsDto;
-import az.fitnest.order.entity.DurationOption;
-import az.fitnest.order.entity.MembershipPlan;
-import az.fitnest.order.entity.Subscription;
+import az.fitnest.order.model.entity.DurationOption;
+import az.fitnest.order.model.entity.MembershipPlan;
+import az.fitnest.order.model.entity.Subscription;
 import az.fitnest.order.repository.MembershipPlanRepository;
 import az.fitnest.order.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,7 @@ public class UserSubscriptionService {
             subscriptionRepository.save(subscription);
         }
 
-        az.fitnest.order.entity.GymVisit visit = az.fitnest.order.entity.GymVisit.builder()
+        az.fitnest.order.model.entity.GymVisit visit = az.fitnest.order.model.entity.GymVisit.builder()
                 .userId(userId)
                 .gymId(gymId)
                 .subscriptionId(subscription.getSubscriptionId())

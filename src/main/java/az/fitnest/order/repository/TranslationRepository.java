@@ -1,6 +1,6 @@
 package az.fitnest.order.repository;
 
-import az.fitnest.order.entity.Translation;
+import az.fitnest.order.model.entity.Translation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

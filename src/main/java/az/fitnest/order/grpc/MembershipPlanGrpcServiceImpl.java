@@ -1,8 +1,8 @@
 package az.fitnest.order.grpc;
 
-import az.fitnest.order.entity.DurationOption;
-import az.fitnest.order.entity.MembershipPlan;
-import az.fitnest.order.entity.PlanBenefit;
+import az.fitnest.order.model.entity.DurationOption;
+import az.fitnest.order.model.entity.MembershipPlan;
+import az.fitnest.order.model.entity.PlanBenefit;
 import az.fitnest.order.repository.MembershipPlanRepository;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
