@@ -31,31 +31,31 @@ public class DataInitializer {
         if (membershipPlanRepository.count() == 0) {
             // Bronze Plan
             createMembershipPlan("Bronze Membership", "19.99", 1, Arrays.asList(
-                new PlanBenefit("bronze_icon", "Access to 5 gyms"),
-                new PlanBenefit("support_icon", "Email support")
+                new PlanBenefit("https://img.icons8.com/color/96/medal-bronze.png", "Access to 5 gyms"),
+                new PlanBenefit("https://img.icons8.com/color/96/customer-support.png", "Email support")
             ), Arrays.asList("GYM"));
 
             // Silver Plan
             createMembershipPlan("Silver Membership", "39.99", 2, Arrays.asList(
-                new PlanBenefit("silver_icon", "Access to 15 gyms"),
-                new PlanBenefit("support_icon", "Priority email support"),
-                new PlanBenefit("sauna_icon", "Sauna access")
+                new PlanBenefit("https://img.icons8.com/color/96/medal-silver.png", "Access to 15 gyms"),
+                new PlanBenefit("https://img.icons8.com/color/96/customer-support.png", "Priority email support"),
+                new PlanBenefit("https://img.icons8.com/color/96/sauna.png", "Sauna access")
             ), Arrays.asList("GYM", "SAUNA"));
 
             // Gold Plan
             createMembershipPlan("Gold Membership", "69.99", 3, Arrays.asList(
-                new PlanBenefit("gold_icon", "Access to all gyms"),
-                new PlanBenefit("support_icon", "24/7 support"),
-                new PlanBenefit("pool_icon", "Pool access"),
-                new PlanBenefit("trainer_icon", "1 monthly personal trainer session")
+                new PlanBenefit("https://img.icons8.com/color/96/medal-gold.png", "Access to all gyms"),
+                new PlanBenefit("https://img.icons8.com/color/96/customer-support.png", "24/7 support"),
+                new PlanBenefit("https://img.icons8.com/color/96/swimming-pool.png", "Pool access"),
+                new PlanBenefit("https://img.icons8.com/color/96/personal-trainer.png", "1 monthly personal trainer session")
             ), Arrays.asList("GYM", "SAUNA", "POOL"));
 
             // Platinum Plan
             createMembershipPlan("Platinum Membership", "99.99", 4, Arrays.asList(
-                new PlanBenefit("platinum_icon", "Unlimited access to all gyms"),
-                new PlanBenefit("support_icon", "Dedicated account manager"),
-                new PlanBenefit("vip_icon", "VIP lounge access"),
-                new PlanBenefit("trainer_icon", "Weekly personal trainer sessions")
+                new PlanBenefit("https://img.icons8.com/color/96/diamond.png", "Unlimited access to all gyms"),
+                new PlanBenefit("https://img.icons8.com/color/96/conference-call.png", "Dedicated account manager"),
+                new PlanBenefit("https://img.icons8.com/color/96/vip.png", "VIP lounge access"),
+                new PlanBenefit("https://img.icons8.com/color/96/personal-trainer.png", "Weekly personal trainer sessions")
             ), Arrays.asList("GYM", "SAUNA", "POOL", "SPA", "VIP"));
         }
     }
