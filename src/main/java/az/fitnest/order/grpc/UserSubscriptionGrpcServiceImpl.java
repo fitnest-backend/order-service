@@ -23,17 +23,11 @@ public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserS
             Long userId = request.getUserId();
             ActiveSubscriptionResponse dto = subscriptionService.getActiveSubscription(userId);
 
-            az.fitnest.order.grpc.ActiveSubscriptionResponse.Builder grpcResponse = az.fitnest.order.grpc.ActiveSubscriptionResponse.newBuilder()
-                    .setStatus(dto.getStatus() != null ? dto.getStatus() : "");
+            az.fitnest.order.grpc.ActiveSubscriptionResponse.Builder grpcResponse = az.fitnest.order.grpc.ActiveSubscriptionResponse.newBuilder();
 
             if (dto.getSubscription() != null) {
                 az.fitnest.order.dto.SubscriptionDetailsDto info = dto.getSubscription();
-                if (info.getSubscriptionId() != null) grpcResponse.setSubscriptionId(info.getSubscriptionId());
                 if (info.getPackageName() != null) grpcResponse.setPackageName(info.getPackageName());
-                if (info.getStartAt() != null) grpcResponse.setStartAt(info.getStartAt().format(DATE_FORMATTER));
-                if (info.getEndAt() != null) grpcResponse.setEndAt(info.getEndAt().format(DATE_FORMATTER));
-                if (info.getTotalLimit() != null) grpcResponse.setTotalLimit(info.getTotalLimit());
-                if (info.getRemainingLimit() != null) grpcResponse.setRemainingLimit(info.getRemainingLimit());
             }
 
             responseObserver.onNext(grpcResponse.build());
