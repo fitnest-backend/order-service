@@ -25,19 +25,19 @@ public class UserSubscriptionService {
     @Transactional
     public boolean checkIn(Long userId, Long gymId) {
         Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
-                .orElseThrow(() -> new RuntimeException("No active subscription found"));
+                .orElseThrow(() -> new RuntimeException("Aktiv abunəlik tapılmadı"));
 
         if (subscription.getEndAt() != null && subscription.getEndAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Subscription is expired");
+            throw new RuntimeException("Abunəliyin vaxtı bitib");
         }
 
         if (subscription.getGymId() != null && !subscription.getGymId().equals(gymId)) {
-            throw new RuntimeException("Subscription is not valid for this gym");
+            throw new RuntimeException("Abunəlik bu idman zalı üçün keçərli deyil");
         }
 
         if (subscription.getRemainingLimit() != null) {
             if (subscription.getRemainingLimit() <= 0) {
-                throw new RuntimeException("No remaining visits on this subscription");
+                throw new RuntimeException("Bu abunəlikdə qalan giriş yoxdur");
             }
             subscription.setRemainingLimit(subscription.getRemainingLimit() - 1);
             subscriptionRepository.save(subscription);
@@ -73,7 +73,7 @@ public class UserSubscriptionService {
         }
 
         MembershipPlan plan = planRepository.findById(subscription.getPlanId())
-                .orElseThrow(() -> new RuntimeException("Plan not found: " + subscription.getPlanId()));
+                .orElseThrow(() -> new RuntimeException("Plan tapılmadı: " + subscription.getPlanId()));
 
         // Infer duration from start/end
         long durationMonths = 1;

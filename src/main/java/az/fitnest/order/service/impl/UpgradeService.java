@@ -26,11 +26,11 @@ public class UpgradeService {
     @Transactional(readOnly = true)
     public UpgradeOptionsResponse getUpgradeOptions(Long userId, Integer targetDurationMonths) {
         Subscription currentSub = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
-                .orElseThrow(() -> new ServiceException("User has no active subscription",
+                .orElseThrow(() -> new ServiceException("İstifadəçinin aktiv abunəliyi yoxdur",
                         org.springframework.http.HttpStatus.CONFLICT, "NO_ACTIVE_SUBSCRIPTION"));
 
         MembershipPlan currentPlan = planRepository.findById(currentSub.getPlanId())
-                .orElseThrow(() -> new ServiceException("Current plan not found",
+                .orElseThrow(() -> new ServiceException("Mövcud plan tapılmadı",
                         org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR"));
 
         // Infer current duration
@@ -45,7 +45,7 @@ public class UpgradeService {
         DurationOption currentOption = currentPlan.getOptions().stream()
                 .filter(o -> o.getDurationMonths().equals(currentDuration))
                 .findFirst()
-                .orElseThrow(() -> new ServiceException("Current plan duration config not found",
+                .orElseThrow(() -> new ServiceException("Mövcud planın müddət konfiqurasiyası tapılmadı",
                         org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR"));
 
         BigDecimal currentEffectivePrice = currentOption.getPriceDiscounted() != null
@@ -123,33 +123,33 @@ public class UpgradeService {
     public UpgradeCheckoutResponse checkout(Long userId, UpgradeCheckoutRequest request) {
         // Validate Current Subscription
         Subscription currentSub = subscriptionRepository.findById(request.getCurrentSubscriptionId())
-                .orElseThrow(() -> new ServiceException("Active subscription not found",
+                .orElseThrow(() -> new ServiceException("Aktiv abunəlik tapılmadı",
                         org.springframework.http.HttpStatus.CONFLICT, "NO_ACTIVE_SUBSCRIPTION"));
 
         if (!currentSub.getUserId().equals(userId)) {
-            throw new ServiceException("Unauthorized access to subscription",
+            throw new ServiceException("Abunəliyə icazəsiz giriş",
                     org.springframework.http.HttpStatus.UNAUTHORIZED, "UNAUTHORIZED");
         }
         if (!"ACTIVE".equals(currentSub.getStatus())) {
-            throw new ServiceException("Subscription is not active",
+            throw new ServiceException("Abunəlik aktiv deyil",
                     org.springframework.http.HttpStatus.CONFLICT, "NO_ACTIVE_SUBSCRIPTION");
         }
 
         // Validate Target Plan
         Long targetPlanId = Long.parseLong(request.getTargetPackageId());
         MembershipPlan targetPlan = planRepository.findById(targetPlanId)
-                .orElseThrow(() -> new ServiceException("Target plan not found",
+                .orElseThrow(() -> new ServiceException("Hədəf plan tapılmadı",
                         org.springframework.http.HttpStatus.NOT_FOUND, "PACKAGE_NOT_FOUND"));
 
         if (!targetPlan.getIsActive()) {
-            throw new ServiceException("Target plan is not active",
+            throw new ServiceException("Hədəf plan aktiv deyil",
                     org.springframework.http.HttpStatus.NOT_FOUND, "PACKAGE_NOT_FOUND");
         }
 
         DurationOption targetOption = targetPlan.getOptions().stream()
                 .filter(o -> o.getDurationMonths().equals(request.getTargetDurationMonths()))
                 .findFirst()
-                .orElseThrow(() -> new ServiceException("Invalid upgrade request configuration",
+                .orElseThrow(() -> new ServiceException("Yanlış təkmilləşdirmə sorğusu konfiqurasiyası",
                         org.springframework.http.HttpStatus.BAD_REQUEST, "INVALID_UPGRADE_REQUEST"));
 
         // Current plan pricing
@@ -167,7 +167,7 @@ public class UpgradeService {
         DurationOption currentOption = currentPlan.getOptions().stream()
                 .filter(o -> o.getDurationMonths().equals(currentDuration))
                 .findFirst()
-                .orElseThrow(() -> new ServiceException("Current plan config not found",
+                .orElseThrow(() -> new ServiceException("Mövcud plan konfiqurasiyası tapılmadı",
                         org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR"));
 
         BigDecimal currentEffectivePrice = currentOption.getPriceDiscounted() != null
@@ -178,7 +178,7 @@ public class UpgradeService {
         BigDecimal payableDiff = targetEffectivePrice.subtract(currentEffectivePrice);
 
         if (payableDiff.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ServiceException("Upgrade not eligible (price difference <= 0)",
+            throw new ServiceException("Təkmilləşdirmə mümkün deyil (qiymət fərqi <= 0)",
                     org.springframework.http.HttpStatus.CONFLICT, "UPGRADE_NOT_ELIGIBLE");
         }
 
@@ -239,7 +239,7 @@ public class UpgradeService {
                 .orElseThrow(() -> new ServiceException("Order not found",
                         org.springframework.http.HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND"));
         if (!order.getUserId().equals(userId)) {
-            throw new ServiceException("Order not found",
+            throw new ServiceException("Sifariş tapılmadı",
                     org.springframework.http.HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND");
         }
         return order;

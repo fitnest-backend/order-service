@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
 		
 		ErrorResponse errorResponse = ErrorResponse.builder()
 				.error(ErrorResponse.ErrorDetail.builder()
-					.message("Validation failed")
+					.message("Doğrulama xətası")
 					.code("VALIDATION_ERROR")
 					.status(HttpStatus.BAD_REQUEST.value())
 					.timestamp(OffsetDateTime.now())
@@ -78,7 +78,7 @@ public class GlobalExceptionHandler {
 
 		ErrorResponse errorResponse = ErrorResponse.builder()
 				.error(ErrorResponse.ErrorDetail.builder()
-					.message("Invalid request format")
+					.message("Yanlış sorğu formatı")
 					.code("HTTP_MESSAGE_NOT_READABLE")
 					.status(HttpStatus.BAD_REQUEST.value())
 					.timestamp(OffsetDateTime.now())
@@ -94,7 +94,7 @@ public class GlobalExceptionHandler {
 
 		ErrorResponse errorResponse = ErrorResponse.builder()
 				.error(ErrorResponse.ErrorDetail.builder()
-					.message("Internal server error")
+					.message("Daxili server xətası")
 					.code("RUNTIME_EXCEPTION")
 					.status(HttpStatus.INTERNAL_SERVER_ERROR.value())
 					.timestamp(OffsetDateTime.now())

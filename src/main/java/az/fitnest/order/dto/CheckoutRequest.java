@@ -11,12 +11,12 @@ import jakarta.validation.constraints.NotNull;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CheckoutRequest {
-    @NotNull
+    @NotNull(message = "İdman zalı ID-si mütləqdir")
     private String gym_id;
-    @NotNull
+    @NotNull(message = "Paket ID-si mütləqdir")
     private String package_id;
-    @NotNull
+    @NotNull(message = "Müddət mütləqdir")
     private Integer duration_months;
-    @NotNull
+    @NotNull(message = "Ödəniş üsulu ID-si mütləqdir")
     private String payment_method_id;
 }
