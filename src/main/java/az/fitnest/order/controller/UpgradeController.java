@@ -90,14 +90,14 @@ public class UpgradeController {
             @Parameter(description = "Yüksəltmə ödəniş təfərrüatları") @Valid @RequestBody UpgradeCheckoutRequest request) {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UpgradeCheckoutResponse response = upgradeService.checkout(userId, request);
-        
+
         if (response.getPayment() != null && !"success".equals(response.getPayment().getStatus())) {
             return ResponseEntity.status(402).body(response);
         }
-        
+
         return ResponseEntity.ok(response);
     }
-    
+
     @Operation(
             summary = "Sifariş təfərrüatlarını əldə edin",
             description = "Sifariş ID-si vasitəsilə xüsusi sifarişin təfərrüatlarını qaytarır."
@@ -124,14 +124,14 @@ public class UpgradeController {
             @Parameter(description = "Sifarişin ID-si") @PathVariable String orderId) {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Order order = upgradeService.getOrder(userId, orderId);
-        
+
         return ResponseEntity.ok(Map.of(
-            "order_id", order.getOrderId(),
-            "type", order.getType(),
-            "status", order.getStatus(),
-            "amount", order.getAmount(),
-            "currency", order.getCurrency(),
-            "created_at", order.getCreatedAt()
+                "order_id", order.getOrderId(),
+                "type", order.getType(),
+                "status", order.getStatus(),
+                "amount", order.getAmount(),
+                "currency", order.getCurrency(),
+                "created_at", order.getCreatedAt()
         ));
     }
 }

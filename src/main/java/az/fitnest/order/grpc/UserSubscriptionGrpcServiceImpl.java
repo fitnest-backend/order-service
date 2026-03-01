@@ -14,8 +14,8 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserSubscriptionServiceGrpc.UserSubscriptionServiceImplBase {
 
-    private final UserSubscriptionService subscriptionService;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    private final UserSubscriptionService subscriptionService;
 
     @Override
     public void getActiveSubscription(GetActiveSubscriptionRequest request, StreamObserver<az.fitnest.order.grpc.ActiveSubscriptionResponse> responseObserver) {

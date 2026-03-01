@@ -13,9 +13,9 @@ public class MockPaymentService {
         // Mock logic: 
         // If paymentMethodId starts with "pm_error", fail.
         // Else success.
-        
+
         if (paymentMethodId.startsWith("pm_fail")) {
-             return PaymentResultDto.builder()
+            return PaymentResultDto.builder()
                     .status("failed")
                     .attemptedAmount(amount)
                     .currency(currency)

@@ -15,12 +15,12 @@ import java.math.BigDecimal;
 public class UpgradeOptionDto {
     private String type; // duration_upgrade, tier_upgrade
     private TargetPackageDto target;
-    
+
     @JsonProperty("payable_difference")
     private BigDecimal payableDifference;
-    
+
     @JsonProperty("new_remaining_limit")
     private Integer newRemainingLimit;
-    
+
     private String badge;
 }

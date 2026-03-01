@@ -41,7 +41,7 @@ public class CheckoutController {
             @Parameter(description = "Ödəniş üçün paket və ödəniş təfərrüatları") @Valid @RequestBody CheckoutRequest request) {
         Long userId = extractUserId(principal);
         if (userId == null) {
-             throw new RuntimeException("User must be authenticated");
+            throw new RuntimeException("User must be authenticated");
         }
         return ResponseEntity.status(201).body(checkoutService.processCheckout(userId, request));
     }

@@ -14,18 +14,18 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class PaymentResultDto {
     private String status;
-    
+
     @JsonProperty("paid_amount")
     private BigDecimal paidAmount;
-    
+
     @JsonProperty("attempted_amount")
     private BigDecimal attemptedAmount;
-    
+
     private String currency;
-    
+
     @JsonProperty("provider_reference")
     private String providerReference;
-    
+
     @JsonProperty("failure_reason")
     private String failureReason;
 }

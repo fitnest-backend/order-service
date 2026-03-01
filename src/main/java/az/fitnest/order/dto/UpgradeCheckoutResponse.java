@@ -13,11 +13,11 @@ import lombok.NoArgsConstructor;
 public class UpgradeCheckoutResponse {
     @JsonProperty("order_id")
     private String orderId;
-    
+
     private PaymentResultDto payment;
-    
+
     private SubscriptionDetailsDto subscription;
-    
+
     @JsonProperty("subscription_unchanged")
     private Boolean subscriptionUnchanged;
 }
