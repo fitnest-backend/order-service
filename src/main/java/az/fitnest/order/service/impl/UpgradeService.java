@@ -122,7 +122,7 @@ public class UpgradeService {
     @Transactional
     public UpgradeCheckoutResponse checkout(Long userId, UpgradeCheckoutRequest request) {
         // Validate Current Subscription
-        Subscription currentSub = subscriptionRepository.findById(request.getCurrentSubscriptionId())
+        Subscription currentSub = subscriptionRepository.findById(request.currentSubscriptionId())
                 .orElseThrow(() -> new ServiceException("Aktiv abunəlik tapılmadı",
                         org.springframework.http.HttpStatus.CONFLICT, "NO_ACTIVE_SUBSCRIPTION"));
 
@@ -136,7 +136,7 @@ public class UpgradeService {
         }
 
         // Validate Target Plan
-        Long targetPlanId = Long.parseLong(request.getTargetPackageId());
+        Long targetPlanId = Long.parseLong(request.targetPackageId());
         MembershipPlan targetPlan = planRepository.findById(targetPlanId)
                 .orElseThrow(() -> new ServiceException("Hədəf plan tapılmadı",
                         org.springframework.http.HttpStatus.NOT_FOUND, "PACKAGE_NOT_FOUND"));
@@ -147,7 +147,7 @@ public class UpgradeService {
         }
 
         DurationOption targetOption = targetPlan.getOptions().stream()
-                .filter(o -> o.getDurationMonths().equals(request.getTargetDurationMonths()))
+                .filter(o -> o.getDurationMonths().equals(request.targetDurationMonths()))
                 .findFirst()
                 .orElseThrow(() -> new ServiceException("Yanlış təkmilləşdirmə sorğusu konfiqurasiyası",
                         org.springframework.http.HttpStatus.BAD_REQUEST, "INVALID_UPGRADE_REQUEST"));
@@ -186,23 +186,23 @@ public class UpgradeService {
         String orderId = "ord_" + UUID.randomUUID().toString().substring(0, 8);
 
         PaymentResultDto paymentResult = paymentService.processPayment(
-                request.getPaymentMethodId(), payableDiff, targetPlan.getCurrency());
+                request.paymentMethodId(), payableDiff, targetPlan.getCurrency());
 
         Order order = Order.builder()
                 .orderId(orderId)
                 .userId(userId)
                 .type("subscription_upgrade")
-                .status(paymentResult.getStatus())
+                .status(paymentResult.status())
                 .amount(payableDiff)
                 .currency(targetPlan.getCurrency())
                 .createdAt(LocalDateTime.now())
-                .providerReference(paymentResult.getProviderReference())
+                .providerReference(paymentResult.providerReference())
                 .build();
         orderRepository.save(order);
 
         SubscriptionDetailsDto subDetails = null;
 
-        if ("success".equals(paymentResult.getStatus())) {
+        if ("success".equals(paymentResult.status())) {
             int targetTotal = targetOption.getEntryLimit() != null ? targetOption.getEntryLimit() : 0;
             int currentRemaining = currentSub.getRemainingLimit() != null ? currentSub.getRemainingLimit() : 0;
             int newRemaining = Math.max(0, targetTotal - currentRemaining);
@@ -210,7 +210,7 @@ public class UpgradeService {
             currentSub.setPlanId(targetPlanId);
             currentSub.setTotalLimit(targetTotal);
             currentSub.setRemainingLimit(newRemaining);
-            currentSub.setEndAt(currentSub.getStartAt().plusMonths(request.getTargetDurationMonths()));
+            currentSub.setEndAt(currentSub.getStartAt().plusMonths(request.targetDurationMonths()));
 
             subscriptionRepository.save(currentSub);
 
@@ -218,7 +218,7 @@ public class UpgradeService {
                     .subscriptionId(currentSub.getSubscriptionId())
                     .packageId(targetPlan.getId().toString())
                     .packageName(targetPlan.getName())
-                    .durationMonths(request.getTargetDurationMonths())
+                    .durationMonths(request.targetDurationMonths())
                     .totalLimit(targetTotal)
                     .remainingLimit(newRemaining)
                     .startAt(currentSub.getStartAt())
@@ -230,7 +230,7 @@ public class UpgradeService {
                 .orderId(orderId)
                 .payment(paymentResult)
                 .subscription(subDetails)
-                .subscriptionUnchanged(!"success".equals(paymentResult.getStatus()))
+                .subscriptionUnchanged(!"success".equals(paymentResult.status()))
                 .build();
     }
 

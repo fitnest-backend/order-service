@@ -91,7 +91,7 @@ public class UpgradeController {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UpgradeCheckoutResponse response = upgradeService.checkout(userId, request);
 
-        if (response.getPayment() != null && !"success".equals(response.getPayment().getStatus())) {
+        if (response.payment() != null && !"success".equals(response.payment().status())) {
             return ResponseEntity.status(402).body(response);
         }
 

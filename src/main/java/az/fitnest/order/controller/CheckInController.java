@@ -40,9 +40,9 @@ public class CheckInController {
     })
     public ResponseEntity<CheckInResponse> checkIn(@RequestBody CheckInRequest request) {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        CheckInResponse response = checkInService.checkIn(userId, request.getGymId());
+        CheckInResponse response = checkInService.checkIn(userId, request.gymId());
 
-        if (response.isSuccess()) {
+        if (response.success()) {
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(403).body(response);

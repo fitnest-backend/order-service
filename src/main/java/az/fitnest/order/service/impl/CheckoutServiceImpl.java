@@ -23,7 +23,7 @@ public class CheckoutServiceImpl implements CheckoutService {
     @Transactional
     @Override
     public CheckoutResponse processCheckout(Long userId, CheckoutRequest request) {
-        Long planId = Long.parseLong(request.getPackage_id());
+        Long planId = Long.parseLong(request.package_id());
 
         // Validate plan exists and is active
         MembershipPlan plan = planRepository.findById(planId)
@@ -32,9 +32,9 @@ public class CheckoutServiceImpl implements CheckoutService {
 
         // Find the matching duration option
         DurationOption option = plan.getOptions().stream()
-                .filter(o -> o.getDurationMonths().equals(request.getDuration_months()))
+                .filter(o -> o.getDurationMonths().equals(request.duration_months()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("No option for duration " + request.getDuration_months() + " on plan " + planId));
+                .orElseThrow(() -> new RuntimeException("No option for duration " + request.duration_months() + " on plan " + planId));
 
         BigDecimal amount = option.getPriceDiscounted() != null ? option.getPriceDiscounted() : option.getPriceStandard();
 

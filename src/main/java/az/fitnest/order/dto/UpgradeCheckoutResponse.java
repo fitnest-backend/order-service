@@ -1,23 +1,14 @@
 package az.fitnest.order.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class UpgradeCheckoutResponse {
+public record UpgradeCheckoutResponse(
     @JsonProperty("order_id")
-    private String orderId;
-
-    private PaymentResultDto payment;
-
-    private SubscriptionDetailsDto subscription;
-
+    String orderId,
+    PaymentResultDto payment,
+    SubscriptionDetailsDto subscription,
     @JsonProperty("subscription_unchanged")
-    private Boolean subscriptionUnchanged;
-}
+    Boolean subscriptionUnchanged
+) {}

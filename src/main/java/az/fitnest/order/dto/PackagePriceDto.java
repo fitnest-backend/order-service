@@ -1,19 +1,12 @@
 package az.fitnest.order.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
+import lombok.Builder;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class PackagePriceDto {
-    private BigDecimal base;
-    private BigDecimal discount;
-    private BigDecimal effective;
-    private String currency;
-}
+public record PackagePriceDto(
+    BigDecimal base,
+    BigDecimal discount,
+    BigDecimal effective,
+    String currency
+) {}

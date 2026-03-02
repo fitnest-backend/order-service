@@ -2,35 +2,28 @@ package az.fitnest.order.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.OffsetDateTime;
 import java.util.Map;
+import lombok.Builder;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ErrorResponse {
-
-    @JsonProperty("error")
-    private ErrorDetail error;
-
-    @Data
+public record ErrorResponse(
+    @JsonProperty("error") ErrorDetail error
+) {
     @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class ErrorDetail {
-        private String code;
-        private String message;
-        private Integer status;
-        private String path;
-        @Builder.Default
-        private OffsetDateTime timestamp = OffsetDateTime.now();
-        private Map<String, Object> details;
+    public record ErrorDetail(
+        String code,
+        String message,
+        Integer status,
+        String path,
+        OffsetDateTime timestamp,
+        @JsonProperty("other_attr") Map<String, Object> details
+    ) {
+        public ErrorDetail {
+            if (timestamp == null) {
+                timestamp = OffsetDateTime.now();
+            }
+        }
     }
 }

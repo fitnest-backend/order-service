@@ -1,31 +1,19 @@
 package az.fitnest.order.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
+import lombok.Builder;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class PaymentResultDto {
-    private String status;
-
+public record PaymentResultDto(
+    String status,
     @JsonProperty("paid_amount")
-    private BigDecimal paidAmount;
-
+    BigDecimal paidAmount,
     @JsonProperty("attempted_amount")
-    private BigDecimal attemptedAmount;
-
-    private String currency;
-
+    BigDecimal attemptedAmount,
+    String currency,
     @JsonProperty("provider_reference")
-    private String providerReference;
-
+    String providerReference,
     @JsonProperty("failure_reason")
-    private String failureReason;
-}
+    String failureReason
+) {}

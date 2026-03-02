@@ -23,26 +23,26 @@ public class MembershipPlanAdminService {
     @Transactional
     public void addPlanWithOptions(MembershipPlanWithOptionsRequest request) {
         MembershipPlan plan = new MembershipPlan();
-        plan.setName(request.getName());
-        plan.setCurrency(request.getCurrency() != null ? request.getCurrency() : "AZN");
-        if (request.getBillingPeriod() != null) {
-            plan.setBillingPeriod(request.getBillingPeriod());
+        plan.setName(request.name());
+        plan.setCurrency(request.currency() != null ? request.currency() : "AZN");
+        if (request.billingPeriod() != null) {
+            plan.setBillingPeriod(request.billingPeriod());
         } else {
             plan.setBillingPeriod(BillingPeriod.MONTHLY);
         }
-        plan.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
-        plan.setSortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0);
+        plan.setIsActive(request.isActive() != null ? request.isActive() : true);
+        plan.setSortOrder(request.sortOrder() != null ? request.sortOrder() : 0);
 
-        if (request.getOptions() != null) {
-            for (DurationOptionEntityDto dto : request.getOptions()) {
+        if (request.options() != null) {
+            for (DurationOptionEntityDto dto : request.options()) {
                 DurationOption opt = new DurationOption();
                 opt.setMembershipPlan(plan);
-                opt.setDurationMonths(dto.getDurationMonths());
-                opt.setPriceStandard(dto.getPriceStandard());
-                opt.setPriceDiscounted(dto.getPriceDiscounted());
-                opt.setEntryLimit(dto.getEntryLimit());
-                opt.setFreezeDays(dto.getFreezeDays());
-                if (dto.getServices() != null) opt.setServices(new ArrayList<>(dto.getServices()));
+                opt.setDurationMonths(dto.durationMonths());
+                opt.setPriceStandard(dto.priceStandard());
+                opt.setPriceDiscounted(dto.priceDiscounted());
+                opt.setEntryLimit(dto.entryLimit());
+                opt.setFreezeDays(dto.freezeDays());
+                if (dto.services() != null) opt.setServices(new ArrayList<>(dto.services()));
                 plan.getOptions().add(opt);
             }
         }
@@ -68,25 +68,25 @@ public class MembershipPlanAdminService {
         MembershipPlan plan = membershipPlanRepository.findById(planId)
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
 
-        plan.setName(request.getName());
-        plan.setCurrency(request.getCurrency() != null ? request.getCurrency() : plan.getCurrency());
-        if (request.getBillingPeriod() != null) {
-            plan.setBillingPeriod(request.getBillingPeriod());
+        plan.setName(request.name());
+        plan.setCurrency(request.currency() != null ? request.currency() : plan.getCurrency());
+        if (request.billingPeriod() != null) {
+            plan.setBillingPeriod(request.billingPeriod());
         }
-        plan.setIsActive(request.getIsActive() != null ? request.getIsActive() : plan.getIsActive());
-        plan.setSortOrder(request.getSortOrder() != null ? request.getSortOrder() : plan.getSortOrder());
+        plan.setIsActive(request.isActive() != null ? request.isActive() : plan.getIsActive());
+        plan.setSortOrder(request.sortOrder() != null ? request.sortOrder() : plan.getSortOrder());
 
         plan.getOptions().clear();
-        if (request.getOptions() != null) {
-            for (DurationOptionEntityDto dto : request.getOptions()) {
+        if (request.options() != null) {
+            for (DurationOptionEntityDto dto : request.options()) {
                 DurationOption opt = new DurationOption();
                 opt.setMembershipPlan(plan);
-                opt.setDurationMonths(dto.getDurationMonths());
-                opt.setPriceStandard(dto.getPriceStandard());
-                opt.setPriceDiscounted(dto.getPriceDiscounted());
-                opt.setEntryLimit(dto.getEntryLimit());
-                opt.setFreezeDays(dto.getFreezeDays());
-                if (dto.getServices() != null) opt.setServices(new ArrayList<>(dto.getServices()));
+                opt.setDurationMonths(dto.durationMonths());
+                opt.setPriceStandard(dto.priceStandard());
+                opt.setPriceDiscounted(dto.priceDiscounted());
+                opt.setEntryLimit(dto.entryLimit());
+                opt.setFreezeDays(dto.freezeDays());
+                if (dto.services() != null) opt.setServices(new ArrayList<>(dto.services()));
                 plan.getOptions().add(opt);
             }
         }

@@ -1,26 +1,16 @@
 package az.fitnest.order.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
+import lombok.Builder;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class UpgradeOptionDto {
-    private String type; // duration_upgrade, tier_upgrade
-    private TargetPackageDto target;
-
+public record UpgradeOptionDto(
+    String type,
+    TargetPackageDto target,
     @JsonProperty("payable_difference")
-    private BigDecimal payableDifference;
-
+    BigDecimal payableDifference,
     @JsonProperty("new_remaining_limit")
-    private Integer newRemainingLimit;
-
-    private String badge;
-}
+    Integer newRemainingLimit,
+    String badge
+) {}

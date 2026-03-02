@@ -1,30 +1,19 @@
 package az.fitnest.order.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
+import lombok.Builder;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class TargetPackageDto {
+public record TargetPackageDto(
     @JsonProperty("package_id")
-    private String packageId;
-
+    String packageId,
     @JsonProperty("package_name")
-    private String packageName;
-
+    String packageName,
     @JsonProperty("duration_months")
-    private Integer durationMonths;
-
+    Integer durationMonths,
     @JsonProperty("target_total_limit")
-    private Integer targetTotalLimit;
-
+    Integer targetTotalLimit,
     @JsonProperty("target_effective_price")
-    private BigDecimal targetEffectivePrice;
-}
+    BigDecimal targetEffectivePrice
+) {}

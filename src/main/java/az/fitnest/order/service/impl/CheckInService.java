@@ -6,7 +6,6 @@ import az.fitnest.order.model.entity.Subscription;
 import az.fitnest.order.repository.GymVisitRepository;
 import az.fitnest.order.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +13,6 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class CheckInService {
 
     private final SubscriptionRepository subscriptionRepository;
@@ -69,8 +67,6 @@ public class CheckInService {
                 .build();
         gymVisitRepository.save(visit);
 
-        log.info("User {} checked in at gym {} (subscription {}). Remaining visits: {}",
-                userId, gymId, subscription.getSubscriptionId(), subscription.getRemainingLimit());
 
         return CheckInResponse.builder()
                 .success(true)

@@ -1,6 +1,5 @@
 package az.fitnest.order.config;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -18,7 +17,6 @@ import java.sql.ResultSet;
  * Application warmup configuration that pre-warms various resources at startup.
  * Eliminates cold-start latency.
  */
-@Slf4j
 @Configuration
 public class ApplicationWarmupConfig {
 
@@ -64,31 +62,24 @@ public class ApplicationWarmupConfig {
                     }
                 }
             }
-            log.debug("Database warmup completed in {}ms", System.currentTimeMillis() - start);
         } catch (Exception e) {
-            log.warn("Failed to warm up database: {}", e.getMessage());
         }
     }
 
     private void warmupRedis() {
         if (redisTemplate == null) {
-            log.debug("No RedisTemplate bean found, skipping Redis warmup.");
             return;
         }
 
         try {
-            log.debug("Warming up Redis connection...");
             long start = System.currentTimeMillis();
             redisTemplate.hasKey("__warmup__");
-            log.debug("Redis warmup completed in {}ms", System.currentTimeMillis() - start);
         } catch (Exception e) {
-            log.warn("Failed to warm up Redis: {}", e.getMessage());
         }
     }
 
     private void warmupJit() {
         try {
-            log.debug("Warming up JIT...");
             long start = System.currentTimeMillis();
 
             String test = "warmup-test-string";
@@ -104,9 +95,7 @@ public class ApplicationWarmupConfig {
             map.put("key", "value");
             map.get("key");
 
-            log.debug("JIT warmup completed in {}ms", System.currentTimeMillis() - start);
         } catch (Exception e) {
-            log.warn("Failed JIT warmup: {}", e.getMessage());
         }
     }
 }

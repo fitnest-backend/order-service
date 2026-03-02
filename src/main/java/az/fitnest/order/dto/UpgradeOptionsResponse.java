@@ -1,17 +1,10 @@
 package az.fitnest.order.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.List;
+import lombok.Builder;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class UpgradeOptionsResponse {
-    private SubscriptionDetailsDto current;
-    private List<UpgradeOptionDto> options;
-}
+public record UpgradeOptionsResponse(
+    SubscriptionDetailsDto current,
+    List<UpgradeOptionDto> options
+) {}

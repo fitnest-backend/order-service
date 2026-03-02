@@ -1,12 +1,10 @@
 package az.fitnest.order.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class CheckInRequest {
-    private Long gymId;
-}
+@Builder
+public record CheckInRequest(
+    @NotNull(message = "Zal ID-si mütləqdir")
+    Long gymId
+) {}

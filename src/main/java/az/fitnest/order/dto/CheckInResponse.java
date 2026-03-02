@@ -1,19 +1,12 @@
 package az.fitnest.order.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
+import lombok.Builder;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class CheckInResponse {
-    private boolean success;
-    private String message;
-    private Integer remainingVisits;
-    private LocalDateTime checkedInAt;
-}
+public record CheckInResponse(
+    boolean success,
+    String message,
+    Integer remainingVisits,
+    LocalDateTime checkedInAt
+) {}

@@ -5,11 +5,9 @@ import az.fitnest.order.service.impl.UserSubscriptionService;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
-import lombok.extern.slf4j.Slf4j;
 
 import java.time.format.DateTimeFormatter;
 
-@Slf4j
 @GrpcService
 @RequiredArgsConstructor
 public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserSubscriptionServiceGrpc.UserSubscriptionServiceImplBase {
@@ -25,16 +23,15 @@ public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserS
 
             az.fitnest.order.grpc.ActiveSubscriptionResponse.Builder grpcResponse = az.fitnest.order.grpc.ActiveSubscriptionResponse.newBuilder();
 
-            if (dto.getSubscription() != null) {
-                az.fitnest.order.dto.SubscriptionDetailsDto info = dto.getSubscription();
-                if (info.getPackageName() != null) grpcResponse.setPackageName(info.getPackageName());
+            if (dto.subscription() != null) {
+                az.fitnest.order.dto.SubscriptionDetailsDto info = dto.subscription();
+                if (info.packageName() != null) grpcResponse.setPackageName(info.packageName());
             }
 
             responseObserver.onNext(grpcResponse.build());
             responseObserver.onCompleted();
 
         } catch (Exception e) {
-            log.error("Failed to get active subscription for user {}: {}", request.getUserId(), e.getMessage());
             responseObserver.onError(io.grpc.Status.INTERNAL
                     .withDescription("Failed to get active subscription: " + e.getMessage())
                     .withCause(e)
