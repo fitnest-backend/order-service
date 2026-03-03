@@ -1,4 +1,4 @@
-package az.fitnest.payment.exception;
+package az.fitnest.order.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
