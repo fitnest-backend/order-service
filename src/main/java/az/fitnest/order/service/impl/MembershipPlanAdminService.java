@@ -22,6 +22,7 @@ public class MembershipPlanAdminService {
 
     @Transactional
     public void addPlanWithOptions(MembershipPlanWithOptionsRequest request) {
+        validatePlanName(request.name());
         MembershipPlan plan = new MembershipPlan();
         plan.setName(request.name());
         plan.setCurrency(request.currency() != null ? request.currency() : "AZN");
@@ -74,6 +75,7 @@ public class MembershipPlanAdminService {
 
     @Transactional
     public void updatePlanWithOptions(Long planId, MembershipPlanWithOptionsRequest request) {
+        validatePlanName(request.name());
         MembershipPlan plan = membershipPlanRepository.findById(planId)
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
 
@@ -118,5 +120,20 @@ public class MembershipPlanAdminService {
         }
 
         membershipPlanRepository.save(plan);
+    }
+
+    private void validatePlanName(String name) {
+        if (name == null) {
+            throw new az.fitnest.order.exception.ServiceException("error.invalid_plan_name", "INVALID_PLAN_NAME", org.springframework.http.HttpStatus.BAD_REQUEST);
+        }
+        String lowerName = name.trim().toLowerCase();
+        boolean isValid = lowerName.equals("bronze") || lowerName.equals("silver") 
+                       || lowerName.equals("gold") || lowerName.equals("platinum")
+                       || lowerName.equals("bronze membership") || lowerName.equals("silver membership") 
+                       || lowerName.equals("gold membership") || lowerName.equals("platinum membership");
+        
+        if (!isValid) {
+            throw new az.fitnest.order.exception.ServiceException("error.invalid_plan_name", "INVALID_PLAN_NAME", org.springframework.http.HttpStatus.BAD_REQUEST);
+        }
     }
 }
