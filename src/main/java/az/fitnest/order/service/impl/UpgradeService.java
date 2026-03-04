@@ -26,11 +26,11 @@ public class UpgradeService {
     @Transactional(readOnly = true)
     public UpgradeOptionsResponse getUpgradeOptions(Long userId, Integer targetDurationMonths) {
         Subscription currentSub = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
-                .orElseThrow(() -> new ServiceException("İstifadəçinin aktiv abunəliyi yoxdur",
+                .orElseThrow(() -> new ServiceException("error.no_active_subscription",
                         "NO_ACTIVE_SUBSCRIPTION", org.springframework.http.HttpStatus.CONFLICT));
 
         MembershipPlan currentPlan = planRepository.findById(currentSub.getPlanId())
-                .orElseThrow(() -> new ServiceException("Mövcud plan tapılmadı",
+                .orElseThrow(() -> new ServiceException("error.plan_not_found",
                         "INTERNAL_ERROR", org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR));
 
         // Infer current duration
@@ -45,7 +45,7 @@ public class UpgradeService {
         DurationOption currentOption = currentPlan.getOptions().stream()
                 .filter(o -> o.getDurationMonths().equals(currentDuration))
                 .findFirst()
-                .orElseThrow(() -> new ServiceException("Mövcud planın müddət konfiqurasiyası tapılmadı",
+                .orElseThrow(() -> new ServiceException("error.duration_config_not_found",
                         "INTERNAL_ERROR", org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR));
 
         BigDecimal currentEffectivePrice = currentOption.getPriceDiscounted() != null
@@ -123,38 +123,38 @@ public class UpgradeService {
     public UpgradeCheckoutResponse checkout(Long userId, UpgradeCheckoutRequest request) {
         // Validate Current Subscription
         Subscription currentSub = subscriptionRepository.findById(request.currentSubscriptionId())
-                .orElseThrow(() -> new ServiceException("Aktiv abunəlik tapılmadı",
+                .orElseThrow(() -> new ServiceException("error.no_active_subscription",
                         "NO_ACTIVE_SUBSCRIPTION", org.springframework.http.HttpStatus.CONFLICT));
 
         if (!currentSub.getUserId().equals(userId)) {
-            throw new ServiceException("Abunəliyə icazəsiz giriş",
+            throw new ServiceException("error.upgrade_unauthorized",
                     "UNAUTHORIZED", org.springframework.http.HttpStatus.UNAUTHORIZED);
         }
         if (!"ACTIVE".equals(currentSub.getStatus())) {
-            throw new ServiceException("Abunəlik aktiv deyil",
+            throw new ServiceException("error.no_active_subscription",
                     "NO_ACTIVE_SUBSCRIPTION", org.springframework.http.HttpStatus.CONFLICT);
         }
 
         // Validate Target Plan
         Long targetPlanId = Long.parseLong(request.targetPackageId());
         MembershipPlan targetPlan = planRepository.findById(targetPlanId)
-                .orElseThrow(() -> new ServiceException("Hədəf plan tapılmadı",
+                .orElseThrow(() -> new ServiceException("error.target_plan_not_found",
                         "PACKAGE_NOT_FOUND", org.springframework.http.HttpStatus.NOT_FOUND));
 
         if (!targetPlan.getIsActive()) {
-            throw new ServiceException("Hədəf plan aktiv deyil",
+            throw new ServiceException("error.target_plan_inactive",
                     "PACKAGE_NOT_FOUND", org.springframework.http.HttpStatus.NOT_FOUND);
         }
 
         DurationOption targetOption = targetPlan.getOptions().stream()
                 .filter(o -> o.getDurationMonths().equals(request.targetDurationMonths()))
                 .findFirst()
-                .orElseThrow(() -> new ServiceException("Yanlış təkmilləşdirmə sorğusu konfiqurasiyası",
+                .orElseThrow(() -> new ServiceException("error.invalid_upgrade_request",
                         "INVALID_UPGRADE_REQUEST", org.springframework.http.HttpStatus.BAD_REQUEST));
 
         // Current plan pricing
         MembershipPlan currentPlan = planRepository.findById(currentSub.getPlanId())
-                .orElseThrow(() -> new ServiceException("Current plan not found",
+                .orElseThrow(() -> new ServiceException("error.plan_not_found",
                         "INTERNAL_ERROR", org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR));
 
         long currentDurationLong = 1;
@@ -167,7 +167,7 @@ public class UpgradeService {
         DurationOption currentOption = currentPlan.getOptions().stream()
                 .filter(o -> o.getDurationMonths().equals(currentDuration))
                 .findFirst()
-                .orElseThrow(() -> new ServiceException("Mövcud plan konfiqurasiyası tapılmadı",
+                .orElseThrow(() -> new ServiceException("error.duration_config_not_found",
                         "INTERNAL_ERROR", org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR));
 
         BigDecimal currentEffectivePrice = currentOption.getPriceDiscounted() != null
@@ -178,7 +178,7 @@ public class UpgradeService {
         BigDecimal payableDiff = targetEffectivePrice.subtract(currentEffectivePrice);
 
         if (payableDiff.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ServiceException("Təkmilləşdirmə mümkün deyil (qiymət fərqi <= 0)",
+            throw new ServiceException("error.upgrade_not_eligible",
                     "UPGRADE_NOT_ELIGIBLE", org.springframework.http.HttpStatus.CONFLICT);
         }
 
@@ -236,10 +236,10 @@ public class UpgradeService {
 
     public Order getOrder(Long userId, String orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ServiceException("Order not found",
+                .orElseThrow(() -> new ServiceException("error.order_not_found",
                         "ORDER_NOT_FOUND", org.springframework.http.HttpStatus.NOT_FOUND));
         if (!order.getUserId().equals(userId)) {
-            throw new ServiceException("Sifariş tapılmadı",
+            throw new ServiceException("error.order_not_found",
                     "ORDER_NOT_FOUND", org.springframework.http.HttpStatus.NOT_FOUND);
         }
         return order;
