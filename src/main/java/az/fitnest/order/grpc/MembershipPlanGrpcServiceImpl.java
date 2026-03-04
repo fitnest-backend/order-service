@@ -100,8 +100,8 @@ public class MembershipPlanGrpcServiceImpl extends MembershipPlanServiceGrpc.Mem
                         .setFreezeDays(opt.getFreezeDays() != null ? opt.getFreezeDays() : 0);
 
                 if (opt.getServices() != null) {
-                    for (String svc : opt.getServices()) {
-                        optBuilder.addServices(svc != null ? svc : "");
+                    for (az.fitnest.order.model.entity.PlanService svc : opt.getServices()) {
+                        optBuilder.addServices(svc != null && svc.getName() != null ? svc.getName() : "");
                     }
                 }
                 planBuilder.addOptions(optBuilder.build());

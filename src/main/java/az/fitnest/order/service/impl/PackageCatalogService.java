@@ -75,8 +75,8 @@ public class PackageCatalogService {
         List<PackageServiceDto> services = List.of();
         if (defaultOption != null && defaultOption.getServices() != null) {
             services = defaultOption.getServices().stream()
-                    .map(s -> PackageServiceDto.builder().serviceName(s).build())
-                    .collect(Collectors.toList());
+                    .map(s -> PackageServiceDto.builder().serviceName(s.getName()).build())
+                    .collect(java.util.stream.Collectors.toList());
         }
 
         return SubscriptionPackageDto.builder()

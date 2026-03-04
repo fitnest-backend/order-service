@@ -12,5 +12,5 @@ public record DurationOptionEntityDto(
     BigDecimal priceDiscounted,
     Integer entryLimit,
     Integer freezeDays,
-    List<String> services
+    List<PlanServiceDto> services
 ) {}

@@ -42,7 +42,16 @@ public class MembershipPlanAdminService {
                 opt.setPriceDiscounted(dto.priceDiscounted());
                 opt.setEntryLimit(dto.entryLimit());
                 opt.setFreezeDays(dto.freezeDays());
-                if (dto.services() != null) opt.setServices(new ArrayList<>(dto.services()));
+                if (dto.services() != null) {
+                    java.util.List<az.fitnest.order.model.entity.PlanService> services = new ArrayList<>();
+                    for (az.fitnest.order.dto.PlanServiceDto psd : dto.services()) {
+                        az.fitnest.order.model.entity.PlanService ps = new az.fitnest.order.model.entity.PlanService();
+                        ps.setName(psd.name());
+                        ps.setDurationOption(opt);
+                        services.add(ps);
+                    }
+                    opt.setServices(services);
+                }
                 plan.getOptions().add(opt);
             }
         }
@@ -86,7 +95,16 @@ public class MembershipPlanAdminService {
                 opt.setPriceDiscounted(dto.priceDiscounted());
                 opt.setEntryLimit(dto.entryLimit());
                 opt.setFreezeDays(dto.freezeDays());
-                if (dto.services() != null) opt.setServices(new ArrayList<>(dto.services()));
+                if (dto.services() != null) {
+                    java.util.List<az.fitnest.order.model.entity.PlanService> services = new ArrayList<>();
+                    for (az.fitnest.order.dto.PlanServiceDto psd : dto.services()) {
+                        az.fitnest.order.model.entity.PlanService ps = new az.fitnest.order.model.entity.PlanService();
+                        ps.setName(psd.name());
+                        ps.setDurationOption(opt);
+                        services.add(ps);
+                    }
+                    opt.setServices(services);
+                }
                 plan.getOptions().add(opt);
             }
         }

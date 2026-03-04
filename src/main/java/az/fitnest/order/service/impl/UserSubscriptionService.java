@@ -114,4 +114,35 @@ public class UserSubscriptionService {
                 .subscription(details)
                 .build();
     }
+
+    @Transactional
+    public void freezeSubscription(Long userId) {
+        Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
+                .orElseThrow(() -> new RuntimeException("Aktiv abunəlik tapılmadı və ya artıq dondurulub"));
+
+        if (subscription.getEndAt() != null && subscription.getEndAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Abunəliyin vaxtı bitib, dondurula bilməz");
+        }
+
+        subscription.setStatus("FROZEN");
+        subscription.setFrozenAt(LocalDateTime.now());
+        subscriptionRepository.save(subscription);
+    }
+
+    @Transactional
+    public void unfreezeSubscription(Long userId) {
+        Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "FROZEN")
+                .orElseThrow(() -> new RuntimeException("Dondurulmuş abunəlik tapılmadı"));
+
+        if (subscription.getFrozenAt() != null && subscription.getEndAt() != null) {
+            long daysFrozen = java.time.temporal.ChronoUnit.DAYS.between(subscription.getFrozenAt(), LocalDateTime.now());
+            if (daysFrozen > 0) {
+                subscription.setEndAt(subscription.getEndAt().plusDays(daysFrozen));
+            }
+        }
+
+        subscription.setStatus("ACTIVE");
+        subscription.setFrozenAt(null);
+        subscriptionRepository.save(subscription);
+    }
 }

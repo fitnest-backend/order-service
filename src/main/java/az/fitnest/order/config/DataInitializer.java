@@ -76,7 +76,17 @@ public class DataInitializer {
         option.setPriceDiscounted(new BigDecimal(price).multiply(new BigDecimal("0.9")).setScale(2, BigDecimal.ROUND_HALF_UP));
         option.setEntryLimit(sortOrder * 10);
         option.setFreezeDays(sortOrder * 2);
-        option.setServices(services);
+
+        if (services != null) {
+            java.util.List<PlanService> mappedServices = new java.util.ArrayList<>();
+            for (String s : services) {
+                PlanService ps = new PlanService();
+                ps.setName(s);
+                ps.setDurationOption(option);
+                mappedServices.add(ps);
+            }
+            option.setServices(mappedServices);
+        }
 
         plan.getOptions().add(option);
         plan = membershipPlanRepository.save(plan);

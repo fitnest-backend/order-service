@@ -44,4 +44,10 @@ public class Subscription {
 
     @Column(name = "remaining_limit")
     private Integer remainingLimit;
+
+    @Column(name = "frozen_at")
+    private LocalDateTime frozenAt;
+
+    @Column(name = "frozen_days_used")
+    private Integer frozenDaysUsed = 0;
 }

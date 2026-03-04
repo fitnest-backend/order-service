@@ -75,7 +75,9 @@ public class UpgradeService {
                         ? option.getPriceDiscounted() : option.getPriceStandard();
                 if (targetEffectivePrice == null) continue;
 
-                boolean isTierUpgrade = !isSamePlan && targetEffectivePrice.compareTo(currentEffectivePrice) > 0;
+                int currentTier = getTierRank(currentPlan.getName());
+                int targetTier = getTierRank(plan.getName());
+                boolean isTierUpgrade = !isSamePlan && targetTier > currentTier;
 
                 // Filter by requested target duration if specified
                 if (targetDurationMonths != null && !option.getDurationMonths().equals(targetDurationMonths)) {
@@ -243,5 +245,15 @@ public class UpgradeService {
                     "ORDER_NOT_FOUND", org.springframework.http.HttpStatus.NOT_FOUND);
         }
         return order;
+    }
+
+    private int getTierRank(String planName) {
+        if (planName == null) return 0;
+        String lower = planName.toLowerCase();
+        if (lower.contains("platinum")) return 4;
+        if (lower.contains("gold")) return 3;
+        if (lower.contains("silver")) return 2;
+        if (lower.contains("bronze")) return 1;
+        return 0;
     }
 }

@@ -37,8 +37,6 @@ public class DurationOption extends BaseAuditableEntity {
     @Column(name = "freeze_days")
     private Integer freezeDays;
 
-    @ElementCollection
-    @CollectionTable(name = "membership_plan_option_services", joinColumns = @JoinColumn(name = "option_id"))
-    @Column(name = "service")
-    private List<String> services = new ArrayList<>();
+    @OneToMany(mappedBy = "durationOption", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PlanService> services = new ArrayList<>();
 }
