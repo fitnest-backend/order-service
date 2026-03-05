@@ -35,7 +35,7 @@ public class PackageCatalogService {
     @Transactional(readOnly = true)
     public SubscriptionPackageDto getPackageById(Long planId) {
         MembershipPlan plan = planRepository.findById(planId)
-                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("PACKAGE_NOT_FOUND", "error.package_not_found"));
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.package_not_found"));
         return mapToDto(plan);
     }
 

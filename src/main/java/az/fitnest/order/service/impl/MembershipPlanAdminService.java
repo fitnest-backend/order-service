@@ -77,7 +77,7 @@ public class MembershipPlanAdminService {
     public void updatePlanWithOptions(Long planId, MembershipPlanWithOptionsRequest request) {
         validatePlanName(request.name());
         MembershipPlan plan = membershipPlanRepository.findById(planId)
-                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("PLAN_NOT_FOUND", "error.plan_not_found"));
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
 
         plan.setName(request.name());
         plan.setCurrency(request.currency() != null ? request.currency() : plan.getCurrency());
