@@ -25,19 +25,19 @@ public class UserSubscriptionService {
     @Transactional
     public boolean checkIn(Long userId, Long gymId) {
         Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
-                .orElseThrow(() -> new RuntimeException("Aktiv abunəlik tapılmadı"));
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("NO_ACTIVE_SUBSCRIPTION", "error.no_active_subscription"));
 
         if (subscription.getEndAt() != null && subscription.getEndAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Abunəliyin vaxtı bitib");
+            throw new az.fitnest.order.exception.BadRequestException("MEMBERSHIP_EXPIRED", "error.membership_expired");
         }
 
         if (subscription.getGymId() != null && !subscription.getGymId().equals(gymId)) {
-            throw new RuntimeException("Abunəlik bu idman zalı üçün keçərli deyil");
+            throw new az.fitnest.order.exception.BadRequestException("SUBSCRIPTION_NOT_VALID_FOR_GYM", "error.subscription_not_valid_for_gym");
         }
 
         if (subscription.getRemainingLimit() != null) {
             if (subscription.getRemainingLimit() <= 0) {
-                throw new RuntimeException("Bu abunəlikdə qalan giriş yoxdur");
+                throw new az.fitnest.order.exception.BadRequestException("NO_REMAINING_VISITS", "error.no_remaining_visits");
             }
             subscription.setRemainingLimit(subscription.getRemainingLimit() - 1);
             subscriptionRepository.save(subscription);
@@ -73,7 +73,7 @@ public class UserSubscriptionService {
         }
 
         MembershipPlan plan = planRepository.findById(subscription.getPlanId())
-                .orElseThrow(() -> new RuntimeException("Plan tapılmadı: " + subscription.getPlanId()));
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("PLAN_NOT_FOUND", "error.plan_not_found"));
 
         // Infer duration from start/end
         long durationMonths = 1;
@@ -118,10 +118,10 @@ public class UserSubscriptionService {
     @Transactional
     public void freezeSubscription(Long userId) {
         Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
-                .orElseThrow(() -> new RuntimeException("Aktiv abunəlik tapılmadı və ya artıq dondurulub"));
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("NO_ACTIVE_SUBSCRIPTION_OR_FROZEN", "error.no_active_subscription_or_frozen"));
 
         if (subscription.getEndAt() != null && subscription.getEndAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Abunəliyin vaxtı bitib, dondurula bilməz");
+            throw new az.fitnest.order.exception.BadRequestException("MEMBERSHIP_EXPIRED_CANNOT_FREEZE", "error.membership_expired_cannot_freeze");
         }
 
         subscription.setStatus("FROZEN");
@@ -132,7 +132,7 @@ public class UserSubscriptionService {
     @Transactional
     public void unfreezeSubscription(Long userId) {
         Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "FROZEN")
-                .orElseThrow(() -> new RuntimeException("Dondurulmuş abunəlik tapılmadı"));
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("FROZEN_SUBSCRIPTION_NOT_FOUND", "error.frozen_subscription_not_found"));
 
         if (subscription.getFrozenAt() != null && subscription.getEndAt() != null) {
             long daysFrozen = java.time.temporal.ChronoUnit.DAYS.between(subscription.getFrozenAt(), LocalDateTime.now());

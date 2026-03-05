@@ -17,6 +17,7 @@ public class CheckInService {
 
     private final SubscriptionRepository subscriptionRepository;
     private final GymVisitRepository gymVisitRepository;
+    private final org.springframework.context.MessageSource messageSource;
 
     @Transactional
     public CheckInResponse checkIn(Long userId, Long gymId) {
@@ -28,7 +29,7 @@ public class CheckInService {
         if (subscription == null) {
             return CheckInResponse.builder()
                     .success(false)
-                    .message("No active membership found for this gym")
+                    .message(messageSource.getMessage("error.no_active_membership_found", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()))
                     .build();
         }
 
@@ -38,7 +39,7 @@ public class CheckInService {
             subscriptionRepository.save(subscription);
             return CheckInResponse.builder()
                     .success(false)
-                    .message("Your membership has expired")
+                    .message(messageSource.getMessage("error.membership_expired", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()))
                     .build();
         }
 
@@ -46,7 +47,7 @@ public class CheckInService {
         if (subscription.getRemainingLimit() != null && subscription.getRemainingLimit() <= 0) {
             return CheckInResponse.builder()
                     .success(false)
-                    .message("You have no remaining visits on your membership")
+                    .message(messageSource.getMessage("error.no_remaining_visits", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()))
                     .remainingVisits(0)
                     .build();
         }
@@ -70,7 +71,7 @@ public class CheckInService {
 
         return CheckInResponse.builder()
                 .success(true)
-                .message("Check-in successful")
+                .message(messageSource.getMessage("error.check_in_successful", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()))
                 .remainingVisits(subscription.getRemainingLimit())
                 .checkedInAt(now)
                 .build();

@@ -28,13 +28,13 @@ public class CheckoutServiceImpl implements CheckoutService {
         // Validate plan exists and is active
         MembershipPlan plan = planRepository.findById(planId)
                 .filter(MembershipPlan::getIsActive)
-                .orElseThrow(() -> new RuntimeException("Plan not found or inactive: " + planId));
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("PLAN_NOT_FOUND", "error.plan_not_found"));
 
         // Find the matching duration option
         DurationOption option = plan.getOptions().stream()
                 .filter(o -> o.getDurationMonths().equals(request.duration_months()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("No option for duration " + request.duration_months() + " on plan " + planId));
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("DURATION_CONFIG_NOT_FOUND", "error.duration_config_not_found"));
 
         BigDecimal amount = option.getPriceDiscounted() != null ? option.getPriceDiscounted() : option.getPriceStandard();
 
