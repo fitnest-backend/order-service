@@ -25,5 +25,15 @@ public record SubscriptionDetailsDto(
     @JsonProperty("start_at")
     LocalDateTime startAt,
     @JsonProperty("end_at")
-    LocalDateTime endAt
+    LocalDateTime endAt,
+    @JsonProperty("frozen_at")
+    LocalDateTime frozenAt,
+    @JsonProperty("unfreezes_at")
+    LocalDateTime unfreezesAt,
+    @JsonProperty("frozen_days_used")
+    Integer frozenDaysUsed,
+    @JsonProperty("allowed_freeze_days")
+    Integer allowedFreezeDays,
+    @JsonProperty("remaining_freeze_days")
+    Integer remainingFreezeDays
 ) {}

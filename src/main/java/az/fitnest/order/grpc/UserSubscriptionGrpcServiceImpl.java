@@ -23,9 +23,14 @@ public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserS
 
             az.fitnest.order.grpc.ActiveSubscriptionResponse.Builder grpcResponse = az.fitnest.order.grpc.ActiveSubscriptionResponse.newBuilder();
 
-            if (dto.subscription() != null) {
-                az.fitnest.order.dto.SubscriptionDetailsDto info = dto.subscription();
-                if (info.packageName() != null) grpcResponse.setPackageName(info.packageName());
+            // Set subscription status (active, frozen, or none)
+            if (dto.status() != null) {
+                grpcResponse.setSubscriptionStatus(dto.status());
+            }
+
+            // Always set package name (including "No Plan" for users without subscription)
+            if (dto.subscription() != null && dto.subscription().packageName() != null) {
+                grpcResponse.setPackageName(dto.subscription().packageName());
             }
 
             responseObserver.onNext(grpcResponse.build());

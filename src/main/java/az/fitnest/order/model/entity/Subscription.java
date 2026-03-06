@@ -50,4 +50,10 @@ public class Subscription {
 
     @Column(name = "frozen_days_used")
     private Integer frozenDaysUsed = 0;
+
+    @Column(name = "allowed_freeze_days")
+    private Integer allowedFreezeDays;
+
+    @Column(name = "unfreezes_at")
+    private LocalDateTime unfreezesAt;
 }
