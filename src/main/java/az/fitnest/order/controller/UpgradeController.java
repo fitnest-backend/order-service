@@ -21,10 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-/**
- * Controller for managing subscription upgrades and orders.
- * Provides endpoints for viewing upgrade options, processing upgrades, and checking order status.
- */
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor

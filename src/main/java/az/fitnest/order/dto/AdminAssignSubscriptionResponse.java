@@ -22,7 +22,6 @@ public record AdminAssignSubscriptionResponse(
     @JsonProperty("option_id")
     Long optionId,
 
-
     @JsonProperty("duration_months")
     Integer durationMonths,
 

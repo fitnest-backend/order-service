@@ -25,12 +25,10 @@ public class CheckoutServiceImpl implements CheckoutService {
     public CheckoutResponse processCheckout(Long userId, CheckoutRequest request) {
         Long planId = Long.parseLong(request.package_id());
 
-        // Validate plan exists and is active
         MembershipPlan plan = planRepository.findById(planId)
                 .filter(MembershipPlan::getIsActive)
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
 
-        // Find the matching duration option by option_id
         DurationOption option = plan.getOptions().stream()
                 .filter(o -> o.getId().equals(request.option_id()))
                 .findFirst()
@@ -38,7 +36,6 @@ public class CheckoutServiceImpl implements CheckoutService {
 
         BigDecimal amount = option.getPriceDiscounted() != null ? option.getPriceDiscounted() : option.getPriceStandard();
 
-        // Simulate order creation and Stripe setup
         String orderId = "ord_" + UUID.randomUUID().toString().substring(0, 8);
         String clientSecret = "pi_" + UUID.randomUUID() + "_secret_" + UUID.randomUUID();
 

@@ -35,7 +35,6 @@ public class UserSubscriptionService {
             throw new az.fitnest.order.exception.BadRequestException("error.membership_expired");
         }
 
-
         if (subscription.getRemainingLimit() != null) {
             if (subscription.getRemainingLimit() <= 0) {
                 throw new az.fitnest.order.exception.BadRequestException("error.no_remaining_visits");
@@ -57,13 +56,11 @@ public class UserSubscriptionService {
 
     @Transactional(readOnly = true)
     public ActiveSubscriptionResponse getActiveSubscription(Long userId) {
-        // First check for ACTIVE subscription
         Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
                 .orElse(null);
 
         String subscriptionStatus = null;
 
-        // If no active subscription, check for FROZEN
         if (subscription == null) {
             subscription = subscriptionRepository.findByUserIdAndStatus(userId, "FROZEN")
                     .orElse(null);
@@ -75,7 +72,6 @@ public class UserSubscriptionService {
         }
 
         if (subscription == null) {
-            // User has no subscription - return "No Plan"
             SubscriptionDetailsDto noPlanDetails = SubscriptionDetailsDto.builder()
                     .packageName("No Plan")
                     .frozenDaysUsed(0)
@@ -89,9 +85,7 @@ public class UserSubscriptionService {
                     .build();
         }
 
-        // Check if expired
         if (subscription.getEndAt() != null && subscription.getEndAt().isBefore(LocalDateTime.now())) {
-            // Subscription expired - return "No Plan"
             SubscriptionDetailsDto noPlanDetails = SubscriptionDetailsDto.builder()
                     .packageName("No Plan")
                     .frozenDaysUsed(0)
@@ -108,7 +102,6 @@ public class UserSubscriptionService {
         MembershipPlan plan = planRepository.findById(subscription.getPlanId())
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
 
-        // Infer duration from start/end
         long durationMonths = 1;
         if (subscription.getEndAt() != null) {
             durationMonths = java.time.temporal.ChronoUnit.MONTHS.between(subscription.getStartAt(), subscription.getEndAt());
@@ -116,7 +109,6 @@ public class UserSubscriptionService {
         }
         Integer duration = (int) durationMonths;
 
-        // Find matching duration option for effective price
         BigDecimal effectivePrice = BigDecimal.ZERO;
         DurationOption matchedOption = plan.getOptions().stream()
                 .filter(o -> o.getDurationMonths().equals(duration))
@@ -129,7 +121,6 @@ public class UserSubscriptionService {
                     : matchedOption.getPriceStandard();
         }
 
-        // Calculate freeze days info
         Integer allowedFreezeDays = matchedOption != null && matchedOption.getFreezeDays() != null
                 ? matchedOption.getFreezeDays()
                 : 0;
@@ -169,11 +160,9 @@ public class UserSubscriptionService {
             throw new az.fitnest.order.exception.BadRequestException("error.membership_expired_cannot_freeze");
         }
 
-        // Get the plan to check allowed freeze days
         MembershipPlan plan = planRepository.findById(subscription.getPlanId())
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
 
-        // Find matching duration option to get freeze days limit
         long tempDurationMonths = 1;
         if (subscription.getEndAt() != null) {
             tempDurationMonths = java.time.temporal.ChronoUnit.MONTHS.between(subscription.getStartAt(), subscription.getEndAt());
@@ -194,34 +183,28 @@ public class UserSubscriptionService {
             throw new az.fitnest.order.exception.BadRequestException("error.freeze_not_allowed_for_plan");
         }
 
-        // Initialize frozen days used if null
         if (subscription.getFrozenDaysUsed() == null) {
             subscription.setFrozenDaysUsed(0);
         }
 
-        // Calculate available freeze days
         int availableFreezeDays = allowedFreezeDays - subscription.getFrozenDaysUsed();
 
         if (availableFreezeDays <= 0) {
             throw new az.fitnest.order.exception.BadRequestException("error.freeze_days_exhausted");
         }
 
-        // If no days specified, freeze for the remaining available days
         if (daysToFreeze == null || daysToFreeze <= 0) {
             daysToFreeze = availableFreezeDays;
         }
 
-        // Validate requested freeze duration
         if (daysToFreeze > availableFreezeDays) {
             throw new az.fitnest.order.exception.BadRequestException(
                 String.format("error.freeze_days_exceeded_limit|%d|%d", availableFreezeDays, allowedFreezeDays)
             );
         }
 
-        // Calculate when subscription should auto-unfreeze
         LocalDateTime unfreezesAt = LocalDateTime.now().plusDays(daysToFreeze);
 
-        // Extend end_at by the freeze duration
         if (subscription.getEndAt() != null) {
             subscription.setEndAt(subscription.getEndAt().plusDays(daysToFreeze));
         }
@@ -235,16 +218,11 @@ public class UserSubscriptionService {
         subscriptionRepository.save(subscription);
     }
 
-    /**
-     * Scheduled task that automatically unfreezes subscriptions when freeze duration expires.
-     * Runs every hour.
-     */
-    @Scheduled(cron = "0 0 * * * *") // Every hour at minute 0
+    @Scheduled(cron = "0 0 * * * *")
     @Transactional
     public void autoUnfreezeExpiredSubscriptions() {
         LocalDateTime now = LocalDateTime.now();
 
-        // Find all frozen subscriptions where unfreeze time has passed
         List<Subscription> expiredFrozenSubs = subscriptionRepository.findAll().stream()
                 .filter(sub -> "FROZEN".equals(sub.getStatus()))
                 .filter(sub -> sub.getUnfreezesAt() != null)
@@ -252,7 +230,6 @@ public class UserSubscriptionService {
                 .toList();
 
         for (Subscription subscription : expiredFrozenSubs) {
-            // Reactivate the subscription
             subscription.setStatus("ACTIVE");
             subscription.setFrozenAt(null);
             subscription.setUnfreezesAt(null);
@@ -267,10 +244,6 @@ public class UserSubscriptionService {
         }
     }
 
-    /**
-     * Admin: Assign a membership plan to a user. If the user already has an ACTIVE or FROZEN
-     * subscription, the old one is cancelled first.
-     */
     @Transactional
     public az.fitnest.order.dto.AdminAssignSubscriptionResponse assignSubscriptionToUser(
             az.fitnest.order.dto.AdminAssignSubscriptionRequest request) {
@@ -282,13 +255,11 @@ public class UserSubscriptionService {
             throw new az.fitnest.order.exception.BadRequestException("error.target_plan_inactive");
         }
 
-        // Find matching duration option by option_id and verify it belongs to the plan
         DurationOption option = plan.getOptions().stream()
                 .filter(o -> o.getId().equals(request.optionId()))
                 .findFirst()
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.duration_config_not_found"));
 
-        // Cancel any existing ACTIVE subscription for this user
         subscriptionRepository.findByUserIdAndStatus(request.userId(), "ACTIVE")
                 .ifPresent(existing -> {
                     existing.setStatus("CANCELLED");
@@ -297,7 +268,6 @@ public class UserSubscriptionService {
                             existing.getSubscriptionId(), request.userId());
                 });
 
-        // Cancel any existing FROZEN subscription for this user
         subscriptionRepository.findByUserIdAndStatus(request.userId(), "FROZEN")
                 .ifPresent(existing -> {
                     existing.setStatus("CANCELLED");
@@ -347,9 +317,6 @@ public class UserSubscriptionService {
                 .build();
     }
 
-    /**
-     * Admin: Revoke (cancel) an active subscription for a user.
-     */
     @Transactional
     public void revokeSubscription(Long userId) {
         Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")

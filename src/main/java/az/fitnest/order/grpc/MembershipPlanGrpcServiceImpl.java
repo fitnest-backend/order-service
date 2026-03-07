@@ -34,8 +34,6 @@ public class MembershipPlanGrpcServiceImpl extends MembershipPlanServiceGrpc.Mem
 
     @Override
     public void getGymPlans(GetGymPlansRequest request, StreamObserver<GetGymPlansResponse> responseObserver) {
-        // Deprecated: catalog-service now maintains its own subscriptions. Returning an empty list or all global active plans.
-        // For compatibility, we'll return all active global plans.
         var plans = planRepository.findByIsActiveTrue();
         GetGymPlansResponse.Builder responseBuilder = GetGymPlansResponse.newBuilder();
         for (MembershipPlan plan : plans) {
@@ -80,7 +78,6 @@ public class MembershipPlanGrpcServiceImpl extends MembershipPlanServiceGrpc.Mem
                 .setCurrency(plan.getCurrency() != null ? plan.getCurrency() : "AZN")
                 .setIsActive(plan.getIsActive() != null && plan.getIsActive());
 
-        // Map benefits
         if (plan.getBenefits() != null) {
             for (PlanBenefit benefit : plan.getBenefits()) {
                 if (benefit.getDescription() != null) {
@@ -89,7 +86,6 @@ public class MembershipPlanGrpcServiceImpl extends MembershipPlanServiceGrpc.Mem
             }
         }
 
-        // Map duration options
         if (plan.getOptions() != null) {
             for (DurationOption opt : plan.getOptions()) {
                 PlanDurationOption.Builder optBuilder = PlanDurationOption.newBuilder()

@@ -16,18 +16,18 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder // Add Builder for ease
+@Builder
 public class Order {
 
     @Id
     @Column(name = "order_id")
-    private String orderId; // Using String ID like ord_7001
+    private String orderId;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(name = "type", nullable = false)
-    private String type; // subscription_upgrade
+    private String type;
 
     @Column(name = "status", nullable = false)
     private String status;

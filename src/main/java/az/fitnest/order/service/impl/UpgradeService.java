@@ -33,7 +33,6 @@ public class UpgradeService {
                 .orElseThrow(() -> new ServiceException("error.plan_not_found",
                         "INTERNAL_ERROR", org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR));
 
-        // Infer current duration
         long currentDurationLong = 1;
         if (currentSub.getEndAt() != null) {
             currentDurationLong = java.time.temporal.ChronoUnit.MONTHS.between(currentSub.getStartAt(), currentSub.getEndAt());
@@ -41,7 +40,6 @@ public class UpgradeService {
         }
         int currentDuration = (int) currentDurationLong;
 
-        // Get current effective price from the matching duration option
         DurationOption currentOption = currentPlan.getOptions().stream()
                 .filter(o -> o.getDurationMonths().equals(currentDuration))
                 .findFirst()
@@ -51,7 +49,6 @@ public class UpgradeService {
         BigDecimal currentEffectivePrice = currentOption.getPriceDiscounted() != null
                 ? currentOption.getPriceDiscounted() : currentOption.getPriceStandard();
 
-        // Prepare current details for response
         SubscriptionDetailsDto currentDetails = SubscriptionDetailsDto.builder()
                 .subscriptionId(currentSub.getSubscriptionId())
                 .packageId(currentPlan.getId().toString())
@@ -62,7 +59,6 @@ public class UpgradeService {
                 .remainingLimit(currentSub.getRemainingLimit())
                 .build();
 
-        // Find upgrade candidates
         List<UpgradeOptionDto> options = new ArrayList<>();
         List<MembershipPlan> allPlans = planRepository.findByIsActiveTrue();
 
@@ -79,7 +75,6 @@ public class UpgradeService {
                 int targetTier = getTierRank(plan.getName());
                 boolean isTierUpgrade = !isSamePlan && targetTier > currentTier;
 
-                // Filter by requested target duration if specified
                 if (targetDurationMonths != null && !option.getDurationMonths().equals(targetDurationMonths)) {
                     continue;
                 }
@@ -124,7 +119,6 @@ public class UpgradeService {
 
     @Transactional
     public UpgradeCheckoutResponse checkout(Long userId, UpgradeCheckoutRequest request) {
-        // Validate Current Subscription
         Subscription currentSub = subscriptionRepository.findById(request.currentSubscriptionId())
                 .orElseThrow(() -> new ServiceException("error.no_active_subscription",
                         "NO_ACTIVE_SUBSCRIPTION", org.springframework.http.HttpStatus.CONFLICT));
@@ -138,7 +132,6 @@ public class UpgradeService {
                     "NO_ACTIVE_SUBSCRIPTION", org.springframework.http.HttpStatus.CONFLICT);
         }
 
-        // Validate Target Plan
         Long targetPlanId = Long.parseLong(request.targetPackageId());
         MembershipPlan targetPlan = planRepository.findById(targetPlanId)
                 .orElseThrow(() -> new ServiceException("error.target_plan_not_found",
@@ -155,7 +148,6 @@ public class UpgradeService {
                 .orElseThrow(() -> new ServiceException("error.invalid_upgrade_request",
                         "INVALID_UPGRADE_REQUEST", org.springframework.http.HttpStatus.BAD_REQUEST));
 
-        // Current plan pricing
         MembershipPlan currentPlan = planRepository.findById(currentSub.getPlanId())
                 .orElseThrow(() -> new ServiceException("error.plan_not_found",
                         "INTERNAL_ERROR", org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR));
@@ -185,7 +177,6 @@ public class UpgradeService {
                     "UPGRADE_NOT_ELIGIBLE", org.springframework.http.HttpStatus.CONFLICT);
         }
 
-        // Create Order
         String orderId = "ord_" + UUID.randomUUID().toString().substring(0, 8);
 
         PaymentResultDto paymentResult = paymentService.processPayment(

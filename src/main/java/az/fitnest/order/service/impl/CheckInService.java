@@ -21,7 +21,6 @@ public class CheckInService {
 
     @Transactional
     public CheckInResponse checkIn(Long userId, Long gymId) {
-        // 1. Find active subscription for this user
         Subscription subscription = subscriptionRepository
                 .findByUserIdAndStatus(userId, "ACTIVE")
                 .orElse(null);
@@ -33,7 +32,6 @@ public class CheckInService {
                     .build();
         }
 
-        // 2. Check subscription hasn't expired
         if (subscription.getEndAt() != null && subscription.getEndAt().isBefore(LocalDateTime.now())) {
             subscription.setStatus("EXPIRED");
             subscriptionRepository.save(subscription);
@@ -43,7 +41,6 @@ public class CheckInService {
                     .build();
         }
 
-        // 3. Check remaining visits (null means unlimited)
         if (subscription.getRemainingLimit() != null && subscription.getRemainingLimit() <= 0) {
             return CheckInResponse.builder()
                     .success(false)
@@ -52,13 +49,11 @@ public class CheckInService {
                     .build();
         }
 
-        // 4. Decrement visit counter
         if (subscription.getRemainingLimit() != null) {
             subscription.setRemainingLimit(subscription.getRemainingLimit() - 1);
             subscriptionRepository.save(subscription);
         }
 
-        // 5. Record the visit
         LocalDateTime now = LocalDateTime.now();
         GymVisit visit = GymVisit.builder()
                 .userId(userId)
@@ -67,7 +62,6 @@ public class CheckInService {
                 .checkedInAt(now)
                 .build();
         gymVisitRepository.save(visit);
-
 
         return CheckInResponse.builder()
                 .success(true)

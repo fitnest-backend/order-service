@@ -28,7 +28,6 @@ public class MembershipPlan extends BaseAuditableEntity {
     @Column(name = "currency", nullable = false)
     private String currency = "AZN";
 
-
     @Enumerated(EnumType.STRING)
     @Column(name = "billing_period", nullable = false)
     private BillingPeriod billingPeriod;

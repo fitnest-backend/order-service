@@ -98,7 +98,6 @@ public class MembershipPlanAdminService {
             }
         }
 
-        // Set a default price for compatibility
         if (!plan.getOptions().isEmpty()) {
             DurationOption first = plan.getOptions().get(0);
             if (first.getDurationMonths() != null && first.getDurationMonths() > 0 && first.getPriceStandard() != null) {

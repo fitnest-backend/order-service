@@ -18,10 +18,6 @@ public class PackageCatalogService {
 
     private final MembershipPlanRepository planRepository;
 
-    /**
-     * Returns a flat list where every DurationOption is a separate item.
-     * E.g. Bronze 1 Ay, Bronze 3 Ay, Bronze 6 Ay, Bronze 12 Ay — 4 separate cards on mobile.
-     */
     @Transactional(readOnly = true)
     public PackageListResponse getAllPackages(boolean activeOnly) {
         List<MembershipPlan> plans = activeOnly ?

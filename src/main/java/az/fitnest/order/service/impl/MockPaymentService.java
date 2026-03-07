@@ -10,9 +10,6 @@ import java.util.UUID;
 public class MockPaymentService {
 
     public PaymentResultDto processPayment(String paymentMethodId, BigDecimal amount, String currency) {
-        // Mock logic: 
-        // If paymentMethodId starts with "pm_error", fail.
-        // Else success.
 
         if (paymentMethodId.startsWith("pm_fail")) {
             return PaymentResultDto.builder()
