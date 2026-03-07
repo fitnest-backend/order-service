@@ -1,7 +1,9 @@
 package az.fitnest.order.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Builder;
 
@@ -23,9 +25,11 @@ public record SubscriptionDetailsDto(
     @JsonProperty("remaining_limit")
     Integer remainingLimit,
     @JsonProperty("start_at")
-    LocalDateTime startAt,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    LocalDate startAt,
     @JsonProperty("end_at")
-    LocalDateTime endAt,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    LocalDate endAt,
     @JsonProperty("frozen_at")
     LocalDateTime frozenAt,
     @JsonProperty("unfreezes_at")

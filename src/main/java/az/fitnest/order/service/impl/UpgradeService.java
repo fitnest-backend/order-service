@@ -224,8 +224,8 @@ public class UpgradeService {
                     .durationMonths(targetOption.getDurationMonths())
                     .totalLimit(targetTotal)
                     .remainingLimit(newRemaining)
-                    .startAt(currentSub.getStartAt())
-                    .endAt(currentSub.getEndAt())
+                    .startAt(currentSub.getStartAt() != null ? currentSub.getStartAt().toLocalDate() : null)
+                    .endAt(currentSub.getEndAt() != null ? currentSub.getEndAt().toLocalDate() : null)
                     .build();
         }
 
