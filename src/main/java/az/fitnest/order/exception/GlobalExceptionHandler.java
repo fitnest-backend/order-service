@@ -14,10 +14,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import az.fitnest.order.dto.ApiResponse;
 import az.fitnest.order.dto.ApiError;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.context.request.WebRequest;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -90,6 +92,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Void>> handleRuntimeException(RuntimeException ex, WebRequest request) {
+        log.error("Unhandled RuntimeException at {}: {}", request.getDescription(false), ex.getMessage(), ex);
         ApiError apiError = ApiError.builder()
                 .code("RUNTIME_EXCEPTION")
                 .message(getMessage("error.unexpected"))
@@ -103,6 +106,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex, WebRequest request) {
+        log.error("Unhandled Exception at {}: {}", request.getDescription(false), ex.getMessage(), ex);
         ApiError apiError = ApiError.builder()
                 .code("INTERNAL_SERVER_ERROR")
                 .message(getMessage("error.internal_server_error"))
