@@ -16,8 +16,5 @@ public record AdminAssignSubscriptionRequest(
 
     @NotNull(message = "error.missing_field")
     @JsonProperty("option_id")
-    Long optionId,
-
-    @JsonProperty("gym_id")
-    Long gymId
+    Long optionId
 ) {}

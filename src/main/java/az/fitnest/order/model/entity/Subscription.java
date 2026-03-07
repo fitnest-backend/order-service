@@ -24,8 +24,6 @@ public class Subscription {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "gym_id")
-    private Long gymId;
 
     @Column(name = "plan_id", nullable = false)
     private Long planId;

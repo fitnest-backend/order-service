@@ -21,9 +21,9 @@ public class CheckInService {
 
     @Transactional
     public CheckInResponse checkIn(Long userId, Long gymId) {
-        // 1. Find active subscription for this user + gym
+        // 1. Find active subscription for this user
         Subscription subscription = subscriptionRepository
-                .findByUserIdAndGymIdAndStatus(userId, gymId, "ACTIVE")
+                .findByUserIdAndStatus(userId, "ACTIVE")
                 .orElse(null);
 
         if (subscription == null) {

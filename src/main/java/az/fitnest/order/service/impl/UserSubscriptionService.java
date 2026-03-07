@@ -35,9 +35,6 @@ public class UserSubscriptionService {
             throw new az.fitnest.order.exception.BadRequestException("error.membership_expired");
         }
 
-        if (subscription.getGymId() != null && !subscription.getGymId().equals(gymId)) {
-            throw new az.fitnest.order.exception.BadRequestException("error.subscription_not_valid_for_gym");
-        }
 
         if (subscription.getRemainingLimit() != null) {
             if (subscription.getRemainingLimit() <= 0) {
@@ -320,7 +317,6 @@ public class UserSubscriptionService {
         Subscription subscription = new Subscription();
         subscription.setUserId(request.userId());
         subscription.setPlanId(request.planId());
-        subscription.setGymId(request.gymId());
         subscription.setStatus("ACTIVE");
         subscription.setStartAt(now);
         subscription.setEndAt(endAt);
@@ -340,7 +336,6 @@ public class UserSubscriptionService {
                 .planId(saved.getPlanId())
                 .planName(plan.getName())
                 .optionId(option.getId())
-                .gymId(saved.getGymId())
                 .durationMonths(option.getDurationMonths())
                 .status(saved.getStatus())
                 .startAt(saved.getStartAt())

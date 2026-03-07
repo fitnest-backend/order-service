@@ -22,8 +22,6 @@ public record AdminAssignSubscriptionResponse(
     @JsonProperty("option_id")
     Long optionId,
 
-    @JsonProperty("gym_id")
-    Long gymId,
 
     @JsonProperty("duration_months")
     Integer durationMonths,
