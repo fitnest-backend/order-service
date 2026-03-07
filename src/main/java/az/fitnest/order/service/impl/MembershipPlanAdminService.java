@@ -13,12 +13,51 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class MembershipPlanAdminService {
 
     private final MembershipPlanRepository membershipPlanRepository;
+
+    @Transactional(readOnly = true)
+    public List<az.fitnest.order.dto.AdminMembershipPlanResponse> getAllPlans() {
+        return membershipPlanRepository.findAll().stream()
+                .map(this::toAdminPlanResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public az.fitnest.order.dto.AdminMembershipPlanResponse getPlanById(Long planId) {
+        MembershipPlan plan = membershipPlanRepository.findById(planId)
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
+        return toAdminPlanResponse(plan);
+    }
+
+    private az.fitnest.order.dto.AdminMembershipPlanResponse toAdminPlanResponse(MembershipPlan plan) {
+        List<az.fitnest.order.dto.AdminMembershipPlanResponse.AdminDurationOptionResponse> options =
+                plan.getOptions().stream()
+                        .map(opt -> az.fitnest.order.dto.AdminMembershipPlanResponse.AdminDurationOptionResponse.builder()
+                                .optionId(opt.getId())
+                                .durationMonths(opt.getDurationMonths())
+                                .priceStandard(opt.getPriceStandard())
+                                .priceDiscounted(opt.getPriceDiscounted())
+                                .entryLimit(opt.getEntryLimit())
+                                .freezeDays(opt.getFreezeDays())
+                                .build())
+                        .toList();
+
+        return az.fitnest.order.dto.AdminMembershipPlanResponse.builder()
+                .planId(plan.getId())
+                .name(plan.getName())
+                .currency(plan.getCurrency())
+                .billingPeriod(plan.getBillingPeriod() != null ? plan.getBillingPeriod().name() : null)
+                .isActive(plan.getIsActive())
+                .sortOrder(plan.getSortOrder())
+                .durationOptions(options)
+                .build();
+    }
 
     @Transactional
     public void addPlanWithOptions(MembershipPlanWithOptionsRequest request) {

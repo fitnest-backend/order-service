@@ -1,0 +1,47 @@
+package az.fitnest.order.dto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+
+import java.time.LocalDateTime;
+
+@Builder
+public record AdminAssignSubscriptionResponse(
+    @JsonProperty("subscription_id")
+    Long subscriptionId,
+
+    @JsonProperty("user_id")
+    Long userId,
+
+    @JsonProperty("plan_id")
+    Long planId,
+
+    @JsonProperty("plan_name")
+    String planName,
+
+    @JsonProperty("gym_id")
+    Long gymId,
+
+    @JsonProperty("duration_months")
+    Integer durationMonths,
+
+    String status,
+
+    @JsonProperty("start_at")
+    LocalDateTime startAt,
+
+    @JsonProperty("end_at")
+    LocalDateTime endAt,
+
+    @JsonProperty("total_limit")
+    Integer totalLimit,
+
+    @JsonProperty("remaining_limit")
+    Integer remainingLimit,
+
+    @JsonProperty("allowed_freeze_days")
+    Integer allowedFreezeDays,
+
+    String message
+) {}
+

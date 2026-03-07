@@ -269,4 +269,102 @@ public class UserSubscriptionService {
             log.info("Auto-unfroze {} subscriptions", expiredFrozenSubs.size());
         }
     }
+
+    /**
+     * Admin: Assign a membership plan to a user. If the user already has an ACTIVE or FROZEN
+     * subscription, the old one is cancelled first.
+     */
+    @Transactional
+    public az.fitnest.order.dto.AdminAssignSubscriptionResponse assignSubscriptionToUser(
+            az.fitnest.order.dto.AdminAssignSubscriptionRequest request) {
+
+        MembershipPlan plan = planRepository.findById(request.planId())
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
+
+        if (plan.getIsActive() == null || !plan.getIsActive()) {
+            throw new az.fitnest.order.exception.BadRequestException("error.target_plan_inactive");
+        }
+
+        // Find matching duration option
+        DurationOption option = plan.getOptions().stream()
+                .filter(o -> o.getDurationMonths().equals(request.durationMonths()))
+                .findFirst()
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.duration_config_not_found"));
+
+        // Cancel any existing ACTIVE subscription for this user
+        subscriptionRepository.findByUserIdAndStatus(request.userId(), "ACTIVE")
+                .ifPresent(existing -> {
+                    existing.setStatus("CANCELLED");
+                    subscriptionRepository.save(existing);
+                    log.info("Admin cancelled existing ACTIVE subscription {} for user {}",
+                            existing.getSubscriptionId(), request.userId());
+                });
+
+        // Cancel any existing FROZEN subscription for this user
+        subscriptionRepository.findByUserIdAndStatus(request.userId(), "FROZEN")
+                .ifPresent(existing -> {
+                    existing.setStatus("CANCELLED");
+                    existing.setFrozenAt(null);
+                    existing.setUnfreezesAt(null);
+                    subscriptionRepository.save(existing);
+                    log.info("Admin cancelled existing FROZEN subscription {} for user {}",
+                            existing.getSubscriptionId(), request.userId());
+                });
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime endAt = now.plusMonths(request.durationMonths());
+
+        Integer entryLimit = option.getEntryLimit();
+        Integer freezeDays = option.getFreezeDays() != null ? option.getFreezeDays() : 0;
+
+        Subscription subscription = new Subscription();
+        subscription.setUserId(request.userId());
+        subscription.setPlanId(request.planId());
+        subscription.setGymId(request.gymId());
+        subscription.setStatus("ACTIVE");
+        subscription.setStartAt(now);
+        subscription.setEndAt(endAt);
+        subscription.setTotalLimit(entryLimit);
+        subscription.setRemainingLimit(entryLimit);
+        subscription.setFrozenDaysUsed(0);
+        subscription.setAllowedFreezeDays(freezeDays);
+
+        Subscription saved = subscriptionRepository.save(subscription);
+
+        log.info("Admin assigned plan {} (duration={} months) to user {}, subscriptionId={}",
+                plan.getName(), request.durationMonths(), request.userId(), saved.getSubscriptionId());
+
+        return az.fitnest.order.dto.AdminAssignSubscriptionResponse.builder()
+                .subscriptionId(saved.getSubscriptionId())
+                .userId(saved.getUserId())
+                .planId(saved.getPlanId())
+                .planName(plan.getName())
+                .gymId(saved.getGymId())
+                .durationMonths(request.durationMonths())
+                .status(saved.getStatus())
+                .startAt(saved.getStartAt())
+                .endAt(saved.getEndAt())
+                .totalLimit(saved.getTotalLimit())
+                .remainingLimit(saved.getRemainingLimit())
+                .allowedFreezeDays(freezeDays)
+                .message("Abunəlik istifadəçiyə uğurla təyin edildi")
+                .build();
+    }
+
+    /**
+     * Admin: Revoke (cancel) an active subscription for a user.
+     */
+    @Transactional
+    public void revokeSubscription(Long userId) {
+        Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
+                .or(() -> subscriptionRepository.findByUserIdAndStatus(userId, "FROZEN"))
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.no_active_subscription"));
+
+        subscription.setStatus("CANCELLED");
+        subscription.setFrozenAt(null);
+        subscription.setUnfreezesAt(null);
+        subscriptionRepository.save(subscription);
+
+        log.info("Admin revoked subscription {} for user {}", subscription.getSubscriptionId(), userId);
+    }
 }
