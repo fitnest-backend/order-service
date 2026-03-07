@@ -102,6 +102,7 @@ public class UpgradeService {
                             .type(isDurationUpgrade ? "duration_upgrade" : "tier_upgrade")
                             .target(TargetPackageDto.builder()
                                     .packageId(plan.getId().toString())
+                                    .optionId(option.getId())
                                     .packageName(plan.getName())
                                     .durationMonths(option.getDurationMonths())
                                     .targetTotalLimit(targetTotal)
@@ -149,7 +150,7 @@ public class UpgradeService {
         }
 
         DurationOption targetOption = targetPlan.getOptions().stream()
-                .filter(o -> o.getDurationMonths().equals(request.targetDurationMonths()))
+                .filter(o -> o.getId().equals(request.targetOptionId()))
                 .findFirst()
                 .orElseThrow(() -> new ServiceException("error.invalid_upgrade_request",
                         "INVALID_UPGRADE_REQUEST", org.springframework.http.HttpStatus.BAD_REQUEST));
@@ -212,7 +213,7 @@ public class UpgradeService {
             currentSub.setPlanId(targetPlanId);
             currentSub.setTotalLimit(targetTotal);
             currentSub.setRemainingLimit(newRemaining);
-            currentSub.setEndAt(currentSub.getStartAt().plusMonths(request.targetDurationMonths()));
+            currentSub.setEndAt(currentSub.getStartAt().plusMonths(targetOption.getDurationMonths()));
 
             subscriptionRepository.save(currentSub);
 
@@ -220,7 +221,7 @@ public class UpgradeService {
                     .subscriptionId(currentSub.getSubscriptionId())
                     .packageId(targetPlan.getId().toString())
                     .packageName(targetPlan.getName())
-                    .durationMonths(request.targetDurationMonths())
+                    .durationMonths(targetOption.getDurationMonths())
                     .totalLimit(targetTotal)
                     .remainingLimit(newRemaining)
                     .startAt(currentSub.getStartAt())

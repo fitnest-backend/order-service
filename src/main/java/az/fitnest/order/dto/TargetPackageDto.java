@@ -8,6 +8,8 @@ import lombok.Builder;
 public record TargetPackageDto(
     @JsonProperty("package_id")
     String packageId,
+    @JsonProperty("option_id")
+    Long optionId,
     @JsonProperty("package_name")
     String packageName,
     @JsonProperty("duration_months")

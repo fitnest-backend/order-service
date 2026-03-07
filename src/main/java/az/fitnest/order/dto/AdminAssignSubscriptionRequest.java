@@ -1,7 +1,6 @@
 package az.fitnest.order.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
@@ -16,11 +15,9 @@ public record AdminAssignSubscriptionRequest(
     Long planId,
 
     @NotNull(message = "error.missing_field")
-    @Min(value = 1, message = "error.out_of_range")
-    @JsonProperty("duration_months")
-    Integer durationMonths,
+    @JsonProperty("option_id")
+    Long optionId,
 
     @JsonProperty("gym_id")
     Long gymId
 ) {}
-

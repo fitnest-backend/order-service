@@ -14,9 +14,9 @@ public record UpgradeCheckoutRequest(
     @NotNull(message = "Hədəf paket ID-si mütləqdir")
     String targetPackageId,
 
-    @JsonProperty("target_duration_months")
-    @NotNull(message = "Hədəf müddət mütləqdir")
-    Integer targetDurationMonths,
+    @JsonProperty("target_option_id")
+    @NotNull(message = "Hədəf option ID-si mütləqdir")
+    Long targetOptionId,
 
     @JsonProperty("payment_method_id")
     @NotNull(message = "Ödəniş üsulu ID-si mütləqdir")

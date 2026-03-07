@@ -30,9 +30,9 @@ public class CheckoutServiceImpl implements CheckoutService {
                 .filter(MembershipPlan::getIsActive)
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
 
-        // Find the matching duration option
+        // Find the matching duration option by option_id
         DurationOption option = plan.getOptions().stream()
-                .filter(o -> o.getDurationMonths().equals(request.duration_months()))
+                .filter(o -> o.getId().equals(request.option_id()))
                 .findFirst()
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.duration_config_not_found"));
 

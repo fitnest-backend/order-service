@@ -49,4 +49,3 @@ public record AdminMembershipPlanResponse(
         Integer freezeDays
     ) {}
 }
-

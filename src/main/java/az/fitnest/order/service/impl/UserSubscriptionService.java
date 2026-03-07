@@ -285,9 +285,9 @@ public class UserSubscriptionService {
             throw new az.fitnest.order.exception.BadRequestException("error.target_plan_inactive");
         }
 
-        // Find matching duration option
+        // Find matching duration option by option_id and verify it belongs to the plan
         DurationOption option = plan.getOptions().stream()
-                .filter(o -> o.getDurationMonths().equals(request.durationMonths()))
+                .filter(o -> o.getId().equals(request.optionId()))
                 .findFirst()
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.duration_config_not_found"));
 
@@ -312,7 +312,7 @@ public class UserSubscriptionService {
                 });
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime endAt = now.plusMonths(request.durationMonths());
+        LocalDateTime endAt = now.plusMonths(option.getDurationMonths());
 
         Integer entryLimit = option.getEntryLimit();
         Integer freezeDays = option.getFreezeDays() != null ? option.getFreezeDays() : 0;
@@ -331,16 +331,17 @@ public class UserSubscriptionService {
 
         Subscription saved = subscriptionRepository.save(subscription);
 
-        log.info("Admin assigned plan {} (duration={} months) to user {}, subscriptionId={}",
-                plan.getName(), request.durationMonths(), request.userId(), saved.getSubscriptionId());
+        log.info("Admin assigned plan {} option {} (duration={} months) to user {}, subscriptionId={}",
+                plan.getName(), option.getId(), option.getDurationMonths(), request.userId(), saved.getSubscriptionId());
 
         return az.fitnest.order.dto.AdminAssignSubscriptionResponse.builder()
                 .subscriptionId(saved.getSubscriptionId())
                 .userId(saved.getUserId())
                 .planId(saved.getPlanId())
                 .planName(plan.getName())
+                .optionId(option.getId())
                 .gymId(saved.getGymId())
-                .durationMonths(request.durationMonths())
+                .durationMonths(option.getDurationMonths())
                 .status(saved.getStatus())
                 .startAt(saved.getStartAt())
                 .endAt(saved.getEndAt())

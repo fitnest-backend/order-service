@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,41 +29,84 @@ public class DataInitializer {
 
     private void initMembershipPlans() {
         if (membershipPlanRepository.count() == 0) {
-            // Bronze Plan
-            createMembershipPlan("Bronze Membership", "19.99", 1, Arrays.asList(
+
+            // ── Bronze ────────────────────────────────────────────
+            List<PlanBenefit> bronzeBenefits = Arrays.asList(
                     new PlanBenefit("https://img.icons8.com/color/96/medal-bronze.png", "Access to 5 gyms"),
                     new PlanBenefit("https://img.icons8.com/color/96/customer-support.png", "Email support")
-            ), Arrays.asList("GYM"));
+            );
+            List<String> bronzeServices = Arrays.asList("GYM");
 
-            // Silver Plan
-            createMembershipPlan("Silver Membership", "39.99", 2, Arrays.asList(
+            createMembershipPlan("Bronze Membership", new BigDecimal("19.99"), 1, 1,  10,  2, bronzeBenefits, bronzeServices);
+            createMembershipPlan("Bronze Membership", new BigDecimal("54.99"), 3, 1,  30,  4, bronzeBenefits, bronzeServices);
+            createMembershipPlan("Bronze Membership", new BigDecimal("99.99"), 6, 1,  60,  7, bronzeBenefits, bronzeServices);
+            createMembershipPlan("Bronze Membership", new BigDecimal("179.99"), 12, 1, 120, 14, bronzeBenefits, bronzeServices);
+
+            // ── Silver ────────────────────────────────────────────
+            List<PlanBenefit> silverBenefits = Arrays.asList(
                     new PlanBenefit("https://img.icons8.com/color/96/medal-silver.png", "Access to 15 gyms"),
                     new PlanBenefit("https://img.icons8.com/color/96/customer-support.png", "Priority email support"),
                     new PlanBenefit("https://img.icons8.com/color/96/sauna.png", "Sauna access")
-            ), Arrays.asList("GYM", "SAUNA"));
+            );
+            List<String> silverServices = Arrays.asList("GYM", "SAUNA");
 
-            // Gold Plan
-            createMembershipPlan("Gold Membership", "69.99", 3, Arrays.asList(
+            createMembershipPlan("Silver Membership", new BigDecimal("39.99"), 1, 2,  20,  4, silverBenefits, silverServices);
+            createMembershipPlan("Silver Membership", new BigDecimal("109.99"), 3, 2,  60,  8, silverBenefits, silverServices);
+            createMembershipPlan("Silver Membership", new BigDecimal("199.99"), 6, 2, 120, 14, silverBenefits, silverServices);
+            createMembershipPlan("Silver Membership", new BigDecimal("359.99"), 12, 2, 240, 28, silverBenefits, silverServices);
+
+            // ── Gold ──────────────────────────────────────────────
+            List<PlanBenefit> goldBenefits = Arrays.asList(
                     new PlanBenefit("https://img.icons8.com/color/96/medal-gold.png", "Access to all gyms"),
                     new PlanBenefit("https://img.icons8.com/color/96/customer-support.png", "24/7 support"),
                     new PlanBenefit("https://img.icons8.com/color/96/swimming-pool.png", "Pool access"),
                     new PlanBenefit("https://img.icons8.com/color/96/personal-trainer.png", "1 monthly personal trainer session")
-            ), Arrays.asList("GYM", "SAUNA", "POOL"));
+            );
+            List<String> goldServices = Arrays.asList("GYM", "SAUNA", "POOL");
 
-            // Platinum Plan
-            createMembershipPlan("Platinum Membership", "99.99", 4, Arrays.asList(
+            createMembershipPlan("Gold Membership", new BigDecimal("69.99"), 1, 3,  30,  6, goldBenefits, goldServices);
+            createMembershipPlan("Gold Membership", new BigDecimal("189.99"), 3, 3,  90, 12, goldBenefits, goldServices);
+            createMembershipPlan("Gold Membership", new BigDecimal("349.99"), 6, 3, 180, 21, goldBenefits, goldServices);
+            createMembershipPlan("Gold Membership", new BigDecimal("629.99"), 12, 3, 360, 42, goldBenefits, goldServices);
+
+            // ── Platinum ──────────────────────────────────────────
+            List<PlanBenefit> platinumBenefits = Arrays.asList(
                     new PlanBenefit("https://img.icons8.com/color/96/diamond.png", "Unlimited access to all gyms"),
                     new PlanBenefit("https://img.icons8.com/color/96/conference-call.png", "Dedicated account manager"),
                     new PlanBenefit("https://img.icons8.com/color/96/vip.png", "VIP lounge access"),
                     new PlanBenefit("https://img.icons8.com/color/96/personal-trainer.png", "Weekly personal trainer sessions")
-            ), Arrays.asList("GYM", "SAUNA", "POOL", "SPA", "VIP"));
+            );
+            List<String> platinumServices = Arrays.asList("GYM", "SAUNA", "POOL", "SPA", "VIP");
+
+            createMembershipPlan("Platinum Membership", new BigDecimal("99.99"), 1, 4,  40,  8, platinumBenefits, platinumServices);
+            createMembershipPlan("Platinum Membership", new BigDecimal("269.99"), 3, 4, 120, 16, platinumBenefits, platinumServices);
+            createMembershipPlan("Platinum Membership", new BigDecimal("499.99"), 6, 4, 240, 30, platinumBenefits, platinumServices);
+            createMembershipPlan("Platinum Membership", new BigDecimal("899.99"), 12, 4, 480, 60, platinumBenefits, platinumServices);
         }
     }
 
-    private void createMembershipPlan(String name, String price, int sortOrder, List<PlanBenefit> benefits, List<String> services) {
+    /**
+     * Creates a single MembershipPlan with exactly one DurationOption.
+     * Each plan+option combo is a separate row — mobile shows them as individual cards.
+     */
+    private void createMembershipPlan(
+            String name,
+            BigDecimal priceStandard,
+            int durationMonths,
+            int sortOrder,
+            int entryLimit,
+            int freezeDays,
+            List<PlanBenefit> benefits,
+            List<String> services) {
+
+        // Calculate ~10% discount for longer durations
+        BigDecimal priceDiscounted = durationMonths > 1
+                ? priceStandard.multiply(new BigDecimal("0.90")).setScale(2, RoundingMode.HALF_UP)
+                : null;
+
         MembershipPlan plan = new MembershipPlan();
         plan.setName(name);
-        plan.setPrice(new BigDecimal(price));
+        plan.setPrice(priceStandard);
         plan.setCurrency("AZN");
         plan.setBillingPeriod(BillingPeriod.MONTHLY);
         plan.setIsActive(true);
@@ -71,11 +115,11 @@ public class DataInitializer {
 
         DurationOption option = new DurationOption();
         option.setMembershipPlan(plan);
-        option.setDurationMonths(1);
-        option.setPriceStandard(new BigDecimal(price));
-        option.setPriceDiscounted(new BigDecimal(price).multiply(new BigDecimal("0.9")).setScale(2, BigDecimal.ROUND_HALF_UP));
-        option.setEntryLimit(sortOrder * 10);
-        option.setFreezeDays(sortOrder * 2);
+        option.setDurationMonths(durationMonths);
+        option.setPriceStandard(priceStandard);
+        option.setPriceDiscounted(priceDiscounted);
+        option.setEntryLimit(entryLimit);
+        option.setFreezeDays(freezeDays);
 
         if (services != null) {
             java.util.List<PlanService> mappedServices = new java.util.ArrayList<>();
@@ -92,14 +136,16 @@ public class DataInitializer {
         plan = membershipPlanRepository.save(plan);
 
         String planId = plan.getId().toString();
+
         // Translate Plan Name
-        createTranslationIfNotFound("MembershipPlan", planId, "AZ", "name", translatePlanNameToAz(name));
-        createTranslationIfNotFound("MembershipPlan", planId, "RU", "name", translatePlanNameToRu(name));
+        String suffix = " (" + durationMonths + (durationMonths == 1 ? " ay)" : " ay)");
+        createTranslationIfNotFound("MembershipPlan", planId, "AZ", "name", translatePlanNameToAz(name) + suffix);
+        createTranslationIfNotFound("MembershipPlan", planId, "RU", "name", translatePlanNameToRu(name) + suffix);
 
         // Translate Benefits
         for (int i = 0; i < benefits.size(); i++) {
             PlanBenefit benefit = benefits.get(i);
-            String benefitId = planId + "_benefit_" + i; // Or use a proper unique key if Benefit has one
+            String benefitId = planId + "_benefit_" + i;
             createTranslationIfNotFound("PlanBenefit", benefitId, "AZ", "description", translateBenefitToAz(benefit.getDescription()));
             createTranslationIfNotFound("PlanBenefit", benefitId, "RU", "description", translateBenefitToRu(benefit.getDescription()));
         }

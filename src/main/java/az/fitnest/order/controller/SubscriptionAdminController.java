@@ -60,4 +60,3 @@ public class SubscriptionAdminController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
-

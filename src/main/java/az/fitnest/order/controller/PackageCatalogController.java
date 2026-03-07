@@ -31,14 +31,14 @@ public class PackageCatalogController {
         return ResponseEntity.ok(packageCatalogService.getAllPackages(active_only));
     }
 
-    @Operation(summary = "Paketi ID vasitəsilə əldə edin", description = "Xüsusi abunəlik paketinin təfərrüatlarını qaytarır.")
+    @Operation(summary = "Paketi option ID vasitəsilə əldə edin", description = "Xüsusi abunəlik paketinin təfərrüatlarını option ID ilə qaytarır.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Paket tapıldı",
                     content = @Content(schema = @Schema(implementation = SubscriptionPackageDto.class))),
             @ApiResponse(responseCode = "404", description = "Paket tapılmadı")
     })
-    @GetMapping("/{packageId}")
-    public ResponseEntity<SubscriptionPackageDto> getPackageById(@PathVariable Long packageId) {
-        return ResponseEntity.ok(packageCatalogService.getPackageById(packageId));
+    @GetMapping("/{optionId}")
+    public ResponseEntity<SubscriptionPackageDto> getPackageByOptionId(@PathVariable Long optionId) {
+        return ResponseEntity.ok(packageCatalogService.getPackageByOptionId(optionId));
     }
 }

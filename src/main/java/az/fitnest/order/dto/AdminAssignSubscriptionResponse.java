@@ -19,6 +19,9 @@ public record AdminAssignSubscriptionResponse(
     @JsonProperty("plan_name")
     String planName,
 
+    @JsonProperty("option_id")
+    Long optionId,
+
     @JsonProperty("gym_id")
     Long gymId,
 
@@ -44,4 +47,3 @@ public record AdminAssignSubscriptionResponse(
 
     String message
 ) {}
-
