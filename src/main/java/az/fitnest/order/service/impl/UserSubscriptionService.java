@@ -138,8 +138,8 @@ public class UserSubscriptionService {
                 .remainingLimit(subscription.getRemainingLimit())
                 .startAt(subscription.getStartAt() != null ? subscription.getStartAt().toLocalDate() : null)
                 .endAt(subscription.getEndAt() != null ? subscription.getEndAt().toLocalDate() : null)
-                .frozenAt(subscription.getFrozenAt())
-                .unfreezesAt(subscription.getUnfreezesAt())
+                .frozenAt(subscription.getFrozenAt() != null ? subscription.getFrozenAt().toLocalDate() : null)
+                .unfreezesAt(subscription.getUnfreezesAt() != null ? subscription.getUnfreezesAt().toLocalDate() : null)
                 .frozenDaysUsed(frozenDaysUsed)
                 .allowedFreezeDays(allowedFreezeDays)
                 .remainingFreezeDays(Math.max(0, remainingFreezeDays))
@@ -216,6 +216,50 @@ public class UserSubscriptionService {
         subscription.setAllowedFreezeDays(allowedFreezeDays);
 
         subscriptionRepository.save(subscription);
+    }
+
+    @Transactional
+    public void unfreezeSubscription(Long userId) {
+        Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "FROZEN")
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.no_frozen_subscription"));
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime frozenAt = subscription.getFrozenAt();
+        LocalDateTime unfreezesAt = subscription.getUnfreezesAt();
+
+        if (frozenAt == null || unfreezesAt == null) {
+            subscription.setStatus("ACTIVE");
+            subscription.setFrozenAt(null);
+            subscription.setUnfreezesAt(null);
+            subscriptionRepository.save(subscription);
+            return;
+        }
+
+        // Logic: if activated after 1 hour or even 23 hours, 1 day is deducted.
+        // If it has been 25 hours, then 2 days are deducted, and so on.
+        long hoursPassed = java.time.temporal.ChronoUnit.HOURS.between(frozenAt, now);
+        int actualDaysUsed = (int) (hoursPassed / 24) + 1;
+
+        // How many days were originally deducted during freeze?
+        long daysOriginallyFrozen = java.time.temporal.ChronoUnit.DAYS.between(frozenAt.toLocalDate(), unfreezesAt.toLocalDate());
+        
+        int daysToRefund = (int) daysOriginallyFrozen - actualDaysUsed;
+
+        if (daysToRefund > 0) {
+            if (subscription.getEndAt() != null) {
+                subscription.setEndAt(subscription.getEndAt().minusDays(daysToRefund));
+            }
+            subscription.setFrozenDaysUsed(Math.max(0, subscription.getFrozenDaysUsed() - daysToRefund));
+        }
+
+        subscription.setStatus("ACTIVE");
+        subscription.setFrozenAt(null);
+        subscription.setUnfreezesAt(null);
+
+        subscriptionRepository.save(subscription);
+
+        log.info("Manually unfroze subscription {} for user {}. Refunded {} days.",
+                subscription.getSubscriptionId(), userId, Math.max(0, daysToRefund));
     }
 
     @Scheduled(cron = "0 0 * * * *")
@@ -308,8 +352,8 @@ public class UserSubscriptionService {
                 .optionId(option.getId())
                 .durationMonths(option.getDurationMonths())
                 .status(saved.getStatus())
-                .startAt(saved.getStartAt())
-                .endAt(saved.getEndAt())
+                .startAt(saved.getStartAt() != null ? saved.getStartAt().toLocalDate() : null)
+                .endAt(saved.getEndAt() != null ? saved.getEndAt().toLocalDate() : null)
                 .totalLimit(saved.getTotalLimit())
                 .remainingLimit(saved.getRemainingLimit())
                 .allowedFreezeDays(freezeDays)

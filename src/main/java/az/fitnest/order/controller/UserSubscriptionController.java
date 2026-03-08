@@ -54,4 +54,18 @@ public class UserSubscriptionController {
         subscriptionService.freezeSubscription(userId, days);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "Abunəliyi aktivləşdirin",
+               description = "Dondurulmuş abunəliyi yenidən aktivləşdirir. İstifadə olunmayan dondurma günləri geri qaytarılır.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Abunəlik aktivləşdirildi"),
+            @ApiResponse(responseCode = "400", description = "Dondurulmuş abunəlik yoxdur"),
+            @ApiResponse(responseCode = "401", description = "İcazə verilmədi")
+    })
+    @PostMapping("/activate")
+    public ResponseEntity<Void> activateSubscription() {
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        subscriptionService.unfreezeSubscription(userId);
+        return ResponseEntity.ok().build();
+    }
 }

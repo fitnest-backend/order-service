@@ -28,10 +28,12 @@ public record AdminAssignSubscriptionResponse(
     String status,
 
     @JsonProperty("start_at")
-    LocalDateTime startAt,
+    @com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    java.time.LocalDate startAt,
 
     @JsonProperty("end_at")
-    LocalDateTime endAt,
+    @com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    java.time.LocalDate endAt,
 
     @JsonProperty("total_limit")
     Integer totalLimit,

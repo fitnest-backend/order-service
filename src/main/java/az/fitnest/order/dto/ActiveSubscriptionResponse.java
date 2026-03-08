@@ -6,6 +6,7 @@ import lombok.Builder;
 public record ActiveSubscriptionResponse(
     String order_id,
     String status,
-    String expires_at,
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "dd/MM/yyyy")
+    java.time.LocalDate expires_at,
     SubscriptionDetailsDto subscription
 ) {}

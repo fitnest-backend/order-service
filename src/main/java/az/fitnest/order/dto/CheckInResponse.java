@@ -8,5 +8,6 @@ public record CheckInResponse(
     boolean success,
     String message,
     Integer remainingVisits,
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "dd/MM/yyyy")
     LocalDateTime checkedInAt
 ) {}

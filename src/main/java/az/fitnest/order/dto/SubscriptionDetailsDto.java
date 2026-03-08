@@ -31,9 +31,11 @@ public record SubscriptionDetailsDto(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     LocalDate endAt,
     @JsonProperty("frozen_at")
-    LocalDateTime frozenAt,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    LocalDate frozenAt,
     @JsonProperty("unfreezes_at")
-    LocalDateTime unfreezesAt,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    LocalDate unfreezesAt,
     @JsonProperty("frozen_days_used")
     Integer frozenDaysUsed,
     @JsonProperty("allowed_freeze_days")
