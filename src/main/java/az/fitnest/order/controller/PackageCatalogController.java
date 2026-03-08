@@ -1,7 +1,9 @@
 package az.fitnest.order.controller;
 
 import az.fitnest.order.dto.PackageListResponse;
+import az.fitnest.order.dto.PackagePlanListResponse;
 import az.fitnest.order.dto.SubscriptionPackageDto;
+import az.fitnest.order.dto.SubscriptionPackageResponse;
 import az.fitnest.order.service.impl.PackageCatalogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,45 +23,44 @@ public class PackageCatalogController {
 
     private final PackageCatalogService packageCatalogService;
 
-    @Operation(summary = "Bütün paketləri əldə edin", description = "Bütün abunəlik paketlərinin siyahısını qaytarır.")
+    @Operation(summary = "Bütün paketləri əldə edin", description = "Bütün unikal abunəlik paketlərinin siyahısını qaytarır.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Paketlər uğurla əldə edildi",
-                    content = @Content(schema = @Schema(implementation = PackageListResponse.class)))
+                    content = @Content(schema = @Schema(implementation = PackagePlanListResponse.class)))
     })
     @GetMapping
-    public ResponseEntity<PackageListResponse> getAllPackages(@RequestParam(defaultValue = "true") boolean active_only) {
-        return ResponseEntity.ok(packageCatalogService.getAllPackages(active_only));
+    public ResponseEntity<PackagePlanListResponse> getAllPackages() {
+        return ResponseEntity.ok(packageCatalogService.getUniquePlans());
     }
 
-    @Operation(summary = "Paketi option ID vasitəsilə əldə edin", description = "Xüsusi abunəlik paketinin təfərrüatlarını option ID ilə qaytarır.")
+    @Operation(summary = "Paket təfərrüatlarını əldə edin", description = "Xüsusi abunəlik paketinin təfərrüatlarını package ID ilə qaytarır.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Paket tapıldı",
-                    content = @Content(schema = @Schema(implementation = SubscriptionPackageDto.class))),
+                    content = @Content(schema = @Schema(implementation = SubscriptionPackageResponse.class))),
             @ApiResponse(responseCode = "404", description = "Paket tapılmadı")
     })
-    @GetMapping("/{optionId}")
-    public ResponseEntity<SubscriptionPackageDto> getPackageByOptionId(@PathVariable Long optionId) {
-        return ResponseEntity.ok(packageCatalogService.getPackageByOptionId(optionId));
+    @GetMapping("/{packageId}")
+    public ResponseEntity<SubscriptionPackageResponse> getPlanById(@PathVariable Long packageId) {
+        return ResponseEntity.ok(packageCatalogService.getPlanById(packageId));
     }
 
-    @Operation(summary = "Bütün paket variantlarını əldə edin", description = "Bütün abunəlik paket variantlarının siyahısını qaytarır.")
+    @Operation(summary = "Paketin bütün variantlarını əldə edin", description = "Xüsusi abunəlik paketinin bütün variantlarını qaytarır.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Variantlar uğurla əldə edildi",
-                    content = @Content(schema = @Schema(implementation = PackageListResponse.class)))
+            @ApiResponse(responseCode = "200", description = "Variantlar əldə edildi")
     })
-    @GetMapping("/options")
-    public ResponseEntity<PackageListResponse> getAllOptions(@RequestParam(defaultValue = "true") boolean active_only) {
-        return ResponseEntity.ok(packageCatalogService.getAllPackages(active_only));
+    @GetMapping("/{packageId}/options")
+    public ResponseEntity<java.util.List<az.fitnest.order.dto.PackageOptionDto>> getOptionsByPlanId(@PathVariable Long packageId) {
+        return ResponseEntity.ok(packageCatalogService.getOptionsByPlanId(packageId));
     }
 
-    @Operation(summary = "Paket variantını option ID vasitəsilə əldə edin (təfərrüatlı)", description = "Xüsusi abunəlik paketi variantının təfərrüatlarını (faydalar daxil olmaqla) option ID ilə qaytarır.")
+    @Operation(summary = "Paket variantının təfərrüatlarını əldə edin", description = "Xüsusi abunəlik paketi variantının təfərrüatlarını package ID və option ID ilə qaytarır.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Variant tapıldı",
                     content = @Content(schema = @Schema(implementation = SubscriptionPackageDto.class))),
             @ApiResponse(responseCode = "404", description = "Variant tapılmadı")
     })
-    @GetMapping("/options/{optionId}")
-    public ResponseEntity<SubscriptionPackageDto> getOptionDetails(@PathVariable Long optionId) {
-        return ResponseEntity.ok(packageCatalogService.getPackageByOptionId(optionId));
+    @GetMapping("/{packageId}/options/{optionId}")
+    public ResponseEntity<SubscriptionPackageDto> getOptionDetails(@PathVariable Long packageId, @PathVariable Long optionId) {
+        return ResponseEntity.ok(packageCatalogService.getOptionDetails(packageId, optionId));
     }
 }

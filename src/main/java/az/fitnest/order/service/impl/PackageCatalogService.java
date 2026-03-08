@@ -41,6 +41,48 @@ public class PackageCatalogService {
     }
 
     @Transactional(readOnly = true)
+    public PackagePlanListResponse getUniquePlans() {
+        List<MembershipPlan> plans = planRepository.findAll();
+
+        List<SubscriptionPackageResponse> dtos = plans.stream()
+                .map(this::mapToPlanResponse)
+                .collect(Collectors.toList());
+
+        return PackagePlanListResponse.builder()
+                .items(dtos)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public SubscriptionPackageResponse getPlanById(Long packageId) {
+        MembershipPlan plan = planRepository.findById(packageId)
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
+        return mapToPlanResponse(plan);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PackageOptionDto> getOptionsByPlanId(Long packageId) {
+        MembershipPlan plan = planRepository.findById(packageId)
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
+        return plan.getOptions().stream()
+                .map(o -> mapToOptionDto(plan, o))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public SubscriptionPackageDto getOptionDetails(Long packageId, Long optionId) {
+        MembershipPlan plan = planRepository.findById(packageId)
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
+        
+        DurationOption option = plan.getOptions().stream()
+                .filter(o -> o.getId().equals(optionId))
+                .findFirst()
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.option_not_found"));
+
+        return mapToDto(plan, option);
+    }
+
+    @Transactional(readOnly = true)
     public SubscriptionPackageDto getPackageByOptionId(Long optionId) {
         for (MembershipPlan plan : planRepository.findAll()) {
             for (DurationOption option : plan.getOptions()) {
@@ -50,6 +92,59 @@ public class PackageCatalogService {
             }
         }
         throw new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found");
+    }
+
+    private SubscriptionPackageResponse mapToPlanResponse(MembershipPlan plan) {
+        List<PackageBenefitDto> benefits = plan.getBenefits().stream()
+                .map(b -> PackageBenefitDto.builder()
+                        .logo(b.getLogo())
+                        .description(b.getDescription())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<PackageOptionDto> options = plan.getOptions().stream()
+                .map(o -> mapToOptionDto(plan, o))
+                .collect(Collectors.toList());
+
+        return SubscriptionPackageResponse.builder()
+                .packageId(plan.getId().toString())
+                .name(plan.getName())
+                .isActive(plan.getIsActive())
+                .discountPercent(plan.getServiceDiscountPercent())
+                .benefits(benefits)
+                .options(options)
+                .build();
+    }
+
+    private PackageOptionDto mapToOptionDto(MembershipPlan plan, DurationOption option) {
+        BigDecimal base = option.getPriceStandard();
+        BigDecimal discount = option.getPriceDiscounted();
+        BigDecimal effective = discount != null ? discount : base;
+
+        PackagePriceDto priceDto = PackagePriceDto.builder()
+                .base(base)
+                .discount(discount)
+                .effective(effective)
+                .currency(plan.getCurrency())
+                .build();
+
+        String badge = (discount != null && base != null && discount.compareTo(base) < 0) ? "discount" : null;
+
+        List<PackageServiceDto> services = option.getServices() != null ?
+                option.getServices().stream()
+                        .map(s -> PackageServiceDto.builder().serviceName(s.getName()).build())
+                        .collect(Collectors.toList()) :
+                List.of();
+
+        return PackageOptionDto.builder()
+                .optionId(option.getId())
+                .durationMonths(option.getDurationMonths())
+                .price(priceDto)
+                .badge(badge)
+                .visitLimit(option.getEntryLimit() != null ? option.getEntryLimit() : 0)
+                .freezeDays(option.getFreezeDays() != null ? option.getFreezeDays() : 0)
+                .services(services)
+                .build();
     }
 
     private SubscriptionPackageDto mapToDto(MembershipPlan plan, DurationOption option) {
