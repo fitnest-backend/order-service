@@ -33,5 +33,7 @@ public record SubscriptionPackageDto(
     List<PackageServiceDto> services,
 
     @JsonProperty("discount_percent")
-    BigDecimal discountPercent
+    BigDecimal discountPercent,
+
+    List<PackageBenefitDto> benefits
 ) {}

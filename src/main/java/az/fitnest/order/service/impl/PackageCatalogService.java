@@ -60,6 +60,7 @@ public class PackageCatalogService {
         Integer durationMonths = null;
         Long optionId = null;
         List<PackageServiceDto> services = List.of();
+        List<PackageBenefitDto> benefits = List.of();
 
         if (option != null) {
             optionId = option.getId();
@@ -89,6 +90,15 @@ public class PackageCatalogService {
             }
         }
 
+        if (plan.getBenefits() != null) {
+            benefits = plan.getBenefits().stream()
+                    .map(b -> PackageBenefitDto.builder()
+                            .logo(b.getLogo())
+                            .description(b.getDescription())
+                            .build())
+                    .collect(Collectors.toList());
+        }
+
         return SubscriptionPackageDto.builder()
                 .packageId(plan.getId().toString())
                 .optionId(optionId)
@@ -101,6 +111,7 @@ public class PackageCatalogService {
                 .freezeDays(freezeDays)
                 .services(services)
                 .discountPercent(plan.getServiceDiscountPercent())
+                .benefits(benefits)
                 .build();
     }
 }
