@@ -18,6 +18,6 @@ public class PlanService extends BaseAuditableEntity {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "option_id", nullable = false)
-    private DurationOption durationOption;
+    @JoinColumn(name = "option_id")
+    private PackageOption packageOption;
 }

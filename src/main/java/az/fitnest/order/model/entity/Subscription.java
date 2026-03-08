@@ -25,7 +25,7 @@ public class Subscription {
     private Long userId;
 
     @Column(name = "plan_id", nullable = false)
-    private Long planId;
+    private Long packageId;
 
     @Column(name = "status", nullable = false)
     private String status;

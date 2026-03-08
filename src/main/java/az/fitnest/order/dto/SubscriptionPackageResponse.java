@@ -14,6 +14,5 @@ public record SubscriptionPackageResponse(
     Boolean isActive,
     @JsonProperty("discount_percent")
     BigDecimal discountPercent,
-    List<PackageBenefitDto> benefits,
     List<PackageOptionDto> options
 ) {}

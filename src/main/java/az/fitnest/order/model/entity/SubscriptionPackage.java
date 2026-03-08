@@ -12,39 +12,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "membership_plans")
+@Table(name = "subscription_packages")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MembershipPlan extends BaseAuditableEntity {
+public class SubscriptionPackage extends BaseAuditableEntity {
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "price", nullable = false)
+    @Column(nullable = false)
     private BigDecimal price;
 
-    @Column(name = "currency", nullable = false)
-    private String currency = "AZN";
+    @Column(nullable = false)
+    private String currency;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "billing_period", nullable = false)
     private BillingPeriod billingPeriod;
 
-    @ElementCollection
-    @CollectionTable(name = "membership_plan_benefits", joinColumns = @JoinColumn(name = "plan_id"))
-    private List<PlanBenefit> benefits = new ArrayList<>();
 
     @Column(name = "service_discount_percent")
     private BigDecimal serviceDiscountPercent;
 
     @Column(name = "is_active")
-    private Boolean isActive = true;
+    private Boolean isActive;
 
     @Column(name = "sort_order")
-    private Integer sortOrder = 0;
+    private Integer sortOrder;
 
-    @OneToMany(mappedBy = "membershipPlan", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DurationOption> options = new ArrayList<>();
+    @OneToMany(mappedBy = "subscriptionPackage", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PackageOption> options = new ArrayList<>();
 }

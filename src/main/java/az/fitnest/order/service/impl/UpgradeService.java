@@ -19,7 +19,7 @@ import java.util.UUID;
 public class UpgradeService {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final MembershipPlanRepository planRepository;
+    private final SubscriptionPackageRepository packageRepository;
     private final MockPaymentService paymentService;
     private final OrderRepository orderRepository;
 
@@ -29,7 +29,7 @@ public class UpgradeService {
                 .orElseThrow(() -> new ServiceException("error.no_active_subscription",
                         "NO_ACTIVE_SUBSCRIPTION", org.springframework.http.HttpStatus.CONFLICT));
 
-        MembershipPlan currentPlan = planRepository.findById(currentSub.getPlanId())
+        SubscriptionPackage currentPackage = packageRepository.findById(currentSub.getPackageId())
                 .orElseThrow(() -> new ServiceException("error.plan_not_found",
                         "INTERNAL_ERROR", org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR));
 
@@ -40,40 +40,42 @@ public class UpgradeService {
         }
         int currentDuration = (int) currentDurationLong;
 
-        DurationOption currentOption = currentPlan.getOptions().stream()
+        PackageOption currentOption = currentPackage.getOptions().stream()
                 .filter(o -> o.getDurationMonths().equals(currentDuration))
                 .findFirst()
                 .orElseThrow(() -> new ServiceException("error.duration_config_not_found",
                         "INTERNAL_ERROR", org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR));
 
-        BigDecimal currentEffectivePrice = currentOption.getPriceDiscounted() != null
-                ? currentOption.getPriceDiscounted() : currentOption.getPriceStandard();
+        BigDecimal currentEffectivePrice = currentOption.getPriceStandard(); 
+        if (currentOption.getPriceDiscounted() != null) {
+            currentEffectivePrice = currentOption.getPriceDiscounted();
+        }
 
         SubscriptionDetailsDto currentDetails = SubscriptionDetailsDto.builder()
                 .subscriptionId(currentSub.getSubscriptionId())
-                .packageId(currentPlan.getId().toString())
-                .packageName(currentPlan.getName())
+                .packageId(currentPackage.getId().toString())
+                .packageName(currentPackage.getName())
                 .durationMonths(currentDuration)
                 .effectivePrice(currentEffectivePrice)
-                .currency(currentPlan.getCurrency())
+                .currency(currentPackage.getCurrency())
                 .remainingLimit(currentSub.getRemainingLimit())
                 .build();
 
         List<UpgradeOptionDto> options = new ArrayList<>();
-        List<MembershipPlan> allPlans = planRepository.findByIsActiveTrue();
+        List<SubscriptionPackage> allPackages = packageRepository.findByIsActiveTrue();
 
-        for (MembershipPlan plan : allPlans) {
-            for (DurationOption option : plan.getOptions()) {
-                boolean isSamePlan = plan.getId().equals(currentPlan.getId());
-                boolean isDurationUpgrade = isSamePlan && option.getDurationMonths() > currentDuration;
+        for (SubscriptionPackage pkg : allPackages) {
+            for (PackageOption option : pkg.getOptions()) {
+                boolean isSamePackage = pkg.getId().equals(currentPackage.getId());
+                boolean isDurationUpgrade = isSamePackage && option.getDurationMonths() > currentDuration;
 
                 BigDecimal targetEffectivePrice = option.getPriceDiscounted() != null
                         ? option.getPriceDiscounted() : option.getPriceStandard();
                 if (targetEffectivePrice == null) continue;
 
-                int currentTier = getTierRank(currentPlan.getName());
-                int targetTier = getTierRank(plan.getName());
-                boolean isTierUpgrade = !isSamePlan && targetTier > currentTier;
+                int currentTier = getTierRank(currentPackage.getName());
+                int targetTier = getTierRank(pkg.getName());
+                boolean isTierUpgrade = !isSamePackage && targetTier > currentTier;
 
                 if (targetDurationMonths != null && !option.getDurationMonths().equals(targetDurationMonths)) {
                     continue;
@@ -96,9 +98,9 @@ public class UpgradeService {
                     options.add(UpgradeOptionDto.builder()
                             .type(isDurationUpgrade ? "duration_upgrade" : "tier_upgrade")
                             .target(TargetPackageDto.builder()
-                                    .packageId(plan.getId().toString())
+                                    .packageId(pkg.getId().toString())
                                     .optionId(option.getId())
-                                    .packageName(plan.getName())
+                                    .packageName(pkg.getName())
                                     .durationMonths(option.getDurationMonths())
                                     .targetTotalLimit(targetTotal)
                                     .targetEffectivePrice(targetEffectivePrice)
@@ -132,23 +134,23 @@ public class UpgradeService {
                     "NO_ACTIVE_SUBSCRIPTION", org.springframework.http.HttpStatus.CONFLICT);
         }
 
-        Long targetPlanId = Long.parseLong(request.targetPackageId());
-        MembershipPlan targetPlan = planRepository.findById(targetPlanId)
+        Long targetPackageId = Long.parseLong(request.targetPackageId());
+        SubscriptionPackage targetPackage = packageRepository.findById(targetPackageId)
                 .orElseThrow(() -> new ServiceException("error.target_plan_not_found",
                         "PACKAGE_NOT_FOUND", org.springframework.http.HttpStatus.NOT_FOUND));
 
-        if (!targetPlan.getIsActive()) {
+        if (!targetPackage.getIsActive()) {
             throw new ServiceException("error.target_plan_inactive",
                     "PACKAGE_NOT_FOUND", org.springframework.http.HttpStatus.NOT_FOUND);
         }
 
-        DurationOption targetOption = targetPlan.getOptions().stream()
+        PackageOption targetOption = targetPackage.getOptions().stream()
                 .filter(o -> o.getId().equals(request.targetOptionId()))
                 .findFirst()
                 .orElseThrow(() -> new ServiceException("error.invalid_upgrade_request",
                         "INVALID_UPGRADE_REQUEST", org.springframework.http.HttpStatus.BAD_REQUEST));
 
-        MembershipPlan currentPlan = planRepository.findById(currentSub.getPlanId())
+        SubscriptionPackage currentPackage = packageRepository.findById(currentSub.getPackageId())
                 .orElseThrow(() -> new ServiceException("error.plan_not_found",
                         "INTERNAL_ERROR", org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR));
 
@@ -159,7 +161,7 @@ public class UpgradeService {
         }
         int currentDuration = (int) currentDurationLong;
 
-        DurationOption currentOption = currentPlan.getOptions().stream()
+        PackageOption currentOption = currentPackage.getOptions().stream()
                 .filter(o -> o.getDurationMonths().equals(currentDuration))
                 .findFirst()
                 .orElseThrow(() -> new ServiceException("error.duration_config_not_found",
@@ -180,7 +182,7 @@ public class UpgradeService {
         String orderId = "ord_" + UUID.randomUUID().toString().substring(0, 8);
 
         PaymentResultDto paymentResult = paymentService.processPayment(
-                request.paymentMethodId(), payableDiff, targetPlan.getCurrency());
+                request.paymentMethodId(), payableDiff, targetPackage.getCurrency());
 
         Order order = Order.builder()
                 .orderId(orderId)
@@ -188,7 +190,7 @@ public class UpgradeService {
                 .type("subscription_upgrade")
                 .status(paymentResult.status())
                 .amount(payableDiff)
-                .currency(targetPlan.getCurrency())
+                .currency(targetPackage.getCurrency())
                 .createdAt(LocalDateTime.now())
                 .providerReference(paymentResult.providerReference())
                 .build();
@@ -201,7 +203,7 @@ public class UpgradeService {
             int currentRemaining = currentSub.getRemainingLimit() != null ? currentSub.getRemainingLimit() : 0;
             int newRemaining = Math.max(0, targetTotal - currentRemaining);
 
-            currentSub.setPlanId(targetPlanId);
+            currentSub.setPackageId(targetPackageId);
             currentSub.setTotalLimit(targetTotal);
             currentSub.setRemainingLimit(newRemaining);
             currentSub.setEndAt(currentSub.getStartAt().plusMonths(targetOption.getDurationMonths()));
@@ -210,8 +212,8 @@ public class UpgradeService {
 
             subDetails = SubscriptionDetailsDto.builder()
                     .subscriptionId(currentSub.getSubscriptionId())
-                    .packageId(targetPlan.getId().toString())
-                    .packageName(targetPlan.getName())
+                    .packageId(targetPackage.getId().toString())
+                    .packageName(targetPackage.getName())
                     .durationMonths(targetOption.getDurationMonths())
                     .totalLimit(targetTotal)
                     .remainingLimit(newRemaining)

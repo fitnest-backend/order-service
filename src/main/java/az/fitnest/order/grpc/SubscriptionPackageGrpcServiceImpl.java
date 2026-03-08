@@ -1,18 +1,18 @@
 package az.fitnest.order.grpc;
 
-import az.fitnest.order.model.entity.DurationOption;
-import az.fitnest.order.model.entity.MembershipPlan;
+import az.fitnest.order.model.entity.PackageOption;
+import az.fitnest.order.model.entity.SubscriptionPackage;
 import az.fitnest.order.model.entity.PlanBenefit;
-import az.fitnest.order.repository.MembershipPlanRepository;
+import az.fitnest.order.repository.SubscriptionPackageRepository;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
 
 @GrpcService
 @RequiredArgsConstructor
-public class MembershipPlanGrpcServiceImpl extends MembershipPlanServiceGrpc.MembershipPlanServiceImplBase {
+public class SubscriptionPackageGrpcServiceImpl extends SubscriptionPackageServiceGrpc.SubscriptionPackageServiceImplBase {
 
-    private final MembershipPlanRepository planRepository;
+    private final SubscriptionPackageRepository packageRepository;
     private final az.fitnest.order.service.impl.UserSubscriptionService userSubscriptionService;
 
     @Override
@@ -34,10 +34,10 @@ public class MembershipPlanGrpcServiceImpl extends MembershipPlanServiceGrpc.Mem
 
     @Override
     public void getGymPlans(GetGymPlansRequest request, StreamObserver<GetGymPlansResponse> responseObserver) {
-        var plans = planRepository.findByIsActiveTrue();
+        var packages = packageRepository.findByIsActiveTrue();
         GetGymPlansResponse.Builder responseBuilder = GetGymPlansResponse.newBuilder();
-        for (MembershipPlan plan : plans) {
-            responseBuilder.addPlans(mapPlanToGrpc(plan));
+        for (SubscriptionPackage pkg : packages) {
+            responseBuilder.addPackages(mapPackageToGrpc(pkg));
         }
         responseObserver.onNext(responseBuilder.build());
         responseObserver.onCompleted();
@@ -45,7 +45,7 @@ public class MembershipPlanGrpcServiceImpl extends MembershipPlanServiceGrpc.Mem
 
     @Override
     public void checkPlanExists(CheckPlanExistsRequest request, StreamObserver<CheckPlanExistsResponse> responseObserver) {
-        var opt = planRepository.findById(request.getPlanId());
+        var opt = packageRepository.findById(request.getPackageId());
         if (opt.isPresent()) {
             responseObserver.onNext(CheckPlanExistsResponse.newBuilder()
                     .setExists(true)
@@ -62,33 +62,40 @@ public class MembershipPlanGrpcServiceImpl extends MembershipPlanServiceGrpc.Mem
 
     @Override
     public void getPlansByIds(GetPlansByIdsRequest request, StreamObserver<GetPlansByIdsResponse> responseObserver) {
-        var plans = planRepository.findAllById(request.getPlanIdsList());
+        var packages = packageRepository.findAllById(request.getPackageIdsList());
         GetPlansByIdsResponse.Builder responseBuilder = GetPlansByIdsResponse.newBuilder();
-        for (MembershipPlan plan : plans) {
-            responseBuilder.addPlans(mapPlanToGrpc(plan));
+        for (SubscriptionPackage pkg : packages) {
+            responseBuilder.addPackages(mapPackageToGrpc(pkg));
         }
         responseObserver.onNext(responseBuilder.build());
         responseObserver.onCompleted();
     }
 
-    private GymMembershipPlan mapPlanToGrpc(MembershipPlan plan) {
-        GymMembershipPlan.Builder planBuilder = GymMembershipPlan.newBuilder()
-                .setPlanId(plan.getId())
-                .setName(plan.getName() != null ? plan.getName() : "")
-                .setCurrency(plan.getCurrency() != null ? plan.getCurrency() : "AZN")
-                .setIsActive(plan.getIsActive() != null && plan.getIsActive());
+    private SubscriptionPackageInfo mapPackageToGrpc(SubscriptionPackage pkg) {
+        SubscriptionPackageInfo.Builder pkgBuilder = SubscriptionPackageInfo.newBuilder()
+                .setPackageId(pkg.getId())
+                .setName(pkg.getName() != null ? pkg.getName() : "")
+                .setCurrency(pkg.getCurrency() != null ? pkg.getCurrency() : "AZN")
+                .setIsActive(pkg.getIsActive() != null && pkg.getIsActive());
 
-        if (plan.getBenefits() != null) {
-            for (PlanBenefit benefit : plan.getBenefits()) {
-                if (benefit.getDescription() != null) {
-                    planBuilder.addBenefits(benefit.getDescription());
+        if (pkg.getOptions() != null) {
+            for (PackageOption opt : pkg.getOptions()) {
+                if (opt.getBenefits() != null) {
+                    for (PlanBenefit benefit : opt.getBenefits()) {
+                        if (benefit.getDescription() != null) {
+                            String desc = benefit.getDescription();
+                            if (!pkgBuilder.getBenefitsList().contains(desc)) {
+                                pkgBuilder.addBenefits(desc);
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        if (plan.getOptions() != null) {
-            for (DurationOption opt : plan.getOptions()) {
-                PlanDurationOption.Builder optBuilder = PlanDurationOption.newBuilder()
+        if (pkg.getOptions() != null) {
+            for (PackageOption opt : pkg.getOptions()) {
+                SubscriptionPackageOption.Builder optBuilder = SubscriptionPackageOption.newBuilder()
                         .setDurationMonths(opt.getDurationMonths() != null ? opt.getDurationMonths() : 0)
                         .setPriceStandard(opt.getPriceStandard() != null ? opt.getPriceStandard().toPlainString() : "0")
                         .setPriceDiscounted(opt.getPriceDiscounted() != null ? opt.getPriceDiscounted().toPlainString() : "")
@@ -100,9 +107,9 @@ public class MembershipPlanGrpcServiceImpl extends MembershipPlanServiceGrpc.Mem
                         optBuilder.addServices(svc != null && svc.getName() != null ? svc.getName() : "");
                     }
                 }
-                planBuilder.addOptions(optBuilder.build());
+                pkgBuilder.addOptions(optBuilder.build());
             }
         }
-        return planBuilder.build();
+        return pkgBuilder.build();
     }
 }

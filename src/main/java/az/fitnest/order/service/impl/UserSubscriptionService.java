@@ -2,10 +2,10 @@ package az.fitnest.order.service.impl;
 
 import az.fitnest.order.dto.ActiveSubscriptionResponse;
 import az.fitnest.order.dto.SubscriptionDetailsDto;
-import az.fitnest.order.model.entity.DurationOption;
-import az.fitnest.order.model.entity.MembershipPlan;
+import az.fitnest.order.model.entity.PackageOption;
+import az.fitnest.order.model.entity.SubscriptionPackage;
 import az.fitnest.order.model.entity.Subscription;
-import az.fitnest.order.repository.MembershipPlanRepository;
+import az.fitnest.order.repository.SubscriptionPackageRepository;
 import az.fitnest.order.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import java.util.List;
 public class UserSubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final MembershipPlanRepository planRepository;
+    private final SubscriptionPackageRepository packageRepository;
     private final az.fitnest.order.repository.GymVisitRepository gymVisitRepository;
 
     @Transactional
@@ -99,7 +99,7 @@ public class UserSubscriptionService {
                     .build();
         }
 
-        MembershipPlan plan = planRepository.findById(subscription.getPlanId())
+        SubscriptionPackage pkg = packageRepository.findById(subscription.getPackageId())
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
 
         long durationMonths = 1;
@@ -110,7 +110,7 @@ public class UserSubscriptionService {
         Integer duration = (int) durationMonths;
 
         BigDecimal effectivePrice = BigDecimal.ZERO;
-        DurationOption matchedOption = plan.getOptions().stream()
+        PackageOption matchedOption = pkg.getOptions().stream()
                 .filter(o -> o.getDurationMonths().equals(duration))
                 .findFirst()
                 .orElse(null);
@@ -129,11 +129,11 @@ public class UserSubscriptionService {
 
         SubscriptionDetailsDto details = SubscriptionDetailsDto.builder()
                 .subscriptionId(subscription.getSubscriptionId())
-                .packageId(plan.getId().toString())
-                .packageName(plan.getName())
+                .packageId(pkg.getId().toString())
+                .packageName(pkg.getName())
                 .durationMonths(duration)
                 .effectivePrice(effectivePrice)
-                .currency(plan.getCurrency())
+                .currency(pkg.getCurrency())
                 .totalLimit(subscription.getTotalLimit())
                 .remainingLimit(subscription.getRemainingLimit())
                 .startAt(subscription.getStartAt() != null ? subscription.getStartAt().toLocalDate() : null)
@@ -160,7 +160,7 @@ public class UserSubscriptionService {
             throw new az.fitnest.order.exception.BadRequestException("error.membership_expired_cannot_freeze");
         }
 
-        MembershipPlan plan = planRepository.findById(subscription.getPlanId())
+        SubscriptionPackage pkg = packageRepository.findById(subscription.getPackageId())
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
 
         long tempDurationMonths = 1;
@@ -170,7 +170,7 @@ public class UserSubscriptionService {
         }
         final long durationMonths = tempDurationMonths;
 
-        DurationOption matchedOption = plan.getOptions().stream()
+        PackageOption matchedOption = pkg.getOptions().stream()
                 .filter(o -> o.getDurationMonths().equals((int) durationMonths))
                 .findFirst()
                 .orElse(null);
@@ -248,14 +248,14 @@ public class UserSubscriptionService {
     public az.fitnest.order.dto.AdminAssignSubscriptionResponse assignSubscriptionToUser(
             az.fitnest.order.dto.AdminAssignSubscriptionRequest request) {
 
-        MembershipPlan plan = planRepository.findById(request.planId())
+        SubscriptionPackage pkg = packageRepository.findById(request.planId())
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
 
-        if (plan.getIsActive() == null || !plan.getIsActive()) {
+        if (pkg.getIsActive() == null || !pkg.getIsActive()) {
             throw new az.fitnest.order.exception.BadRequestException("error.target_plan_inactive");
         }
 
-        DurationOption option = plan.getOptions().stream()
+        PackageOption option = pkg.getOptions().stream()
                 .filter(o -> o.getId().equals(request.optionId()))
                 .findFirst()
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.duration_config_not_found"));
@@ -286,7 +286,7 @@ public class UserSubscriptionService {
 
         Subscription subscription = new Subscription();
         subscription.setUserId(request.userId());
-        subscription.setPlanId(request.planId());
+        subscription.setPackageId(request.planId());
         subscription.setStatus("ACTIVE");
         subscription.setStartAt(now);
         subscription.setEndAt(endAt);
@@ -298,13 +298,13 @@ public class UserSubscriptionService {
         Subscription saved = subscriptionRepository.save(subscription);
 
         log.info("Admin assigned plan {} option {} (duration={} months) to user {}, subscriptionId={}",
-                plan.getName(), option.getId(), option.getDurationMonths(), request.userId(), saved.getSubscriptionId());
+                pkg.getName(), option.getId(), option.getDurationMonths(), request.userId(), saved.getSubscriptionId());
 
         return az.fitnest.order.dto.AdminAssignSubscriptionResponse.builder()
                 .subscriptionId(saved.getSubscriptionId())
                 .userId(saved.getUserId())
-                .planId(saved.getPlanId())
-                .planName(plan.getName())
+                .planId(saved.getPackageId())
+                .planName(pkg.getName())
                 .optionId(option.getId())
                 .durationMonths(option.getDurationMonths())
                 .status(saved.getStatus())

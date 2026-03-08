@@ -7,9 +7,9 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Builder
-public record AdminMembershipPlanResponse(
-    @JsonProperty("plan_id")
-    Long planId,
+public record AdminSubscriptionPackageResponse(
+    @JsonProperty("package_id")
+    Long packageId,
 
     String name,
 
@@ -25,11 +25,11 @@ public record AdminMembershipPlanResponse(
     Integer sortOrder,
 
     @JsonProperty("duration_options")
-    List<AdminDurationOptionResponse> durationOptions
+    List<AdminPackageOptionResponse> durationOptions
 ) {
 
     @Builder
-    public record AdminDurationOptionResponse(
+    public record AdminPackageOptionResponse(
         @JsonProperty("option_id")
         Long optionId,
 

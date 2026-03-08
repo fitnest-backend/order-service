@@ -1,11 +1,11 @@
 package az.fitnest.order.service.impl;
 
-import az.fitnest.order.repository.MembershipPlanRepository;
-import az.fitnest.order.dto.DurationOptionEntityDto;
-import az.fitnest.order.dto.MembershipPlanWithOptionsRequest;
+import az.fitnest.order.repository.SubscriptionPackageRepository;
+import az.fitnest.order.dto.PackageOptionEntityDto;
+import az.fitnest.order.dto.SubscriptionPackageWithOptionsRequest;
 import az.fitnest.order.model.enums.BillingPeriod;
-import az.fitnest.order.model.entity.DurationOption;
-import az.fitnest.order.model.entity.MembershipPlan;
+import az.fitnest.order.model.entity.PackageOption;
+import az.fitnest.order.model.entity.SubscriptionPackage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,28 +17,28 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class MembershipPlanAdminService {
+public class SubscriptionPackageAdminService {
 
-    private final MembershipPlanRepository membershipPlanRepository;
+    private final SubscriptionPackageRepository packageRepository;
 
     @Transactional(readOnly = true)
-    public List<az.fitnest.order.dto.AdminMembershipPlanResponse> getAllPlans() {
-        return membershipPlanRepository.findAll().stream()
-                .map(this::toAdminPlanResponse)
+    public List<az.fitnest.order.dto.AdminSubscriptionPackageResponse> getAllPackages() {
+        return packageRepository.findAll().stream()
+                .map(this::toAdminPackageResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public az.fitnest.order.dto.AdminMembershipPlanResponse getPlanById(Long planId) {
-        MembershipPlan plan = membershipPlanRepository.findById(planId)
+    public az.fitnest.order.dto.AdminSubscriptionPackageResponse getPackageById(Long packageId) {
+        SubscriptionPackage pkg = packageRepository.findById(packageId)
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
-        return toAdminPlanResponse(plan);
+        return toAdminPackageResponse(pkg);
     }
 
-    private az.fitnest.order.dto.AdminMembershipPlanResponse toAdminPlanResponse(MembershipPlan plan) {
-        List<az.fitnest.order.dto.AdminMembershipPlanResponse.AdminDurationOptionResponse> options =
-                plan.getOptions().stream()
-                        .map(opt -> az.fitnest.order.dto.AdminMembershipPlanResponse.AdminDurationOptionResponse.builder()
+    private az.fitnest.order.dto.AdminSubscriptionPackageResponse toAdminPackageResponse(SubscriptionPackage pkg) {
+        List<az.fitnest.order.dto.AdminSubscriptionPackageResponse.AdminPackageOptionResponse> options =
+                pkg.getOptions().stream()
+                        .map(opt -> az.fitnest.order.dto.AdminSubscriptionPackageResponse.AdminPackageOptionResponse.builder()
                                 .optionId(opt.getId())
                                 .durationMonths(opt.getDurationMonths())
                                 .priceStandard(opt.getPriceStandard())
@@ -48,37 +48,37 @@ public class MembershipPlanAdminService {
                                 .build())
                         .toList();
 
-        return az.fitnest.order.dto.AdminMembershipPlanResponse.builder()
-                .planId(plan.getId())
-                .name(plan.getName())
-                .currency(plan.getCurrency())
-                .billingPeriod(plan.getBillingPeriod() != null ? plan.getBillingPeriod().name() : null)
-                .isActive(plan.getIsActive())
-                .sortOrder(plan.getSortOrder())
+        return az.fitnest.order.dto.AdminSubscriptionPackageResponse.builder()
+                .packageId(pkg.getId())
+                .name(pkg.getName())
+                .currency(pkg.getCurrency())
+                .billingPeriod(pkg.getBillingPeriod() != null ? pkg.getBillingPeriod().name() : null)
+                .isActive(pkg.getIsActive())
+                .sortOrder(pkg.getSortOrder())
                 .durationOptions(options)
                 .build();
     }
 
     @Transactional
-    public void addPlanWithOptions(MembershipPlanWithOptionsRequest request) {
+    public void addPackageWithOptions(SubscriptionPackageWithOptionsRequest request) {
         if (request.name() == null || request.name().isBlank()) {
             throw new az.fitnest.order.exception.BadRequestException("error.missing_field");
         }
-        MembershipPlan plan = new MembershipPlan();
-        plan.setName(request.name());
-        plan.setCurrency(request.currency() != null ? request.currency() : "AZN");
+        SubscriptionPackage pkg = new SubscriptionPackage();
+        pkg.setName(request.name());
+        pkg.setCurrency(request.currency() != null ? request.currency() : "AZN");
         if (request.billingPeriod() != null) {
-            plan.setBillingPeriod(request.billingPeriod());
+            pkg.setBillingPeriod(request.billingPeriod());
         } else {
-            plan.setBillingPeriod(BillingPeriod.MONTHLY);
+            pkg.setBillingPeriod(BillingPeriod.MONTHLY);
         }
-        plan.setIsActive(request.isActive() != null ? request.isActive() : true);
-        plan.setSortOrder(request.sortOrder() != null ? request.sortOrder() : 0);
+        pkg.setIsActive(request.isActive() != null ? request.isActive() : true);
+        pkg.setSortOrder(request.sortOrder() != null ? request.sortOrder() : 0);
 
         if (request.options() != null) {
-            for (DurationOptionEntityDto dto : request.options()) {
-                DurationOption opt = new DurationOption();
-                opt.setMembershipPlan(plan);
+            for (PackageOptionEntityDto dto : request.options()) {
+                PackageOption opt = new PackageOption();
+                opt.setSubscriptionPackage(pkg);
                 opt.setDurationMonths(dto.durationMonths());
                 opt.setPriceStandard(dto.priceStandard());
                 opt.setPriceDiscounted(dto.priceDiscounted());
@@ -89,51 +89,51 @@ public class MembershipPlanAdminService {
                     for (az.fitnest.order.dto.PlanServiceDto psd : dto.services()) {
                         az.fitnest.order.model.entity.PlanService ps = new az.fitnest.order.model.entity.PlanService();
                         ps.setName(psd.name());
-                        ps.setDurationOption(opt);
+                        ps.setPackageOption(opt);
                         services.add(ps);
                     }
                     opt.setServices(services);
                 }
-                plan.getOptions().add(opt);
+                pkg.getOptions().add(opt);
             }
         }
 
-        if (!plan.getOptions().isEmpty()) {
-            DurationOption first = plan.getOptions().get(0);
+        if (!pkg.getOptions().isEmpty()) {
+            PackageOption first = pkg.getOptions().get(0);
             if (first.getDurationMonths() != null && first.getDurationMonths() > 0 && first.getPriceStandard() != null) {
                 BigDecimal monthly = first.getPriceStandard().divide(new BigDecimal(first.getDurationMonths()), 4, RoundingMode.HALF_UP);
-                plan.setPrice(monthly);
+                pkg.setPrice(monthly);
             } else {
-                plan.setPrice(BigDecimal.ZERO);
+                pkg.setPrice(BigDecimal.ZERO);
             }
         } else {
-            plan.setPrice(BigDecimal.ZERO);
+            pkg.setPrice(BigDecimal.ZERO);
         }
 
-        membershipPlanRepository.save(plan);
+        packageRepository.save(pkg);
     }
 
     @Transactional
-    public void updatePlanWithOptions(Long planId, MembershipPlanWithOptionsRequest request) {
+    public void updatePackageWithOptions(Long packageId, SubscriptionPackageWithOptionsRequest request) {
         if (request.name() == null || request.name().isBlank()) {
             throw new az.fitnest.order.exception.BadRequestException("error.missing_field");
         }
-        MembershipPlan plan = membershipPlanRepository.findById(planId)
+        SubscriptionPackage pkg = packageRepository.findById(packageId)
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
 
-        plan.setName(request.name());
-        plan.setCurrency(request.currency() != null ? request.currency() : plan.getCurrency());
+        pkg.setName(request.name());
+        pkg.setCurrency(request.currency() != null ? request.currency() : pkg.getCurrency());
         if (request.billingPeriod() != null) {
-            plan.setBillingPeriod(request.billingPeriod());
+            pkg.setBillingPeriod(request.billingPeriod());
         }
-        plan.setIsActive(request.isActive() != null ? request.isActive() : plan.getIsActive());
-        plan.setSortOrder(request.sortOrder() != null ? request.sortOrder() : plan.getSortOrder());
+        pkg.setIsActive(request.isActive() != null ? request.isActive() : pkg.getIsActive());
+        pkg.setSortOrder(request.sortOrder() != null ? request.sortOrder() : pkg.getSortOrder());
 
-        plan.getOptions().clear();
+        pkg.getOptions().clear();
         if (request.options() != null) {
-            for (DurationOptionEntityDto dto : request.options()) {
-                DurationOption opt = new DurationOption();
-                opt.setMembershipPlan(plan);
+            for (PackageOptionEntityDto dto : request.options()) {
+                PackageOption opt = new PackageOption();
+                opt.setSubscriptionPackage(pkg);
                 opt.setDurationMonths(dto.durationMonths());
                 opt.setPriceStandard(dto.priceStandard());
                 opt.setPriceDiscounted(dto.priceDiscounted());
@@ -144,23 +144,23 @@ public class MembershipPlanAdminService {
                     for (az.fitnest.order.dto.PlanServiceDto psd : dto.services()) {
                         az.fitnest.order.model.entity.PlanService ps = new az.fitnest.order.model.entity.PlanService();
                         ps.setName(psd.name());
-                        ps.setDurationOption(opt);
+                        ps.setPackageOption(opt);
                         services.add(ps);
                     }
                     opt.setServices(services);
                 }
-                plan.getOptions().add(opt);
+                pkg.getOptions().add(opt);
             }
         }
 
-        if (!plan.getOptions().isEmpty()) {
-            DurationOption first = plan.getOptions().get(0);
+        if (!pkg.getOptions().isEmpty()) {
+            PackageOption first = pkg.getOptions().get(0);
             if (first.getDurationMonths() != null && first.getDurationMonths() > 0 && first.getPriceStandard() != null) {
                 BigDecimal monthly = first.getPriceStandard().divide(new BigDecimal(first.getDurationMonths()), 4, RoundingMode.HALF_UP);
-                plan.setPrice(monthly);
+                pkg.setPrice(monthly);
             }
         }
 
-        membershipPlanRepository.save(plan);
+        packageRepository.save(pkg);
     }
 }

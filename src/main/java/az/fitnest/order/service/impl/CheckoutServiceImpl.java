@@ -4,9 +4,9 @@ import az.fitnest.order.service.CheckoutService;
 import az.fitnest.order.dto.CheckoutRequest;
 import az.fitnest.order.dto.CheckoutResponse;
 import az.fitnest.order.dto.CheckoutPaymentInfoDto;
-import az.fitnest.order.model.entity.MembershipPlan;
-import az.fitnest.order.model.entity.DurationOption;
-import az.fitnest.order.repository.MembershipPlanRepository;
+import az.fitnest.order.model.entity.SubscriptionPackage;
+import az.fitnest.order.model.entity.PackageOption;
+import az.fitnest.order.repository.SubscriptionPackageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,18 +18,18 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CheckoutServiceImpl implements CheckoutService {
 
-    private final MembershipPlanRepository planRepository;
+    private final SubscriptionPackageRepository packageRepository;
 
     @Transactional
     @Override
     public CheckoutResponse processCheckout(Long userId, CheckoutRequest request) {
-        Long planId = Long.parseLong(request.package_id());
+        Long packageId = Long.parseLong(request.package_id());
 
-        MembershipPlan plan = planRepository.findById(planId)
-                .filter(MembershipPlan::getIsActive)
+        SubscriptionPackage pkg = packageRepository.findById(packageId)
+                .filter(SubscriptionPackage::getIsActive)
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
 
-        DurationOption option = plan.getOptions().stream()
+        PackageOption option = pkg.getOptions().stream()
                 .filter(o -> o.getId().equals(request.option_id()))
                 .findFirst()
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.duration_config_not_found"));
@@ -43,7 +43,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                 .order_id(orderId)
                 .status("pending_payment")
                 .amount(amount.doubleValue())
-                .currency(plan.getCurrency())
+                .currency(pkg.getCurrency())
                 .payment(CheckoutPaymentInfoDto.builder()
                         .provider("stripe")
                         .payment_intent_client_secret(clientSecret)

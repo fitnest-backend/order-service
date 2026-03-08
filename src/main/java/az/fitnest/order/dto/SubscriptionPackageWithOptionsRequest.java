@@ -5,11 +5,11 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
-public record MembershipPlanWithOptionsRequest(
+public record SubscriptionPackageWithOptionsRequest(
     String name,
     String currency,
     BillingPeriod billingPeriod,
     Boolean isActive,
     Integer sortOrder,
-    List<DurationOptionEntityDto> options
+    List<PackageOptionEntityDto> options
 ) {}

@@ -16,11 +16,11 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DurationOption extends BaseAuditableEntity {
+public class PackageOption extends BaseAuditableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
-    private MembershipPlan membershipPlan;
+    private SubscriptionPackage subscriptionPackage;
 
     @Column(name = "duration_months")
     private Integer durationMonths;
@@ -37,6 +37,10 @@ public class DurationOption extends BaseAuditableEntity {
     @Column(name = "freeze_days")
     private Integer freezeDays;
 
-    @OneToMany(mappedBy = "durationOption", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "packageOption", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlanService> services = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "membership_plan_option_benefits", joinColumns = @JoinColumn(name = "option_id"))
+    private List<PlanBenefit> benefits = new ArrayList<>();
 }
