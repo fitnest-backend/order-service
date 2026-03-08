@@ -1,6 +1,7 @@
 package az.fitnest.order.controller;
 
 import az.fitnest.order.dto.PackageListResponse;
+import az.fitnest.order.dto.PackageNameDto;
 import az.fitnest.order.dto.PackagePlanListResponse;
 import az.fitnest.order.dto.SubscriptionPackageDto;
 import az.fitnest.order.dto.SubscriptionPackageResponse;
@@ -62,5 +63,14 @@ public class PackageCatalogController {
     @GetMapping("/{packageId}/options/{optionId}")
     public ResponseEntity<SubscriptionPackageDto> getOptionDetails(@PathVariable Long packageId, @PathVariable Long optionId) {
         return ResponseEntity.ok(packageCatalogService.getOptionDetails(packageId, optionId));
+    }
+
+    @Operation(summary = "Paket adlarını əldə edin", description = "Yalnız abunəlik paketlərinin adlarını qaytarır.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Paket adları uğurla əldə edildi")
+    })
+    @GetMapping("/names")
+    public ResponseEntity<java.util.List<PackageNameDto>> getPackageNames() {
+        return ResponseEntity.ok(packageCatalogService.getPackageNames());
     }
 }
