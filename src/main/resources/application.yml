@@ -23,6 +23,8 @@ spring:
       enabled: true
   main:
     lazy-initialization: ${SPRING_MAIN_LAZY_INITIALIZATION:false}
+  messages:
+    encoding: UTF-8
   application:
     name: order-service
   datasource:
