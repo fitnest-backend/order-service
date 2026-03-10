@@ -45,10 +45,6 @@ dependencies {
     // DB (pin for reproducible builds)
     runtimeOnly "org.postgresql:postgresql:42.7.10"
 
-    // Feign (pin; not managed by Boot BOM)
-    implementation "io.github.openfeign:feign-hc5:13.9.2"
-
-    // OpenAPI UI (Boot 4 compatible major line)
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2"
 
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
