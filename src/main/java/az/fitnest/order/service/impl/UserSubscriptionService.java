@@ -235,14 +235,11 @@ public class UserSubscriptionService {
             return;
         }
 
-        // Logic: if activated after 1 hour or even 23 hours, 1 day is deducted.
-        // If it has been 25 hours, then 2 days are deducted, and so on.
         long hoursPassed = java.time.temporal.ChronoUnit.HOURS.between(frozenAt, now);
         int actualDaysUsed = (int) (hoursPassed / 24) + 1;
 
-        // How many days were originally deducted during freeze?
         long daysOriginallyFrozen = java.time.temporal.ChronoUnit.DAYS.between(frozenAt.toLocalDate(), unfreezesAt.toLocalDate());
-        
+
         int daysToRefund = (int) daysOriginallyFrozen - actualDaysUsed;
 
         if (daysToRefund > 0) {

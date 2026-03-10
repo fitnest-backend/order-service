@@ -83,7 +83,7 @@ public class PackageCatalogService {
     public SubscriptionPackageDto getOptionDetails(Long packageId, Long optionId) {
         SubscriptionPackage pkg = packageRepository.findById(packageId)
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
-        
+
         PackageOption option = pkg.getOptions().stream()
                 .filter(o -> o.getId().equals(optionId))
                 .findFirst()

@@ -46,7 +46,7 @@ public class UpgradeService {
                 .orElseThrow(() -> new ServiceException("error.duration_config_not_found",
                         "INTERNAL_ERROR", org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR));
 
-        BigDecimal currentEffectivePrice = currentOption.getPriceStandard(); 
+        BigDecimal currentEffectivePrice = currentOption.getPriceStandard();
         if (currentOption.getPriceDiscounted() != null) {
             currentEffectivePrice = currentOption.getPriceDiscounted();
         }

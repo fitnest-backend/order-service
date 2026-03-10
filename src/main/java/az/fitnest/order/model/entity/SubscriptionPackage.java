@@ -32,7 +32,6 @@ public class SubscriptionPackage extends BaseAuditableEntity {
     @Column(name = "billing_period", nullable = false)
     private BillingPeriod billingPeriod;
 
-
     @Column(name = "service_discount_percent")
     private BigDecimal serviceDiscountPercent;
 

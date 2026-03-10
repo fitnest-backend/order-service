@@ -19,6 +19,7 @@ import java.util.UUID;
 public class CheckoutServiceImpl implements CheckoutService {
 
     private final SubscriptionPackageRepository packageRepository;
+    private final az.fitnest.order.client.PaymentClient paymentClient;
 
     @Transactional
     @Override
@@ -37,29 +38,34 @@ public class CheckoutServiceImpl implements CheckoutService {
         BigDecimal amount = option.getPriceDiscounted() != null ? option.getPriceDiscounted() : option.getPriceStandard();
 
         String orderId = "ord_" + UUID.randomUUID().toString().substring(0, 8);
-        String clientSecret = "pi_" + UUID.randomUUID() + "_secret_" + UUID.randomUUID();
 
-        // Fill payment fields for gRPC call to payment-service
-        Double paymentAmount = amount.doubleValue();
-        String paymentCurrency = pkg.getCurrency();
-        String paymentDescription = pkg.getName() + " - " + option.getDurationMonths() + " months";
-        String paymentLanguage = request.language() != null ? request.language() : "az";
-        Integer isInstallment = request.is_installment() != null ? request.is_installment() : 0;
-        Integer refund = request.refund() != null ? request.refund() : 0;
-        java.util.List<String> otherAttr = request.other_attr() != null ? request.other_attr() : java.util.Collections.emptyList();
+        az.fitnest.order.dto.epoint.EpointPaymentRequest paymentRequest = az.fitnest.order.dto.epoint.EpointPaymentRequest.builder()
+                .order_id(orderId)
+                .amount(amount.doubleValue())
+                .currency(pkg.getCurrency())
+                .description(pkg.getName() + " - " + option.getDurationMonths() + " months")
+                .language(request.language() != null ? request.language() : "az")
+                .is_installment(request.is_installment() != null ? request.is_installment() : 0)
+                .refund(request.refund() != null ? request.refund() : 0)
+                .other_attr(request.other_attr() != null ? (java.util.List) request.other_attr() : java.util.Collections.emptyList())
+                .build();
 
-        // TODO: Call payment-service via gRPC with these fields
-        // Example:
-        // paymentGrpcClient.createPayment(orderId, paymentAmount, paymentCurrency, paymentDescription, paymentLanguage, isInstallment, refund, otherAttr);
+        org.springframework.http.ResponseEntity<az.fitnest.order.dto.epoint.EpointResponse> paymentResponse = paymentClient.initiatePayment(paymentRequest);
+        az.fitnest.order.dto.epoint.EpointResponse epointResponse = paymentResponse.getBody();
+
+        if (epointResponse == null || !"success".equalsIgnoreCase(epointResponse.status())) {
+            throw new RuntimeException("Payment initiation failed: " + (epointResponse != null ? epointResponse.message() : "Unknown error"));
+        }
 
         return CheckoutResponse.builder()
                 .order_id(orderId)
                 .status("pending_payment")
-                .amount(paymentAmount)
-                .currency(paymentCurrency)
+                .amount(amount.doubleValue())
+                .currency(pkg.getCurrency())
                 .payment(CheckoutPaymentInfoDto.builder()
-                        .provider("stripe")
-                        .payment_intent_client_secret(clientSecret)
+                        .provider("epoint")
+                        .payment_url(epointResponse.redirect_url())
+                        .status(epointResponse.status())
                         .build())
                 .build();
     }
