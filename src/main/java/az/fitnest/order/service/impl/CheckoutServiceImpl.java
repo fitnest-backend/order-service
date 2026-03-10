@@ -39,11 +39,24 @@ public class CheckoutServiceImpl implements CheckoutService {
         String orderId = "ord_" + UUID.randomUUID().toString().substring(0, 8);
         String clientSecret = "pi_" + UUID.randomUUID() + "_secret_" + UUID.randomUUID();
 
+        // Fill payment fields for gRPC call to payment-service
+        Double paymentAmount = amount.doubleValue();
+        String paymentCurrency = pkg.getCurrency();
+        String paymentDescription = pkg.getName() + " - " + option.getDurationMonths() + " months";
+        String paymentLanguage = request.language() != null ? request.language() : "az";
+        Integer isInstallment = request.is_installment() != null ? request.is_installment() : 0;
+        Integer refund = request.refund() != null ? request.refund() : 0;
+        java.util.List<String> otherAttr = request.other_attr() != null ? request.other_attr() : java.util.Collections.emptyList();
+
+        // TODO: Call payment-service via gRPC with these fields
+        // Example:
+        // paymentGrpcClient.createPayment(orderId, paymentAmount, paymentCurrency, paymentDescription, paymentLanguage, isInstallment, refund, otherAttr);
+
         return CheckoutResponse.builder()
                 .order_id(orderId)
                 .status("pending_payment")
-                .amount(amount.doubleValue())
-                .currency(pkg.getCurrency())
+                .amount(paymentAmount)
+                .currency(paymentCurrency)
                 .payment(CheckoutPaymentInfoDto.builder()
                         .provider("stripe")
                         .payment_intent_client_secret(clientSecret)
