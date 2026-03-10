@@ -25,7 +25,7 @@ public record CheckoutRequest(
     @Schema(description = "Valyuta", example = "AZN")
     String currency,
 
-    @Schema(description = "Sifariş təsviri")
+    @Schema(hidden = true)
     String description,
 
     @Schema(description = "Dil", example = "az")
