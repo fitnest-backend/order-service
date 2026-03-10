@@ -172,3 +172,7 @@ logging:
 grpc:
   server:
     port: 9090
+  client:
+    payment-service:
+      address: 'static://localhost:9091'
+      negotiation-type: plaintext

@@ -2,6 +2,10 @@ syntax = "proto3";
 
 package fitnest.payment;
 
+option java_package = "az.fitnest.payment.grpc";
+option java_multiple_files = true;
+option java_outer_classname = "PaymentProto";
+
 service PaymentService {
   rpc CreatePayment (CreatePaymentRequest) returns (CreatePaymentResponse);
 }
@@ -14,7 +18,7 @@ message CreatePaymentRequest {
   string language = 5;
   int32 is_installment = 6;
   int32 refund = 7;
-  repeated string other_attr = 8;
+  repeated string other_attr = 10;
 }
 
 message CreatePaymentResponse {
@@ -23,4 +27,3 @@ message CreatePaymentResponse {
   string transaction_id = 3;
   string message = 4;
 }
-

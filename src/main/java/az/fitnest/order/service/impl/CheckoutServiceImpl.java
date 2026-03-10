@@ -19,7 +19,7 @@ import java.util.UUID;
 public class CheckoutServiceImpl implements CheckoutService {
 
     private final SubscriptionPackageRepository packageRepository;
-    private final az.fitnest.order.client.PaymentClient paymentClient;
+    private final az.fitnest.order.grpc.PaymentGrpcClient paymentGrpcClient;
 
     @Transactional
     @Override
@@ -50,8 +50,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                 .other_attr(request.other_attr() != null ? (java.util.List) request.other_attr() : java.util.Collections.emptyList())
                 .build();
 
-        org.springframework.http.ResponseEntity<az.fitnest.order.dto.epoint.EpointResponse> paymentResponse = paymentClient.initiatePayment(paymentRequest);
-        az.fitnest.order.dto.epoint.EpointResponse epointResponse = paymentResponse.getBody();
+        az.fitnest.order.dto.epoint.EpointResponse epointResponse = paymentGrpcClient.initiatePayment(paymentRequest);
 
         if (epointResponse == null || !"success".equalsIgnoreCase(epointResponse.status())) {
             throw new RuntimeException("Payment initiation failed: " + (epointResponse != null ? epointResponse.message() : "Unknown error"));
