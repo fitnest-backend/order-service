@@ -8,6 +8,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
@@ -16,6 +19,7 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class DataInitializer {
+    private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
 
     private final SubscriptionPackageRepository packageRepository;
     private final TranslationRepository translationRepository;
@@ -23,7 +27,13 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initOrderData() {
         return args -> {
-            initSubscriptionPackages();
+            logger.info("Running DataInitializer for order-service startup...");
+            try {
+                initSubscriptionPackages();
+                logger.info("DataInitializer completed successfully.");
+            } catch (Exception e) {
+                logger.error("DataInitializer failed: {}", e.getMessage(), e);
+            }
         };
     }
 
