@@ -60,6 +60,7 @@ public class SubscriptionPackageAdminService {
     }
 
     @Transactional
+<<<<<<< HEAD
     public void addPackageWithOptions(SubscriptionPackageWithOptionsRequest request) {
         if (request.name() == null || request.name().isBlank()) {
             throw new az.fitnest.order.exception.BadRequestException("error.missing_field");
@@ -111,6 +112,25 @@ public class SubscriptionPackageAdminService {
         }
 
         packageRepository.save(pkg);
+=======
+    public Long createPackage(String name, String currency, BillingPeriod billingPeriod, Boolean isActive) {
+        if (name == null || name.isBlank()) {
+            throw new az.fitnest.order.exception.BadRequestException("error.missing_field");
+        }
+        SubscriptionPackage pkg = new SubscriptionPackage();
+        pkg.setName(name);
+        pkg.setCurrency(currency != null ? currency : "AZN");
+        pkg.setBillingPeriod(billingPeriod != null ? billingPeriod : BillingPeriod.MONTHLY);
+        pkg.setIsActive(isActive != null ? isActive : true);
+        pkg.setPrice(BigDecimal.ZERO);
+        packageRepository.save(pkg);
+        return pkg.getId();
+    }
+
+    @Transactional
+    public void addPackageWithOptions(SubscriptionPackageWithOptionsRequest request) {
+        throw new UnsupportedOperationException("Use createPackage and addOptionToPackage separately.");
+>>>>>>> 3dda0f5 (fix)
     }
 
     @Transactional
@@ -127,7 +147,10 @@ public class SubscriptionPackageAdminService {
             pkg.setBillingPeriod(request.billingPeriod());
         }
         pkg.setIsActive(request.isActive() != null ? request.isActive() : pkg.getIsActive());
+<<<<<<< HEAD
         pkg.setSortOrder(request.sortOrder() != null ? request.sortOrder() : pkg.getSortOrder());
+=======
+>>>>>>> 3dda0f5 (fix)
 
         pkg.getOptions().clear();
         if (request.options() != null) {
@@ -163,4 +186,33 @@ public class SubscriptionPackageAdminService {
 
         packageRepository.save(pkg);
     }
+<<<<<<< HEAD
+=======
+
+    @Transactional
+    public Long addOptionToPackage(Long packageId, az.fitnest.order.dto.PackageOptionEntityDto dto) {
+        SubscriptionPackage pkg = packageRepository.findById(packageId)
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
+        PackageOption opt = new PackageOption();
+        opt.setSubscriptionPackage(pkg);
+        opt.setDurationMonths(dto.durationMonths());
+        opt.setPriceStandard(dto.priceStandard());
+        opt.setPriceDiscounted(dto.priceDiscounted());
+        opt.setEntryLimit(dto.entryLimit());
+        opt.setFreezeDays(dto.freezeDays());
+        if (dto.services() != null) {
+            java.util.List<az.fitnest.order.model.entity.PlanService> services = new ArrayList<>();
+            for (az.fitnest.order.dto.PlanServiceDto psd : dto.services()) {
+                az.fitnest.order.model.entity.PlanService ps = new az.fitnest.order.model.entity.PlanService();
+                ps.setName(psd.name());
+                ps.setPackageOption(opt);
+                services.add(ps);
+            }
+            opt.setServices(services);
+        }
+        pkg.getOptions().add(opt);
+        packageRepository.save(pkg);
+        return opt.getId();
+    }
+>>>>>>> 3dda0f5 (fix)
 }

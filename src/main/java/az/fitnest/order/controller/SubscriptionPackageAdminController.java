@@ -51,4 +51,23 @@ public class SubscriptionPackageAdminController {
         return ResponseEntity.noContent().build();
     }
 
+<<<<<<< HEAD
+=======
+    @Operation(summary = "Paket variantı yaradın", description = "Mövcud abunəlik paketinə yeni variant əlavə edir. ADMIN rolu tələb olunur.")
+    @PostMapping("/{packageId}/options")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Long> createOption(@PathVariable Long packageId, @RequestBody az.fitnest.order.dto.PackageOptionEntityDto request) {
+        Long optionId = subscriptionPackageAdminService.addOptionToPackage(packageId, request);
+        return ResponseEntity.status(201).body(optionId);
+    }
+
+    @Operation(summary = "Sadə paket yaradın", description = "Yalnız əsas sahələrlə yeni abunəlik paketi yaradır. ADMIN rolu tələb olunur.")
+    @PostMapping("/basic")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Long> createPackage(@RequestBody az.fitnest.order.dto.SubscriptionPackageBasicRequest request) {
+        Long packageId = subscriptionPackageAdminService.createPackage(request.name(), request.currency(), request.billingPeriod(), request.isActive());
+        return ResponseEntity.status(201).body(packageId);
+    }
+
+>>>>>>> 3dda0f5 (fix)
 }

@@ -1,5 +1,9 @@
 package az.fitnest.order.service.impl;
 
+<<<<<<< HEAD
+=======
+import az.fitnest.order.client.CatalogServiceGrpcClient;
+>>>>>>> 3dda0f5 (fix)
 import az.fitnest.order.dto.CheckInResponse;
 import az.fitnest.order.model.entity.GymVisit;
 import az.fitnest.order.model.entity.Subscription;
@@ -14,10 +18,17 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class CheckInService {
+<<<<<<< HEAD
 
     private final SubscriptionRepository subscriptionRepository;
     private final GymVisitRepository gymVisitRepository;
     private final org.springframework.context.MessageSource messageSource;
+=======
+    private final SubscriptionRepository subscriptionRepository;
+    private final GymVisitRepository gymVisitRepository;
+    private final org.springframework.context.MessageSource messageSource;
+    private final CatalogServiceGrpcClient catalogServiceGrpcClient;
+>>>>>>> 3dda0f5 (fix)
 
     @Transactional
     public CheckInResponse checkIn(Long userId, Long gymId) {
@@ -32,6 +43,18 @@ public class CheckInService {
                     .build();
         }
 
+<<<<<<< HEAD
+=======
+        // Validate gym supports user's subscription plan
+        boolean gymSupportsPlan = catalogServiceGrpcClient.gymSupportsPlan(gymId, subscription.getPackageId());
+        if (!gymSupportsPlan) {
+            return CheckInResponse.builder()
+                    .success(false)
+                    .message(messageSource.getMessage("error.subscription_not_valid_for_gym", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()))
+                    .build();
+        }
+
+>>>>>>> 3dda0f5 (fix)
         if (subscription.getEndAt() != null && subscription.getEndAt().isBefore(LocalDateTime.now())) {
             subscription.setStatus("EXPIRED");
             subscriptionRepository.save(subscription);
