@@ -51,8 +51,6 @@ public class SubscriptionPackageAdminController {
         return ResponseEntity.noContent().build();
     }
 
-<<<<<<< HEAD
-=======
     @Operation(summary = "Paket variantı yaradın", description = "Mövcud abunəlik paketinə yeni variant əlavə edir. ADMIN rolu tələb olunur.")
     @PostMapping("/{packageId}/options")
     @PreAuthorize("hasRole('ADMIN')")
@@ -68,6 +66,4 @@ public class SubscriptionPackageAdminController {
         Long packageId = subscriptionPackageAdminService.createPackage(request.name(), request.currency(), request.billingPeriod(), request.isActive());
         return ResponseEntity.status(201).body(packageId);
     }
-
->>>>>>> 3dda0f5 (fix)
 }

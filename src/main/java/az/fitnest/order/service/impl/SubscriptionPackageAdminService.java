@@ -60,59 +60,11 @@ public class SubscriptionPackageAdminService {
     }
 
     @Transactional
-<<<<<<< HEAD
     public void addPackageWithOptions(SubscriptionPackageWithOptionsRequest request) {
-        if (request.name() == null || request.name().isBlank()) {
-            throw new az.fitnest.order.exception.BadRequestException("error.missing_field");
-        }
-        SubscriptionPackage pkg = new SubscriptionPackage();
-        pkg.setName(request.name());
-        pkg.setCurrency(request.currency() != null ? request.currency() : "AZN");
-        if (request.billingPeriod() != null) {
-            pkg.setBillingPeriod(request.billingPeriod());
-        } else {
-            pkg.setBillingPeriod(BillingPeriod.MONTHLY);
-        }
-        pkg.setIsActive(request.isActive() != null ? request.isActive() : true);
-        pkg.setSortOrder(request.sortOrder() != null ? request.sortOrder() : 0);
+        throw new UnsupportedOperationException("Use createPackage and addOptionToPackage separately.");
+    }
 
-        if (request.options() != null) {
-            for (PackageOptionEntityDto dto : request.options()) {
-                PackageOption opt = new PackageOption();
-                opt.setSubscriptionPackage(pkg);
-                opt.setDurationMonths(dto.durationMonths());
-                opt.setPriceStandard(dto.priceStandard());
-                opt.setPriceDiscounted(dto.priceDiscounted());
-                opt.setEntryLimit(dto.entryLimit());
-                opt.setFreezeDays(dto.freezeDays());
-                if (dto.services() != null) {
-                    java.util.List<az.fitnest.order.model.entity.PlanService> services = new ArrayList<>();
-                    for (az.fitnest.order.dto.PlanServiceDto psd : dto.services()) {
-                        az.fitnest.order.model.entity.PlanService ps = new az.fitnest.order.model.entity.PlanService();
-                        ps.setName(psd.name());
-                        ps.setPackageOption(opt);
-                        services.add(ps);
-                    }
-                    opt.setServices(services);
-                }
-                pkg.getOptions().add(opt);
-            }
-        }
-
-        if (!pkg.getOptions().isEmpty()) {
-            PackageOption first = pkg.getOptions().get(0);
-            if (first.getDurationMonths() != null && first.getDurationMonths() > 0 && first.getPriceStandard() != null) {
-                BigDecimal monthly = first.getPriceStandard().divide(new BigDecimal(first.getDurationMonths()), 4, RoundingMode.HALF_UP);
-                pkg.setPrice(monthly);
-            } else {
-                pkg.setPrice(BigDecimal.ZERO);
-            }
-        } else {
-            pkg.setPrice(BigDecimal.ZERO);
-        }
-
-        packageRepository.save(pkg);
-=======
+    @Transactional
     public Long createPackage(String name, String currency, BillingPeriod billingPeriod, Boolean isActive) {
         if (name == null || name.isBlank()) {
             throw new az.fitnest.order.exception.BadRequestException("error.missing_field");
@@ -125,12 +77,6 @@ public class SubscriptionPackageAdminService {
         pkg.setPrice(BigDecimal.ZERO);
         packageRepository.save(pkg);
         return pkg.getId();
-    }
-
-    @Transactional
-    public void addPackageWithOptions(SubscriptionPackageWithOptionsRequest request) {
-        throw new UnsupportedOperationException("Use createPackage and addOptionToPackage separately.");
->>>>>>> 3dda0f5 (fix)
     }
 
     @Transactional
@@ -147,10 +93,7 @@ public class SubscriptionPackageAdminService {
             pkg.setBillingPeriod(request.billingPeriod());
         }
         pkg.setIsActive(request.isActive() != null ? request.isActive() : pkg.getIsActive());
-<<<<<<< HEAD
         pkg.setSortOrder(request.sortOrder() != null ? request.sortOrder() : pkg.getSortOrder());
-=======
->>>>>>> 3dda0f5 (fix)
 
         pkg.getOptions().clear();
         if (request.options() != null) {
@@ -186,8 +129,6 @@ public class SubscriptionPackageAdminService {
 
         packageRepository.save(pkg);
     }
-<<<<<<< HEAD
-=======
 
     @Transactional
     public Long addOptionToPackage(Long packageId, az.fitnest.order.dto.PackageOptionEntityDto dto) {
@@ -214,5 +155,4 @@ public class SubscriptionPackageAdminService {
         packageRepository.save(pkg);
         return opt.getId();
     }
->>>>>>> 3dda0f5 (fix)
 }
