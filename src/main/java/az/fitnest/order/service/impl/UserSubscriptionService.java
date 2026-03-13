@@ -292,12 +292,12 @@ public class UserSubscriptionService {
         List<String> statuses = List.of("ACTIVE", "FROZEN");
         List<Subscription> expiredSubs = subscriptionRepository.findByStatusInAndEndAtBefore(statuses, now);
         for (Subscription subscription : expiredSubs) {
-            subscription.setStatus("FINISHED");
+            subscription.setStatus("EXPIRED");
             subscriptionRepository.save(subscription);
-            log.info("Auto-finished subscription {} for user {} (endAt={})", subscription.getSubscriptionId(), subscription.getUserId(), subscription.getEndAt());
+            log.info("Auto-expired subscription {} for user {} (endAt={})", subscription.getSubscriptionId(), subscription.getUserId(), subscription.getEndAt());
         }
         if (!expiredSubs.isEmpty()) {
-            log.info("Auto-finished {} expired subscriptions.", expiredSubs.size());
+            log.info("Auto-expired {} subscriptions.", expiredSubs.size());
         }
     }
 
