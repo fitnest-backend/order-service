@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class DataInitializer {
 
     private final SubscriptionPackageRepository packageRepository;
     private final TranslationRepository translationRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
     @Bean
     public CommandLineRunner initOrderData() {
@@ -30,6 +32,7 @@ public class DataInitializer {
             logger.info("Running DataInitializer for order-service startup...");
             try {
                 initSubscriptionPackages();
+                initExpiredSubscriptionForUser1();
                 logger.info("DataInitializer completed successfully.");
             } catch (Exception e) {
                 logger.error("DataInitializer failed: {}", e.getMessage(), e);
@@ -148,6 +151,37 @@ public class DataInitializer {
             createTranslationIfNotFound("PlanBenefit", benefitId, "AZ", "description", translateBenefitToAz(benefit.getDescription()));
             createTranslationIfNotFound("PlanBenefit", benefitId, "RU", "description", translateBenefitToRu(benefit.getDescription()));
         }
+    }
+
+    private void initExpiredSubscriptionForUser1() {
+        Long userId = 1L;
+        // Use first available packageId
+        SubscriptionPackage pkg = packageRepository.findAll().stream().findFirst().orElse(null);
+        if (pkg == null) {
+            logger.warn("No subscription package found, cannot create expired subscription for user 1.");
+            return;
+        }
+        Long packageId = pkg.getId();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startAt = now.minusMonths(1);
+        LocalDateTime endAt = now.minusSeconds(5); // Expired 5 seconds ago
+        Integer totalLimit = 10;
+        Integer remainingLimit = 0;
+        Integer freezeDays = 0;
+
+        Subscription subscription = new Subscription();
+        subscription.setUserId(userId);
+        subscription.setPackageId(packageId);
+        subscription.setStatus("EXPIRED");
+        subscription.setStartAt(startAt);
+        subscription.setEndAt(endAt);
+        subscription.setTotalLimit(totalLimit);
+        subscription.setRemainingLimit(remainingLimit);
+        subscription.setFrozenDaysUsed(0);
+        subscription.setAllowedFreezeDays(freezeDays);
+
+        subscriptionRepository.save(subscription);
+        logger.info("Assigned expired subscription to user {} (subscriptionId={})", userId, subscription.getSubscriptionId());
     }
 
     private String translatePackageNameToAz(String name) {
