@@ -394,4 +394,17 @@ public class UserSubscriptionService {
                 .map(Subscription::getUserId)
                 .toList();
     }
+
+    public List<Long> getUserIdsByDurationMonths(int durationMonths) {
+        return subscriptionRepository.findAll().stream()
+                .filter(sub -> "ACTIVE".equals(sub.getStatus()) || "FROZEN".equals(sub.getStatus()))
+                .filter(sub -> {
+                    if (sub.getStartAt() == null || sub.getEndAt() == null) return false;
+                    long months = java.time.temporal.ChronoUnit.MONTHS.between(sub.getStartAt(), sub.getEndAt());
+                    if (months == 0) months = 1;
+                    return (int) months == durationMonths;
+                })
+                .map(Subscription::getUserId)
+                .toList();
+    }
 }
