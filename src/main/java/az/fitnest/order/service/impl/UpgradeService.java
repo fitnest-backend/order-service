@@ -209,7 +209,7 @@ public class UpgradeService {
             currentSub.setTotalLimit(targetTotal);
             currentSub.setRemainingLimit(newRemaining);
             currentSub.setEndAt(currentSub.getStartAt().plusMonths(targetOption.getDurationMonths()));
-
+            currentSub.setIsUpgraded(true);
             subscriptionRepository.save(currentSub);
 
             subDetails = SubscriptionDetailsDto.builder()

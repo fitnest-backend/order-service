@@ -53,4 +53,7 @@ public class Subscription {
 
     @Column(name = "unfreezes_at")
     private LocalDateTime unfreezesAt;
+
+    @Column(name = "is_upgraded")
+    private Boolean isUpgraded = false;
 }

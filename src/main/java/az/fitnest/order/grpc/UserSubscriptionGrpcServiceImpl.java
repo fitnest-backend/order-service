@@ -60,6 +60,7 @@ public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserS
                 .asRuntimeException());
         }
     }
+
     @Override
     public void getUserIdsByDurationMonths(az.fitnest.order.grpc.GetUserIdsByDurationMonthsRequest request, StreamObserver<az.fitnest.order.grpc.GetUserIdsByPackageIdResponse> responseObserver) {
         try {
@@ -73,6 +74,24 @@ public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserS
         } catch (Exception e) {
             responseObserver.onError(io.grpc.Status.INTERNAL
                 .withDescription("Failed to get user IDs by duration: " + e.getMessage())
+                .withCause(e)
+                .asRuntimeException());
+        }
+    }
+
+    @Override
+    public void getUserIdsByType(az.fitnest.order.grpc.GetUserIdsByTypeRequest request, StreamObserver<az.fitnest.order.grpc.GetUserIdsByPackageIdResponse> responseObserver) {
+        try {
+            String type = request.getType();
+            List<Long> userIds = subscriptionService.getUserIdsByType(type);
+            az.fitnest.order.grpc.GetUserIdsByPackageIdResponse response = az.fitnest.order.grpc.GetUserIdsByPackageIdResponse.newBuilder()
+                .addAllUserIds(userIds)
+                .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(io.grpc.Status.INTERNAL
+                .withDescription("Failed to get user IDs by type: " + e.getMessage())
                 .withCause(e)
                 .asRuntimeException());
         }

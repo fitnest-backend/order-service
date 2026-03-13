@@ -25,6 +25,7 @@ public class UserSubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionPackageRepository packageRepository;
     private final az.fitnest.order.repository.GymVisitRepository gymVisitRepository;
+    private final az.fitnest.order.repository.OrderRepository orderRepository;
 
     @Transactional
     public boolean checkIn(Long userId, Long gymId) {
@@ -406,5 +407,33 @@ public class UserSubscriptionService {
                 })
                 .map(Subscription::getUserId)
                 .toList();
+    }
+
+    public List<Long> getUserIdsByType(String type) {
+        LocalDateTime now = LocalDateTime.now();
+        return switch (type.toLowerCase()) {
+            case "all" -> subscriptionRepository.findAll().stream()
+                    .map(Subscription::getUserId)
+                    .distinct()
+                    .toList();
+            case "active" -> subscriptionRepository.findByStatusIn(List.of("ACTIVE", "FROZEN")).stream()
+                    .map(Subscription::getUserId)
+                    .distinct()
+                    .toList();
+            case "expired" -> subscriptionRepository.findByStatus("EXPIRED").stream()
+                    .map(Subscription::getUserId)
+                    .distinct()
+                    .toList();
+            case "upgraded" -> subscriptionRepository.findByIsUpgraded(true).stream()
+                    .map(Subscription::getUserId)
+                    .distinct()
+                    .toList();
+            case "last_7_days" -> subscriptionRepository.findByStatusInAndEndAtBetween(
+                            List.of("ACTIVE", "FROZEN"), now, now.plusDays(7)).stream()
+                    .map(Subscription::getUserId)
+                    .distinct()
+                    .toList();
+            default -> List.of();
+        };
     }
 }
