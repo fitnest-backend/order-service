@@ -285,7 +285,7 @@ public class UserSubscriptionService {
         }
     }
 
-    @Scheduled(cron = "0 * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     @Transactional
     public void autoFinishExpiredSubscriptions() {
         LocalDateTime now = LocalDateTime.now();
