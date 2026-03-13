@@ -6,6 +6,7 @@ import az.fitnest.order.dto.UpgradeOptionsResponse;
 import az.fitnest.order.model.entity.Order;
 import az.fitnest.order.service.impl.UpgradeService;
 import az.fitnest.order.dto.PaymentResultDto;
+import az.fitnest.order.dto.OrderResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -102,7 +103,7 @@ public class UpgradeController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Sifariş təfərrüatları uğurla əldə edildi",
-                    content = @Content(schema = @Schema(implementation = Map.class))
+                    content = @Content(schema = @Schema(implementation = OrderResponse.class))
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -116,18 +117,10 @@ public class UpgradeController {
             )
     })
     @GetMapping("/orders/{orderId}")
-    public ResponseEntity<Map<String, Object>> getOrder(
+    public ResponseEntity<OrderResponse> getOrder(
             @Parameter(description = "Sifarişin ID-si") @PathVariable String orderId) {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Order order = upgradeService.getOrder(userId, orderId);
-
-        return ResponseEntity.ok(Map.of(
-                "order_id", order.getOrderId(),
-                "type", order.getType(),
-                "status", order.getStatus(),
-                "amount", order.getAmount(),
-                "currency", order.getCurrency(),
-                "created_at", order.getCreatedAt()
-        ));
+        OrderResponse response = upgradeService.getOrderResponse(userId, orderId);
+        return ResponseEntity.ok(response);
     }
 }

@@ -241,6 +241,18 @@ public class UpgradeService {
         return order;
     }
 
+    public OrderResponse getOrderResponse(Long userId, String orderId) {
+        Order order = getOrder(userId, orderId);
+        OrderResponse response = new OrderResponse();
+        response.setOrderId(order.getOrderId());
+        response.setType(order.getType());
+        response.setStatus(order.getStatus());
+        response.setAmount(order.getAmount());
+        response.setCurrency(order.getCurrency());
+        response.setCreatedAt(order.getCreatedAt());
+        return response;
+    }
+
     private int getTierRank(String planName) {
         if (planName == null) return 0;
         String lower = planName.toLowerCase();
