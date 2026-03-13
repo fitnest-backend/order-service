@@ -25,100 +25,117 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-@Tag(name = "Subscription Upgrades", description = "Abunəliklərin yüksəldilməsi və sifarişlərin idarə olunması üçün ucluqlar")
+@Tag(name = "Subscription Upgrades", description = "Endpoints for managing subscription upgrades, payment processing, and order details. All endpoints require authentication.")
 public class UpgradeController {
 
     private final UpgradeService upgradeService;
 
     @Operation(
-            summary = "Yüksəltmə seçimlərini əldə edin",
-            description = "Autentifikasiya olunmuş istifadəçi üçün mövcud abunəlik yüksəltmə seçimlərini qaytarır. " +
-                    "İstəyə bağlı olaraq hədəf müddətə görə süzgəcdən keçirə bilər."
+        summary = "Get available upgrade options",
+        description = "Returns available upgrade options for the authenticated user's current subscription. Optionally filter by target duration in months.",
+        parameters = {
+            @Parameter(
+                name = "target_duration_months",
+                description = "Filter upgrade options by target duration in months.",
+                example = "12",
+                required = false
+            )
+        }
     )
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Yüksəltmə seçimləri uğurla əldə edildi",
-                    content = @Content(schema = @Schema(implementation = UpgradeOptionsResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "İcazə verilmədi",
-                    content = @Content
-            )
+        @ApiResponse(
+            responseCode = "200",
+            description = "Upgrade options successfully retrieved.",
+            content = @Content(schema = @Schema(implementation = UpgradeOptionsResponse.class))
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized. Authentication required.",
+            content = @Content
+        )
     })
     @GetMapping("/subscriptions/upgrade/options")
     public ResponseEntity<UpgradeOptionsResponse> getUpgradeOptions(
-            @Parameter(description = "Yüksəltmə seçimlərini süzgəcdən keçirmək üçün ay ilə hədəf müddət")
-            @RequestParam(name = "target_duration_months", required = false) Integer targetDurationMonths) {
+        @RequestParam(name = "target_duration_months", required = false)
+        Integer targetDurationMonths) {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(upgradeService.getUpgradeOptions(userId, targetDurationMonths));
     }
 
     @Operation(
-            summary = "Abunəlik yüksəltmə ödənişi",
-            description = "Abunəlik yüksəltmə ödəniş prosesini icra edir. " +
-                    "Ödəniş uğursuz olarsa 402 Payment Required, uğurlu olarsa 200 OK qaytarır."
+        summary = "Process subscription upgrade payment",
+        description = "Processes payment for a subscription upgrade. Returns payment and subscription details. If payment fails, returns 402 Payment Required.",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Upgrade payment details",
+            required = true,
+            content = @Content(schema = @Schema(implementation = UpgradeCheckoutRequest.class))
+        )
     )
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Ödəniş uğurla emal edildi",
-                    content = @Content(schema = @Schema(implementation = UpgradeCheckoutResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Yanlış sorğu məlumatı",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "İcazə verilmədi",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "402",
-                    description = "Ödəniş tələb olunur - ödəniş uğursuz oldu",
-                    content = @Content(schema = @Schema(implementation = UpgradeCheckoutResponse.class))
-            )
+        @ApiResponse(
+            responseCode = "200",
+            description = "Payment processed successfully.",
+            content = @Content(schema = @Schema(implementation = UpgradeCheckoutResponse.class))
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad request. Invalid input data.",
+            content = @Content
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized. Authentication required.",
+            content = @Content
+        ),
+        @ApiResponse(
+            responseCode = "402",
+            description = "Payment required. Payment failed.",
+            content = @Content(schema = @Schema(implementation = UpgradeCheckoutResponse.class))
+        )
     })
     @PostMapping("/subscriptions/upgrade/checkout")
     public ResponseEntity<UpgradeCheckoutResponse> checkout(
-            @Parameter(description = "Yüksəltmə ödəniş təfərrüatları") @Valid @RequestBody UpgradeCheckoutRequest request) {
+        @Valid @RequestBody UpgradeCheckoutRequest request) {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UpgradeCheckoutResponse response = upgradeService.checkout(userId, request);
-
         if (response.payment() != null && !"success".equals(response.payment().status())) {
             return ResponseEntity.status(402).body(response);
         }
-
         return ResponseEntity.ok(response);
     }
 
     @Operation(
-            summary = "Sifariş təfərrüatlarını əldə edin",
-            description = "Sifariş ID-si vasitəsilə xüsusi sifarişin təfərrüatlarını qaytarır."
+        summary = "Get order details",
+        description = "Returns detailed information for a specific order belonging to the authenticated user.",
+        parameters = {
+            @Parameter(
+                name = "orderId",
+                description = "Unique identifier of the order.",
+                example = "ord_12345678",
+                required = true
+            )
+        }
     )
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Sifariş təfərrüatları uğurla əldə edildi",
-                    content = @Content(schema = @Schema(implementation = OrderResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "İcazə verilmədi",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Sifariş tapılmadı",
-                    content = @Content
-            )
+        @ApiResponse(
+            responseCode = "200",
+            description = "Order details successfully retrieved.",
+            content = @Content(schema = @Schema(implementation = OrderResponse.class))
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized. Authentication required.",
+            content = @Content
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Order not found or does not belong to the user.",
+            content = @Content
+        )
     })
     @GetMapping("/orders/{orderId}")
     public ResponseEntity<OrderResponse> getOrder(
-            @Parameter(description = "Sifarişin ID-si") @PathVariable String orderId) {
+        @PathVariable String orderId) {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         OrderResponse response = upgradeService.getOrderResponse(userId, orderId);
         return ResponseEntity.ok(response);
