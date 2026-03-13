@@ -285,6 +285,22 @@ public class UserSubscriptionService {
         }
     }
 
+    @Scheduled(cron = "0 * * * *")
+    @Transactional
+    public void autoFinishExpiredSubscriptions() {
+        LocalDateTime now = LocalDateTime.now();
+        List<String> statuses = List.of("ACTIVE", "FROZEN");
+        List<Subscription> expiredSubs = subscriptionRepository.findByStatusInAndEndAtBefore(statuses, now);
+        for (Subscription subscription : expiredSubs) {
+            subscription.setStatus("FINISHED");
+            subscriptionRepository.save(subscription);
+            log.info("Auto-finished subscription {} for user {} (endAt={})", subscription.getSubscriptionId(), subscription.getUserId(), subscription.getEndAt());
+        }
+        if (!expiredSubs.isEmpty()) {
+            log.info("Auto-finished {} expired subscriptions.", expiredSubs.size());
+        }
+    }
+
     @Transactional
     public az.fitnest.order.dto.AdminAssignSubscriptionResponse assignSubscriptionToUser(
             az.fitnest.order.dto.AdminAssignSubscriptionRequest request) {
