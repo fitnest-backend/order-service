@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -249,7 +251,9 @@ public class UpgradeService {
         response.setStatus(order.getStatus());
         response.setAmount(order.getAmount());
         response.setCurrency(order.getCurrency());
-        response.setCreatedAt(order.getCreatedAt());
+        if (order.getCreatedAt() != null) {
+            response.setCreatedAt(order.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant());
+        }
         return response;
     }
 
