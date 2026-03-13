@@ -33,7 +33,6 @@ public class CheckInService {
                     .build();
         }
 
-        // Validate gym supports user's subscription plan
         boolean gymSupportsPlan = catalogServiceGrpcClient.gymSupportsPlan(gymId, subscription.getPackageId());
         if (!gymSupportsPlan) {
             return CheckInResponse.builder()

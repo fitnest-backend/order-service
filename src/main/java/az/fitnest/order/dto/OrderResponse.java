@@ -21,4 +21,3 @@ public class OrderResponse {
     @Schema(description = "Order creation time")
     private Instant createdAt;
 }
-

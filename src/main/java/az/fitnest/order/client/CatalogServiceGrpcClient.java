@@ -20,4 +20,3 @@ public class CatalogServiceGrpcClient {
         return response.getSupported();
     }
 }
-

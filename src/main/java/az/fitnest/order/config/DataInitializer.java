@@ -155,7 +155,6 @@ public class DataInitializer {
 
     private void initExpiredSubscriptionForUser1() {
         Long userId = 1L;
-        // Use first available packageId
         SubscriptionPackage pkg = packageRepository.findAll().stream().findFirst().orElse(null);
         if (pkg == null) {
             logger.warn("No subscription package found, cannot create expired subscription for user 1.");
@@ -164,7 +163,7 @@ public class DataInitializer {
         Long packageId = pkg.getId();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startAt = now.minusMonths(1);
-        LocalDateTime endAt = now.minusSeconds(5); // Expired 5 seconds ago
+        LocalDateTime endAt = now.minusSeconds(5);
         Integer totalLimit = 10;
         Integer remainingLimit = 0;
         Integer freezeDays = 0;
