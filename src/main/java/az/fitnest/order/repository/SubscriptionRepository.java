@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
     Optional<Subscription> findByUserIdAndStatus(Long userId, String status);
     List<Subscription> findByStatusInAndEndAtBefore(List<String> statuses, LocalDateTime now);
+    List<Subscription> findByPackageId(Long packageId);
 }

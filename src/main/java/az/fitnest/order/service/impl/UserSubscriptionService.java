@@ -387,4 +387,11 @@ public class UserSubscriptionService {
 
         log.info("Admin revoked subscription {} for user {}", subscription.getSubscriptionId(), userId);
     }
+
+    public List<Long> getUserIdsByPackageId(Long packageId) {
+        return subscriptionRepository.findByPackageId(packageId)
+                .stream()
+                .map(Subscription::getUserId)
+                .toList();
+    }
 }

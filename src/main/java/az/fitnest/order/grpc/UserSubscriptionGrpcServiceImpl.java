@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @GrpcService
 @RequiredArgsConstructor
@@ -39,6 +40,24 @@ public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserS
                     .withDescription("Failed to get active subscription: " + e.getMessage())
                     .withCause(e)
                     .asRuntimeException());
+        }
+    }
+
+    @Override
+    public void getUserIdsByPackageId(az.fitnest.order.grpc.GetUserIdsByPackageIdRequest request, StreamObserver<az.fitnest.order.grpc.GetUserIdsByPackageIdResponse> responseObserver) {
+        try {
+            Long packageId = request.getPackageId();
+            List<Long> userIds = subscriptionService.getUserIdsByPackageId(packageId);
+            az.fitnest.order.grpc.GetUserIdsByPackageIdResponse response = az.fitnest.order.grpc.GetUserIdsByPackageIdResponse.newBuilder()
+                .addAllUserIds(userIds)
+                .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(io.grpc.Status.INTERNAL
+                .withDescription("Failed to get user IDs: " + e.getMessage())
+                .withCause(e)
+                .asRuntimeException());
         }
     }
 }
