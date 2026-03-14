@@ -155,4 +155,32 @@ public class SubscriptionPackageAdminService {
         packageRepository.save(pkg);
         return opt.getId();
     }
+
+    @Transactional
+    public void deletePackageById(Long packageId) {
+        SubscriptionPackage pkg = packageRepository.findById(packageId)
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
+        packageRepository.delete(pkg);
+    }
+
+    @Transactional
+    public void deleteAllPackages() {
+        packageRepository.deleteAll();
+    }
+
+    @Transactional
+    public void deleteOptionById(Long packageId, Long optionId) {
+        SubscriptionPackage pkg = packageRepository.findById(packageId)
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
+        pkg.getOptions().removeIf(opt -> opt.getId().equals(optionId));
+        packageRepository.save(pkg);
+    }
+
+    @Transactional
+    public void deleteAllOptionsByPackageId(Long packageId) {
+        SubscriptionPackage pkg = packageRepository.findById(packageId)
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
+        pkg.getOptions().clear();
+        packageRepository.save(pkg);
+    }
 }

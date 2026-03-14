@@ -66,4 +66,36 @@ public class SubscriptionPackageAdminController {
         Long packageId = subscriptionPackageAdminService.createPackage(request.name(), request.currency(), request.billingPeriod(), request.isActive());
         return ResponseEntity.status(201).body(packageId);
     }
+
+    @Operation(summary = "Paketi sil", description = "Müəyyən abunəlik paketini və bütün variantlarını silir.")
+    @DeleteMapping("/{packageId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deletePackage(@PathVariable Long packageId) {
+        subscriptionPackageAdminService.deletePackageById(packageId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Bütün paketləri sil", description = "Bütün abunəlik paketlərini və variantlarını silir.")
+    @DeleteMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteAllPackages() {
+        subscriptionPackageAdminService.deleteAllPackages();
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Variantı sil", description = "Müəyyən paket variantını silir.")
+    @DeleteMapping("/{packageId}/options/{optionId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteOption(@PathVariable Long packageId, @PathVariable Long optionId) {
+        subscriptionPackageAdminService.deleteOptionById(packageId, optionId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Bütün variantları sil", description = "Müəyyən paketə aid bütün variantları silir.")
+    @DeleteMapping("/{packageId}/options")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteAllOptions(@PathVariable Long packageId) {
+        subscriptionPackageAdminService.deleteAllOptionsByPackageId(packageId);
+        return ResponseEntity.noContent().build();
+    }
 }
