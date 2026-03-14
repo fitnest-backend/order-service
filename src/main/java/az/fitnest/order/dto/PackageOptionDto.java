@@ -1,9 +1,11 @@
 package az.fitnest.order.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import lombok.Builder;
 
+@JsonInclude(JsonInclude.Include.ALWAYS)
 @Builder
 public record PackageOptionDto(
     @JsonProperty("option_id")
