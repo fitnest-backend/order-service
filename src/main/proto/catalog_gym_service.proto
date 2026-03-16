@@ -5,10 +5,6 @@ package catalog;
 option java_multiple_files = true;
 option java_package = "az.fitnest.catalog.grpc";
 
-service GymService {
-  rpc GymSupportsPlan(GymSupportsPlanRequest) returns (GymSupportsPlanResponse);
-}
-
 message GymSupportsPlanRequest {
   int64 gym_id = 1;
   int64 plan_id = 2;
@@ -17,4 +13,3 @@ message GymSupportsPlanRequest {
 message GymSupportsPlanResponse {
   bool supported = 1;
 }
-
