@@ -14,14 +14,12 @@ service GymService {
   rpc AddReview(AddReviewRequest) returns (AddReviewResponse);
   rpc GetReservationRules(GetReservationRulesRequest) returns (ReservationRulesResponse);
   rpc GetMainPageGyms(GetMainPageGymsRequest) returns (GetMainPageGymsResponse);
-  // Admin endpoints
 
   rpc AddTrainer(AddTrainerRequest) returns (AddTrainerResponse);
   rpc UpdateTrainer(UpdateTrainerRequest) returns (UpdateTrainerResponse);
   rpc DeleteTrainer(DeleteTrainerRequest) returns (DeleteTrainerResponse);
   rpc CreateGym(CreateGymRequest) returns (CreateGymResponse);
   rpc UpdateGym(UpdateGymRequest) returns (UpdateGymResponse);
-  // New endpoint for adding/updating gym images
   rpc PutGymImage(PutGymImageRequest) returns (PutGymImageResponse);
   rpc GymSupportsPlan(catalog.GymSupportsPlanRequest) returns (catalog.GymSupportsPlanResponse);
 }
@@ -95,7 +93,6 @@ message GymTrainer {
   string trainer_id = 1;
   string name = 2;
   string surname = 3;
-  // ProfessionDto is represented inline here or via ID. Let's make it inline.
   int64 profession_id = 4;
   string profession_name = 5;
   string picture = 6;
@@ -161,7 +158,6 @@ message GymMainPage {
   string city = 8;
   double distance_km = 7;
 }
-// Admin requests and responses
 
 message AddTrainerRequest {
   int64 gym_id = 1;
@@ -222,10 +218,9 @@ message UpdateGymRequest {
 message UpdateGymResponse {
   bool success = 1;
 }
-// New messages for image upload
 message PutGymImageRequest {
   int64 gym_id = 1;
-  string image_name = 2; // e.g., "sauna", "training zone"
+  string image_name = 2;
   string url = 3;
 }
 message PutGymImageResponse {
