@@ -7,10 +7,6 @@ import lombok.Builder;
 
 @Builder
 public record CheckoutRequest(
-    @NotNull(message = "İdman zalı ID-si mütləqdir")
-    @JsonProperty("gym_id")
-    String gym_id,
-
     @NotNull(message = "Paket ID-si mütləqdir")
     @JsonProperty("package_id")
     String package_id,
