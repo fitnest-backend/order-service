@@ -19,7 +19,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -49,9 +48,9 @@ public class UserSubscriptionController {
             @ApiResponse(responseCode = "401", description = "İcazə verilmədi")
     })
     @PostMapping("/freeze")
-    public ResponseEntity<Void> freezeSubscription(@RequestParam(required = false) Integer days) {
+    public ResponseEntity<Void> freezeSubscription() {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        subscriptionService.freezeSubscription(userId, days);
+        subscriptionService.freezeSubscription(userId);
         return ResponseEntity.ok().build();
     }
 

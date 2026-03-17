@@ -153,7 +153,7 @@ public class UserSubscriptionService {
     }
 
     @Transactional
-    public void freezeSubscription(Long userId, Integer daysToFreeze) {
+    public void freezeSubscription(Long userId) {
         Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.no_active_subscription"));
 
@@ -194,15 +194,7 @@ public class UserSubscriptionService {
             throw new az.fitnest.order.exception.BadRequestException("error.freeze_days_exhausted");
         }
 
-        if (daysToFreeze == null || daysToFreeze <= 0) {
-            daysToFreeze = availableFreezeDays;
-        }
-
-        if (daysToFreeze > availableFreezeDays) {
-            throw new az.fitnest.order.exception.BadRequestException(
-                String.format("error.freeze_days_exceeded_limit|%d|%d", availableFreezeDays, allowedFreezeDays)
-            );
-        }
+        int daysToFreeze = availableFreezeDays;
 
         LocalDateTime unfreezesAt = LocalDateTime.now().plusDays(daysToFreeze);
 
@@ -365,7 +357,7 @@ public class UserSubscriptionService {
                 .planName(pkg.getName())
                 .optionId(option.getId())
                 .durationMonths(option.getDurationMonths())
-                .status(saved.getStatus())
+                .status(saved.getStatus()
                 .startAt(saved.getStartAt() != null ? saved.getStartAt().toLocalDate() : null)
                 .endAt(saved.getEndAt() != null ? saved.getEndAt().toLocalDate() : null)
                 .totalLimit(saved.getTotalLimit())
