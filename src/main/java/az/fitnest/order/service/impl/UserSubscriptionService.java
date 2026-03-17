@@ -357,7 +357,7 @@ public class UserSubscriptionService {
                 .planName(pkg.getName())
                 .optionId(option.getId())
                 .durationMonths(option.getDurationMonths())
-                .status(saved.getStatus()
+                .status(saved.getStatus())
                 .startAt(saved.getStartAt() != null ? saved.getStartAt().toLocalDate() : null)
                 .endAt(saved.getEndAt() != null ? saved.getEndAt().toLocalDate() : null)
                 .totalLimit(saved.getTotalLimit())
