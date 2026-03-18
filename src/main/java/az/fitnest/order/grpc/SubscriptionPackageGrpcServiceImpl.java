@@ -16,6 +16,28 @@ public class SubscriptionPackageGrpcServiceImpl extends SubscriptionPackageServi
     private final az.fitnest.order.service.impl.UserSubscriptionService userSubscriptionService;
 
     @Override
+    public void getPackageNamesByIds(GetPackageNamesByIdsRequest request, StreamObserver<GetPackageNamesByIdsResponse> responseObserver) {
+        try {
+            var packages = packageRepository.findAllById(request.getPackageIdsList());
+            GetPackageNamesByIdsResponse.Builder responseBuilder = GetPackageNamesByIdsResponse.newBuilder();
+            for (SubscriptionPackage pkg : packages) {
+                PackageNameInfo.Builder pkgBuilder = PackageNameInfo.newBuilder()
+                        .setPackageId(pkg.getId())
+                        .setName(pkg.getName() != null ? pkg.getName() : "");
+                responseBuilder.addPackages(pkgBuilder.build());
+            }
+            responseObserver.onNext(responseBuilder.build());
+        } catch (Exception e) {
+            responseObserver.onError(io.grpc.Status.INTERNAL
+                .withDescription("Failed to fetch package names by IDs: " + e.getMessage())
+                .withCause(e)
+                .asRuntimeException());
+            return;
+        }
+        responseObserver.onCompleted();
+    }
+
+    @Override
     public void checkIn(az.fitnest.order.grpc.CheckInRequest request, StreamObserver<az.fitnest.order.grpc.CheckInResponse> responseObserver) {
         try {
             boolean success = userSubscriptionService.checkIn(request.getUserId(), request.getGymId());
@@ -64,11 +86,10 @@ public class SubscriptionPackageGrpcServiceImpl extends SubscriptionPackageServi
     public void getPlansByIds(GetPlansByIdsRequest request, StreamObserver<GetPlansByIdsResponse> responseObserver) {
         try {
             var packages = packageRepository.findAllByIdWithOptions(request.getPackageIdsList());
-            // Force initialization of benefits for each option
             for (SubscriptionPackage pkg : packages) {
                 if (pkg.getOptions() != null) {
                     for (PackageOption option : pkg.getOptions()) {
-                        option.getBenefits().size(); // initialize benefits
+                        option.getBenefits().size();
                     }
                 }
             }
