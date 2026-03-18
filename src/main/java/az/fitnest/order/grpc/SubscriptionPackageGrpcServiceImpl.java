@@ -64,6 +64,14 @@ public class SubscriptionPackageGrpcServiceImpl extends SubscriptionPackageServi
     public void getPlansByIds(GetPlansByIdsRequest request, StreamObserver<GetPlansByIdsResponse> responseObserver) {
         try {
             var packages = packageRepository.findAllByIdWithOptions(request.getPackageIdsList());
+            // Force initialization of benefits for each option
+            for (SubscriptionPackage pkg : packages) {
+                if (pkg.getOptions() != null) {
+                    for (PackageOption option : pkg.getOptions()) {
+                        option.getBenefits().size(); // initialize benefits
+                    }
+                }
+            }
             GetPlansByIdsResponse.Builder responseBuilder = GetPlansByIdsResponse.newBuilder();
             for (SubscriptionPackage pkg : packages) {
                 responseBuilder.addPackages(mapPackageToGrpc(pkg));
