@@ -62,21 +62,21 @@ public class SubscriptionPackageGrpcServiceImpl extends SubscriptionPackageServi
 
     @Override
     public void getPlansByIds(GetPlansByIdsRequest request, StreamObserver<GetPlansByIdsResponse> responseObserver) {
-            try {
-                var packages = packageRepository.findAllById(request.getPackageIdsList());
-                GetPlansByIdsResponse.Builder responseBuilder = GetPlansByIdsResponse.newBuilder();
-                for (SubscriptionPackage pkg : packages) {
-                    responseBuilder.addPackages(mapPackageToGrpc(pkg));
-                }
-                responseObserver.onNext(responseBuilder.build());
-            } catch (Exception e) {
-                responseObserver.onError(io.grpc.Status.INTERNAL
-                    .withDescription("Failed to fetch plans by IDs: " + e.getMessage())
-                    .withCause(e)
-                    .asRuntimeException());
-                return;
+        try {
+            var packages = packageRepository.findAllByIdWithOptions(request.getPackageIdsList());
+            GetPlansByIdsResponse.Builder responseBuilder = GetPlansByIdsResponse.newBuilder();
+            for (SubscriptionPackage pkg : packages) {
+                responseBuilder.addPackages(mapPackageToGrpc(pkg));
             }
-            responseObserver.onCompleted();
+            responseObserver.onNext(responseBuilder.build());
+        } catch (Exception e) {
+            responseObserver.onError(io.grpc.Status.INTERNAL
+                .withDescription("Failed to fetch plans by IDs: " + e.getMessage())
+                .withCause(e)
+                .asRuntimeException());
+            return;
+        }
+        responseObserver.onCompleted();
     }
 
     private SubscriptionPackageInfo mapPackageToGrpc(SubscriptionPackage pkg) {
