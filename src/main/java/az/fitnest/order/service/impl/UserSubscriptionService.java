@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import az.fitnest.order.util.UserContext;
+import az.fitnest.order.event.SubscriptionEventPublisher;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,7 @@ public class UserSubscriptionService {
     private final SubscriptionPackageRepository packageRepository;
     private final az.fitnest.order.repository.GymVisitRepository gymVisitRepository;
     private final az.fitnest.order.repository.OrderRepository orderRepository;
+    private final SubscriptionEventPublisher subscriptionEventPublisher;
 
     @Transactional
     public boolean checkIn(Long userId, Long gymId) {
@@ -43,6 +45,7 @@ public class UserSubscriptionService {
             }
             subscription.setRemainingLimit(subscription.getRemainingLimit() - 1);
             subscriptionRepository.save(subscription);
+            subscriptionEventPublisher.publishSubscriptionEvent(userId, "CHECKIN", subscription.getSubscriptionId());
         }
 
         az.fitnest.order.model.entity.GymVisit visit = az.fitnest.order.model.entity.GymVisit.builder()
@@ -210,6 +213,8 @@ public class UserSubscriptionService {
         subscription.setAllowedFreezeDays(allowedFreezeDays);
 
         subscriptionRepository.save(subscription);
+
+        subscriptionEventPublisher.publishSubscriptionEvent(userId, "FREEZE", subscription.getSubscriptionId());
     }
 
     @Transactional
@@ -248,6 +253,8 @@ public class UserSubscriptionService {
         subscription.setUnfreezesAt(null);
 
         subscriptionRepository.save(subscription);
+
+        subscriptionEventPublisher.publishSubscriptionEvent(userId, "UNFREEZE", subscription.getSubscriptionId());
 
         log.info("Manually unfroze subscription {} for user {}. Refunded {} days.",
                 subscription.getSubscriptionId(), userId, Math.max(0, daysToRefund));
@@ -317,6 +324,7 @@ public class UserSubscriptionService {
                     subscriptionRepository.save(existing);
                     log.info("Admin cancelled existing ACTIVE subscription {} for user {}",
                             existing.getSubscriptionId(), request.userId());
+                    subscriptionEventPublisher.publishSubscriptionEvent(request.userId(), "CANCELLED", existing.getSubscriptionId());
                 });
 
         subscriptionRepository.findByUserIdAndStatus(request.userId(), "FROZEN")
@@ -327,6 +335,7 @@ public class UserSubscriptionService {
                     subscriptionRepository.save(existing);
                     log.info("Admin cancelled existing FROZEN subscription {} for user {}",
                             existing.getSubscriptionId(), request.userId());
+                    subscriptionEventPublisher.publishSubscriptionEvent(request.userId(), "CANCELLED", existing.getSubscriptionId());
                 });
 
         LocalDateTime now = LocalDateTime.now();
@@ -347,39 +356,27 @@ public class UserSubscriptionService {
         subscription.setAllowedFreezeDays(freezeDays);
 
         Subscription saved = subscriptionRepository.save(subscription);
-
         log.info("Admin assigned plan {} option {} (duration={} months) to user {}, subscriptionId={}",
                 pkg.getName(), option.getId(), option.getDurationMonths(), request.userId(), saved.getSubscriptionId());
+        subscriptionEventPublisher.publishSubscriptionEvent(request.userId(), "ASSIGNED", saved.getSubscriptionId());
 
         return az.fitnest.order.dto.AdminAssignSubscriptionResponse.builder()
                 .subscriptionId(saved.getSubscriptionId())
                 .userId(saved.getUserId())
-                .planId(saved.getPackageId())
-                .planName(pkg.getName())
-                .optionId(option.getId())
-                .durationMonths(option.getDurationMonths())
-                .status(saved.getStatus())
-                .startAt(saved.getStartAt() != null ? saved.getStartAt().toLocalDate() : null)
-                .endAt(saved.getEndAt() != null ? saved.getEndAt().toLocalDate() : null)
-                .totalLimit(saved.getTotalLimit())
-                .remainingLimit(saved.getRemainingLimit())
-                .allowedFreezeDays(freezeDays)
-                .message("Abunəlik istifadəçiyə uğurla təyin edildi")
                 .build();
     }
 
     @Transactional
     public void revokeSubscription(Long userId) {
         Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
-                .or(() -> subscriptionRepository.findByUserIdAndStatus(userId, "FROZEN"))
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.no_active_subscription"));
 
         subscription.setStatus("CANCELLED");
         subscription.setFrozenAt(null);
         subscription.setUnfreezesAt(null);
         subscriptionRepository.save(subscription);
-
         log.info("Admin revoked subscription {} for user {}", subscription.getSubscriptionId(), userId);
+        subscriptionEventPublisher.publishSubscriptionEvent(userId, "REVOKED", subscription.getSubscriptionId());
     }
 
     public List<Long> getUserIdsByPackageId(Long packageId) {
