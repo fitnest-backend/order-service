@@ -4,22 +4,17 @@ import az.fitnest.order.dto.ActiveSubscriptionResponse;
 import az.fitnest.order.service.impl.UserSubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/me/subscriptions")
@@ -37,9 +32,10 @@ public class UserSubscriptionController {
     })
     @GetMapping("/active")
     public ResponseEntity<ActiveSubscriptionResponse> getActiveSubscription() {
-        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = az.fitnest.order.util.UserContext.getCurrentUserId();
         return ResponseEntity.ok(subscriptionService.getActiveSubscription(userId));
     }
+
     @Operation(summary = "Abunəliyi dondur",
                description = "Cari istifadəçinin aktiv abunəliyini müəyyən müddətə dondurur. Dondurma müddəti bitmə tarixinə əlavə edilir.")
     @ApiResponses(value = {
@@ -49,7 +45,7 @@ public class UserSubscriptionController {
     })
     @PostMapping("/freeze")
     public ResponseEntity<Void> freezeSubscription() {
-        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = az.fitnest.order.util.UserContext.getCurrentUserId();
         subscriptionService.freezeSubscription(userId);
         return ResponseEntity.ok().build();
     }
@@ -63,7 +59,7 @@ public class UserSubscriptionController {
     })
     @PostMapping("/activate")
     public ResponseEntity<Void> activateSubscription() {
-        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = az.fitnest.order.util.UserContext.getCurrentUserId();
         subscriptionService.unfreezeSubscription(userId);
         return ResponseEntity.ok().build();
     }
