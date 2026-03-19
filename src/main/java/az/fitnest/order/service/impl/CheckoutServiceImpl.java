@@ -34,8 +34,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.duration_config_not_found"));
         BigDecimal amount = option.getPriceDiscounted() != null ? option.getPriceDiscounted() : option.getPriceStandard();
         String orderId = "ord_" + UUID.randomUUID().toString().substring(0, 8);
-        // Language: get from user context or default
-        String language = "az"; // TODO: fetch from user profile/context if available
+        String language = "az";
         az.fitnest.order.dto.epoint.EpointPaymentRequest paymentRequest = az.fitnest.order.dto.epoint.EpointPaymentRequest.builder()
                 .order_id(orderId)
                 .amount(amount.doubleValue())

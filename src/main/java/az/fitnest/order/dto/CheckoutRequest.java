@@ -15,9 +15,6 @@ public record CheckoutRequest(
     @JsonProperty("option_id")
     Long option_id,
 
-    /**
-     * Taksit: 0 (no installment), 1 (installment). Boolean as integer.
-     */
     @Schema(description = "Taksit (0: yox, 1: bəli)", example = "0")
     Integer is_installment
 ) {}

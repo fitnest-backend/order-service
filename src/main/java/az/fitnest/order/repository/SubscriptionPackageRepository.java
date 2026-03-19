@@ -23,5 +23,3 @@ public interface SubscriptionPackageRepository extends JpaRepository<Subscriptio
     @Query("SELECT p FROM SubscriptionPackage p LEFT JOIN FETCH p.options WHERE p.id IN :ids")
     List<SubscriptionPackage> findAllByIdWithOptions(@Param("ids") List<Long> ids);
 }
-
-
