@@ -62,116 +62,122 @@ public class UserSubscriptionService {
     @Transactional(readOnly = true)
     public ActiveSubscriptionResponse getActiveSubscription(Long userId) {
         org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserSubscriptionService.class);
-        log.info("Fetching active subscription for userId={}", userId);
-        Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
-                .orElse(null);
-
-        String subscriptionStatus = null;
-
-        if (subscription == null) {
-            log.info("No ACTIVE subscription found for userId={}, checking FROZEN", userId);
-            subscription = subscriptionRepository.findByUserIdAndStatus(userId, "FROZEN")
+        try {
+            log.info("Fetching active subscription for userId={}", userId);
+            Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
                     .orElse(null);
-            if (subscription != null) {
-                subscriptionStatus = "frozen";
-                log.info("Found FROZEN subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
+
+            String subscriptionStatus = null;
+
+            if (subscription == null) {
+                log.info("No ACTIVE subscription found for userId={}, checking FROZEN", userId);
+                subscription = subscriptionRepository.findByUserIdAndStatus(userId, "FROZEN")
+                        .orElse(null);
+                if (subscription != null) {
+                    subscriptionStatus = "frozen";
+                    log.info("Found FROZEN subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
+                }
+            } else {
+                subscriptionStatus = "active";
+                log.info("Found ACTIVE subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
             }
-        } else {
-            subscriptionStatus = "active";
-            log.info("Found ACTIVE subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
-        }
 
-        if (subscription == null) {
-            log.info("No subscription found for userId={}, returning No Plan", userId);
-            SubscriptionDetailsDto noPlanDetails = SubscriptionDetailsDto.builder()
-                    .packageName("No Plan")
-                    .frozenDaysUsed(0)
-                    .allowedFreezeDays(0)
-                    .remainingFreezeDays(0)
+            if (subscription == null) {
+                log.info("No subscription found for userId={}, returning No Plan", userId);
+                SubscriptionDetailsDto noPlanDetails = SubscriptionDetailsDto.builder()
+                        .packageName("No Plan")
+                        .frozenDaysUsed(0)
+                        .allowedFreezeDays(0)
+                        .remainingFreezeDays(0)
+                        .build();
+
+                return ActiveSubscriptionResponse.builder()
+                        .status("none")
+                        .subscription(noPlanDetails)
+                        .build();
+            }
+
+            if (subscription.getEndAt() != null && subscription.getEndAt().isBefore(java.time.LocalDateTime.now())) {
+                log.info("Subscription expired for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
+                SubscriptionDetailsDto noPlanDetails = SubscriptionDetailsDto.builder()
+                        .packageName("No Plan")
+                        .frozenDaysUsed(0)
+                        .allowedFreezeDays(0)
+                        .remainingFreezeDays(0)
+                        .build();
+
+                return ActiveSubscriptionResponse.builder()
+                        .status("none")
+                        .subscription(noPlanDetails)
+                        .build();
+            }
+
+            log.info("Fetching package for subscriptionId={}, packageId={}", subscription.getSubscriptionId(), subscription.getPackageId());
+            SubscriptionPackage pkg = packageRepository.findById(subscription.getPackageId())
+                    .orElse(null);
+            if (pkg == null) {
+                log.error("Package not found for packageId={} (userId={})", subscription.getPackageId(), userId);
+                throw new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found");
+            }
+
+            long durationMonths = 1;
+            if (subscription.getEndAt() != null) {
+                durationMonths = java.time.temporal.ChronoUnit.MONTHS.between(subscription.getStartAt(), subscription.getEndAt());
+                if (durationMonths == 0) durationMonths = 1;
+            }
+            Integer duration = (int) durationMonths;
+
+            log.info("Looking for package option with duration={} months in packageId={}", duration, pkg.getId());
+            java.math.BigDecimal effectivePrice = java.math.BigDecimal.ZERO;
+            PackageOption matchedOption = pkg.getOptions() != null ? pkg.getOptions().stream()
+                    .filter(o -> o.getDurationMonths().equals(duration))
+                    .findFirst()
+                    .orElse(null) : null;
+            if (matchedOption == null) {
+                log.warn("No matching package option found for duration={} months in packageId={} (userId={})", duration, pkg.getId(), userId);
+            }
+
+            if (matchedOption != null) {
+                effectivePrice = matchedOption.getPriceDiscounted() != null
+                        ? matchedOption.getPriceDiscounted()
+                        : matchedOption.getPriceStandard();
+            }
+
+            Integer allowedFreezeDays = matchedOption != null && matchedOption.getFreezeDays() != null
+                    ? matchedOption.getFreezeDays()
+                    : 0;
+            Integer frozenDaysUsed = subscription.getFrozenDaysUsed() != null ? subscription.getFrozenDaysUsed() : 0;
+            Integer remainingFreezeDays = allowedFreezeDays - frozenDaysUsed;
+
+            log.info("Building subscription details DTO for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
+            SubscriptionDetailsDto details = SubscriptionDetailsDto.builder()
+                    .subscriptionId(subscription.getSubscriptionId())
+                    .packageId(pkg.getId().toString())
+                    .packageName(pkg.getName())
+                    .durationMonths(duration)
+                    .effectivePrice(effectivePrice)
+                    .currency(pkg.getCurrency())
+                    .totalLimit(subscription.getTotalLimit())
+                    .remainingLimit(subscription.getRemainingLimit())
+                    .startAt(subscription.getStartAt() != null ? subscription.getStartAt().toLocalDate() : null)
+                    .endAt(subscription.getEndAt() != null ? subscription.getEndAt().toLocalDate() : null)
+                    .frozenAt(subscription.getFrozenAt() != null ? subscription.getFrozenAt().toLocalDate() : null)
+                    .unfreezesAt(subscription.getUnfreezesAt() != null ? subscription.getUnfreezesAt().toLocalDate() : null)
+                    .frozenDaysUsed(frozenDaysUsed)
+                    .allowedFreezeDays(allowedFreezeDays)
+                    .remainingFreezeDays(Math.max(0, remainingFreezeDays))
                     .build();
 
+            log.info("Returning subscription details for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
             return ActiveSubscriptionResponse.builder()
-                    .status("none")
-                    .subscription(noPlanDetails)
+                    .status(subscriptionStatus)
+                    .subscription(details)
                     .build();
+        } catch (Exception ex) {
+            log.error("Exception in getActiveSubscription for userId={}: {}", userId, ex.getMessage(), ex);
+            ex.printStackTrace();
+            throw ex;
         }
-
-        if (subscription.getEndAt() != null && subscription.getEndAt().isBefore(java.time.LocalDateTime.now())) {
-            log.info("Subscription expired for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
-            SubscriptionDetailsDto noPlanDetails = SubscriptionDetailsDto.builder()
-                    .packageName("No Plan")
-                    .frozenDaysUsed(0)
-                    .allowedFreezeDays(0)
-                    .remainingFreezeDays(0)
-                    .build();
-
-            return ActiveSubscriptionResponse.builder()
-                    .status("none")
-                    .subscription(noPlanDetails)
-                    .build();
-        }
-
-        log.info("Fetching package for subscriptionId={}, packageId={}", subscription.getSubscriptionId(), subscription.getPackageId());
-        SubscriptionPackage pkg = packageRepository.findById(subscription.getPackageId())
-                .orElse(null);
-        if (pkg == null) {
-            log.error("Package not found for packageId={} (userId={})", subscription.getPackageId(), userId);
-            throw new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found");
-        }
-
-        long durationMonths = 1;
-        if (subscription.getEndAt() != null) {
-            durationMonths = java.time.temporal.ChronoUnit.MONTHS.between(subscription.getStartAt(), subscription.getEndAt());
-            if (durationMonths == 0) durationMonths = 1;
-        }
-        Integer duration = (int) durationMonths;
-
-        log.info("Looking for package option with duration={} months in packageId={}", duration, pkg.getId());
-        java.math.BigDecimal effectivePrice = java.math.BigDecimal.ZERO;
-        PackageOption matchedOption = pkg.getOptions() != null ? pkg.getOptions().stream()
-                .filter(o -> o.getDurationMonths().equals(duration))
-                .findFirst()
-                .orElse(null) : null;
-        if (matchedOption == null) {
-            log.warn("No matching package option found for duration={} months in packageId={} (userId={})", duration, pkg.getId(), userId);
-        }
-
-        if (matchedOption != null) {
-            effectivePrice = matchedOption.getPriceDiscounted() != null
-                    ? matchedOption.getPriceDiscounted()
-                    : matchedOption.getPriceStandard();
-        }
-
-        Integer allowedFreezeDays = matchedOption != null && matchedOption.getFreezeDays() != null
-                ? matchedOption.getFreezeDays()
-                : 0;
-        Integer frozenDaysUsed = subscription.getFrozenDaysUsed() != null ? subscription.getFrozenDaysUsed() : 0;
-        Integer remainingFreezeDays = allowedFreezeDays - frozenDaysUsed;
-
-        log.info("Building subscription details DTO for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
-        SubscriptionDetailsDto details = SubscriptionDetailsDto.builder()
-                .subscriptionId(subscription.getSubscriptionId())
-                .packageId(pkg.getId().toString())
-                .packageName(pkg.getName())
-                .durationMonths(duration)
-                .effectivePrice(effectivePrice)
-                .currency(pkg.getCurrency())
-                .totalLimit(subscription.getTotalLimit())
-                .remainingLimit(subscription.getRemainingLimit())
-                .startAt(subscription.getStartAt() != null ? subscription.getStartAt().toLocalDate() : null)
-                .endAt(subscription.getEndAt() != null ? subscription.getEndAt().toLocalDate() : null)
-                .frozenAt(subscription.getFrozenAt() != null ? subscription.getFrozenAt().toLocalDate() : null)
-                .unfreezesAt(subscription.getUnfreezesAt() != null ? subscription.getUnfreezesAt().toLocalDate() : null)
-                .frozenDaysUsed(frozenDaysUsed)
-                .allowedFreezeDays(allowedFreezeDays)
-                .remainingFreezeDays(Math.max(0, remainingFreezeDays))
-                .build();
-
-        log.info("Returning subscription details for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
-        return ActiveSubscriptionResponse.builder()
-                .status(subscriptionStatus)
-                .subscription(details)
-                .build();
     }
 
     @Transactional

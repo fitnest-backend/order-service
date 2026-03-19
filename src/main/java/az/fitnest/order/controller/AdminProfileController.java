@@ -27,12 +27,15 @@ public class AdminProfileController {
             return ResponseEntity.ok(response);
         } catch (ResourceNotFoundException ex) {
             log.error("ResourceNotFoundException for userId={}: {}", userId, ex.getMessage(), ex);
+            ex.printStackTrace();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (BadRequestException ex) {
             log.error("BadRequestException for userId={}: {}", userId, ex.getMessage(), ex);
+            ex.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         } catch (Exception ex) {
             log.error("Unexpected exception for userId={}: {}", userId, ex.getMessage(), ex);
+            ex.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
