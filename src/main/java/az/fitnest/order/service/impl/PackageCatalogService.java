@@ -132,12 +132,6 @@ public class PackageCatalogService {
 
         String badge = (discount != null && base != null && discount.compareTo(base) < 0) ? "discount" : null;
 
-        List<PackageServiceDto> services = option.getServices() != null ?
-                option.getServices().stream()
-                        .map(s -> PackageServiceDto.builder().serviceName(s.getName()).build())
-                        .collect(Collectors.toList()) :
-                List.of();
-
         List<PackageBenefitDto> benefits = option.getBenefits() != null ?
                 option.getBenefits().stream()
                         .map(b -> PackageBenefitDto.builder()
@@ -154,7 +148,6 @@ public class PackageCatalogService {
                 .badge(badge)
                 .visitLimit(option.getEntryLimit() != null ? option.getEntryLimit() : 0)
                 .freezeDays(option.getFreezeDays() != null ? option.getFreezeDays() : 0)
-                .services(services)
                 .benefits(benefits)
                 .build();
     }
@@ -166,7 +159,6 @@ public class PackageCatalogService {
         Integer freezeDays = 0;
         Integer durationMonths = null;
         Long optionId = null;
-        List<PackageServiceDto> services = List.of();
         List<PackageBenefitDto> benefits = List.of();
 
         if (option != null) {
@@ -190,12 +182,6 @@ public class PackageCatalogService {
             visitLimit = option.getEntryLimit() != null ? option.getEntryLimit() : 0;
             freezeDays = option.getFreezeDays() != null ? option.getFreezeDays() : 0;
 
-            if (option.getServices() != null) {
-                services = option.getServices().stream()
-                        .map(s -> PackageServiceDto.builder().serviceName(s.getName()).build())
-                        .collect(Collectors.toList());
-            }
-
             if (option.getBenefits() != null) {
                 benefits = option.getBenefits().stream()
                         .map(b -> PackageBenefitDto.builder()
@@ -216,8 +202,6 @@ public class PackageCatalogService {
                 .badge(badge)
                 .visitLimit(visitLimit)
                 .freezeDays(freezeDays)
-                .services(services)
-                .discountPercent(pkg.getServiceDiscountPercent())
                 .benefits(benefits)
                 .build();
     }

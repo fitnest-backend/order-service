@@ -105,16 +105,6 @@ public class SubscriptionPackageAdminService {
                 opt.setPriceDiscounted(dto.priceDiscounted());
                 opt.setEntryLimit(dto.entryLimit());
                 opt.setFreezeDays(dto.freezeDays());
-                if (dto.services() != null) {
-                    java.util.List<az.fitnest.order.model.entity.PlanService> services = new ArrayList<>();
-                    for (az.fitnest.order.dto.PlanServiceDto psd : dto.services()) {
-                        az.fitnest.order.model.entity.PlanService ps = new az.fitnest.order.model.entity.PlanService();
-                        ps.setName(psd.name());
-                        ps.setPackageOption(opt);
-                        services.add(ps);
-                    }
-                    opt.setServices(services);
-                }
                 pkg.getOptions().add(opt);
             }
         }
@@ -141,15 +131,12 @@ public class SubscriptionPackageAdminService {
         opt.setPriceDiscounted(dto.priceDiscounted());
         opt.setEntryLimit(dto.entryLimit());
         opt.setFreezeDays(dto.freezeDays());
-        if (dto.services() != null) {
-            java.util.List<az.fitnest.order.model.entity.PlanService> services = new ArrayList<>();
-            for (az.fitnest.order.dto.PlanServiceDto psd : dto.services()) {
-                az.fitnest.order.model.entity.PlanService ps = new az.fitnest.order.model.entity.PlanService();
-                ps.setName(psd.name());
-                ps.setPackageOption(opt);
-                services.add(ps);
+        if (dto.benefits() != null) {
+            java.util.List<az.fitnest.order.model.entity.PlanBenefit> benefits = new ArrayList<>();
+            for (az.fitnest.order.model.entity.PlanBenefit pb : dto.benefits()) {
+                benefits.add(pb);
             }
-            opt.setServices(services);
+            opt.setBenefits(benefits);
         }
         pkg.getOptions().add(opt);
         packageRepository.save(pkg);

@@ -125,17 +125,6 @@ public class DataInitializer {
         option.setFreezeDays(freezeDays);
         option.setBenefits(benefits);
 
-        if (services != null) {
-            java.util.List<PlanService> mappedServices = new java.util.ArrayList<>();
-            for (String s : services) {
-                PlanService ps = new PlanService();
-                ps.setName(s);
-                ps.setPackageOption(option);
-                mappedServices.add(ps);
-            }
-            option.setServices(mappedServices);
-        }
-
         pkg.getOptions().add(option);
         pkg = packageRepository.save(pkg);
 

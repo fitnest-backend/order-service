@@ -37,8 +37,6 @@ public class PackageOption extends BaseAuditableEntity {
     @Column(name = "freeze_days")
     private Integer freezeDays;
 
-    // Removed 'services' field. Use 'benefits' only.
-
     @ElementCollection
     @CollectionTable(name = "membership_plan_option_benefits", joinColumns = @JoinColumn(name = "option_id"))
     private List<PlanBenefit> benefits = new ArrayList<>();

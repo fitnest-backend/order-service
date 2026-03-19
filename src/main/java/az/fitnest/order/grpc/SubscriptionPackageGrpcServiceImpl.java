@@ -139,11 +139,6 @@ public class SubscriptionPackageGrpcServiceImpl extends SubscriptionPackageServi
                         .setEntryLimit(opt.getEntryLimit() != null ? opt.getEntryLimit() : 0)
                         .setFreezeDays(opt.getFreezeDays() != null ? opt.getFreezeDays() : 0);
 
-                if (opt.getServices() != null) {
-                    for (az.fitnest.order.model.entity.PlanService svc : opt.getServices()) {
-                        optBuilder.addServices(svc != null && svc.getName() != null ? svc.getName() : "");
-                    }
-                }
                 pkgBuilder.addOptions(optBuilder.build());
             }
         }
