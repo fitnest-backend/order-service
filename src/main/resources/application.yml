@@ -166,8 +166,14 @@ springdoc:
 
 logging:
   level:
-    az.fitnest.order: OFF
+    root: ${LOGGING_LEVEL_ROOT:DEBUG}
+    az.fitnest.order: ${LOGGING_LEVEL_AZ_FITNEST_ORDER:DEBUG}
     feign.Logger: OFF
+  pattern:
+    console: "${LOGGING_PATTERN_CONSOLE:%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %msg%n}"
+    file: "${LOGGING_PATTERN_FILE:%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n}"
+  file:
+    name: logs/order-service.log
 
 grpc:
   server:
