@@ -8,7 +8,8 @@ import lombok.Setter;
 import az.fitnest.order.model.enums.BillingPeriod;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 
 @Entity
@@ -42,5 +43,5 @@ public class SubscriptionPackage extends BaseAuditableEntity {
     private Integer sortOrder;
 
     @OneToMany(mappedBy = "subscriptionPackage", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PackageOption> options = new ArrayList<>();
+    private Set<PackageOption> options = new HashSet<>();
 }

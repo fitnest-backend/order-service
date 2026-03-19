@@ -120,8 +120,8 @@ public class SubscriptionPackageAdminService {
         }
 
         if (!pkg.getOptions().isEmpty()) {
-            PackageOption first = pkg.getOptions().get(0);
-            if (first.getDurationMonths() != null && first.getDurationMonths() > 0 && first.getPriceStandard() != null) {
+            PackageOption first = pkg.getOptions().stream().findFirst().orElse(null);
+            if (first != null && first.getDurationMonths() != null && first.getDurationMonths() > 0 && first.getPriceStandard() != null) {
                 BigDecimal monthly = first.getPriceStandard().divide(new BigDecimal(first.getDurationMonths()), 4, RoundingMode.HALF_UP);
                 pkg.setPrice(monthly);
             }

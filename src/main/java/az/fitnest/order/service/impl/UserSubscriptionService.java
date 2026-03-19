@@ -164,7 +164,10 @@ public class UserSubscriptionService {
                 }
             }
             if (optionId == null && pkg.getOptions() != null && !pkg.getOptions().isEmpty()) {
-                optionId = pkg.getOptions().get(0).getId();
+                PackageOption firstOption = pkg.getOptions().stream().findFirst().orElse(null);
+                if (firstOption != null) {
+                    optionId = firstOption.getId();
+                }
             }
             SubscriptionDetailsDto details = SubscriptionDetailsDto.builder()
                     .subscriptionId(subscription.getSubscriptionId())
