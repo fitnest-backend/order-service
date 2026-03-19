@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/checkout")
 @RequiredArgsConstructor
 @Tag(name = "Checkout", description = "Abunəliklər və idman paketləri almaq üçün ucluqlar")
+@CrossOrigin
 public class CheckoutController {
 
     private final CheckoutService checkoutService;
@@ -43,7 +45,8 @@ public class CheckoutController {
         if (userId == null) {
             throw new RuntimeException("User must be authenticated");
         }
-        return ResponseEntity.status(201).body(checkoutService.processCheckout(userId, request));
+        CheckoutResponse response = checkoutService.processCheckout(userId, request);
+        return ResponseEntity.status(201).body(response);
     }
 
     private Long extractUserId(Object principal) {
