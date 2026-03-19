@@ -25,14 +25,6 @@ public class AdminProfileController {
             ActiveSubscriptionResponse response = userSubscriptionService.getActiveSubscription(userId);
             log.info("Fetched subscription details for userId={}", userId);
             return ResponseEntity.ok(response);
-        } catch (ResourceNotFoundException ex) {
-            log.error("ResourceNotFoundException for userId={}: {}", userId, ex.getMessage(), ex);
-            ex.printStackTrace();
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        } catch (BadRequestException ex) {
-            log.error("BadRequestException for userId={}: {}", userId, ex.getMessage(), ex);
-            ex.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         } catch (Exception ex) {
             log.error("Unexpected exception for userId={}: {}", userId, ex.getMessage(), ex);
             ex.printStackTrace();
