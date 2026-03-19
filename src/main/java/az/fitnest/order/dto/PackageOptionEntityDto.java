@@ -11,5 +11,5 @@ public record PackageOptionEntityDto(
     BigDecimal priceDiscounted,
     Integer entryLimit,
     Integer freezeDays,
-    List<PlanServiceDto> services
+    java.util.List<az.fitnest.order.model.entity.PlanBenefit> benefits
 ) {}

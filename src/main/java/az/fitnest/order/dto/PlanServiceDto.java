@@ -1,8 +1,2 @@
-package az.fitnest.order.dto;
 
-import lombok.Builder;
-
-@Builder
-public record PlanServiceDto(
-    String name
-) {}
+// Removed PlanServiceDto. Use PlanBenefit and 'benefits' field in DTOs instead.
