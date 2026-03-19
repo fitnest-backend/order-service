@@ -20,7 +20,7 @@ public class AdminProfileController {
     private final UserSubscriptionService userSubscriptionService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<ActiveSubscriptionResponse> getUserSubscription(@PathVariable Long userId) {
+    public ResponseEntity<Object> getUserSubscription(@PathVariable Long userId) {
         log.info("Admin requested subscription details for userId={}", userId);
         try {
             ActiveSubscriptionResponse response = userSubscriptionService.getActiveSubscription(userId);
@@ -29,15 +29,16 @@ public class AdminProfileController {
         } catch (ResourceNotFoundException ex) {
             log.error("ResourceNotFoundException for userId={}: {}", userId, ex.getMessage(), ex);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(null);
+                    .body(ErrorResponse.of(ex.getMessage(), "error.no_active_subscription"));
         } catch (BadRequestException ex) {
             log.error("BadRequestException for userId={}: {}", userId, ex.getMessage(), ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(null);
+                    .body(ErrorResponse.of(ex.getMessage(), "error.bad_request"));
         } catch (Exception ex) {
             log.error("Unexpected exception for userId={}: {}", userId, ex.getMessage(), ex);
             ex.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ErrorResponse.of("Unexpected error occurred", "error.unexpected"));
         }
     }
 
