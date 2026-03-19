@@ -1,6 +1,7 @@
 package az.fitnest.order.controller;
 
 import az.fitnest.order.dto.ActiveSubscriptionResponse;
+import az.fitnest.order.dto.ErrorResponse;
 import az.fitnest.order.service.impl.UserSubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,14 @@ public class AdminProfileController {
             ActiveSubscriptionResponse response = userSubscriptionService.getActiveSubscription(userId);
             log.info("Fetched subscription details for userId={}", userId);
             return ResponseEntity.ok(response);
+        } catch (ResourceNotFoundException ex) {
+            log.error("ResourceNotFoundException for userId={}: {}", userId, ex.getMessage(), ex);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
+        } catch (BadRequestException ex) {
+            log.error("BadRequestException for userId={}: {}", userId, ex.getMessage(), ex);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(null);
         } catch (Exception ex) {
             log.error("Unexpected exception for userId={}: {}", userId, ex.getMessage(), ex);
             ex.printStackTrace();
@@ -33,7 +42,7 @@ public class AdminProfileController {
     }
 
     @PostMapping("/{userId}/freeze")
-    public ResponseEntity<Void> freezeUserSubscription(@PathVariable Long userId) {
+    public ResponseEntity<Object> freezeUserSubscription(@PathVariable Long userId) {
         log.info("Admin requested freeze for userId={}", userId);
         try {
             userSubscriptionService.freezeSubscription(userId);
@@ -41,13 +50,16 @@ public class AdminProfileController {
             return ResponseEntity.ok().build();
         } catch (ResourceNotFoundException ex) {
             log.error("ResourceNotFoundException during freeze for userId={}: {}", userId, ex.getMessage(), ex);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ErrorResponse.of(ex.getMessage(), "error.no_active_subscription"));
         } catch (BadRequestException ex) {
             log.error("BadRequestException during freeze for userId={}: {}", userId, ex.getMessage(), ex);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ErrorResponse.of(ex.getMessage(), "error.bad_request"));
         } catch (Exception ex) {
             log.error("Unexpected exception during freeze for userId={}: {}", userId, ex.getMessage(), ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ErrorResponse.of("Unexpected error occurred", "error.unexpected"));
         }
     }
 }
