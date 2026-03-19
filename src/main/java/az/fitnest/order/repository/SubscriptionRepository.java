@@ -10,6 +10,14 @@ import java.util.Optional;
 
 @Repository
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
+            @org.springframework.data.jpa.repository.Query("SELECT s FROM Subscription s WHERE s.status = 'FROZEN' AND s.unfreezesAt <= :now")
+            java.util.List<Subscription> findExpiredFrozen(@org.springframework.data.repository.query.Param("now") java.time.LocalDateTime now);
+
+            @org.springframework.data.jpa.repository.Query("SELECT s.userId FROM Subscription s WHERE s.durationMonths = :duration")
+            java.util.List<Long> findUserIdsByDurationMonths(@org.springframework.data.repository.query.Param("duration") Integer duration);
+
+            @org.springframework.data.jpa.repository.Query("SELECT s.userId FROM Subscription s")
+            java.util.List<Long> findAllUserIds();
     Optional<Subscription> findByUserIdAndStatus(Long userId, String status);
     List<Subscription> findByStatusInAndEndAtBefore(List<String> statuses, LocalDateTime now);
     List<Subscription> findByStatusIn(List<String> statuses);

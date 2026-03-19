@@ -10,6 +10,13 @@ import java.util.List;
 
 @Repository
 public interface SubscriptionPackageRepository extends JpaRepository<SubscriptionPackage, Long> {
+    @Query("""
+    SELECT p FROM SubscriptionPackage p
+    LEFT JOIN FETCH p.options o
+    LEFT JOIN FETCH o.benefits
+    WHERE p.id = :id
+    """)
+    java.util.Optional<SubscriptionPackage> findFullById(@Param("id") Long id);
 
     List<SubscriptionPackage> findByIsActiveTrue();
 

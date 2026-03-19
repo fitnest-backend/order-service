@@ -113,7 +113,7 @@ public class UserSubscriptionService {
             }
 
             log.info("Fetching package for subscriptionId={}, packageId={}", subscription.getSubscriptionId(), subscription.getPackageId());
-            SubscriptionPackage pkg = packageRepository.findById(subscription.getPackageId())
+            SubscriptionPackage pkg = packageRepository.findFullById(subscription.getPackageId())
                     .orElse(null);
             if (pkg == null) {
                 log.error("Package not found for packageId={} (userId={})", subscription.getPackageId(), userId);
@@ -303,12 +303,7 @@ public class UserSubscriptionService {
     @Transactional
     public void autoUnfreezeExpiredSubscriptions() {
         LocalDateTime now = LocalDateTime.now();
-
-        List<Subscription> expiredFrozenSubs = subscriptionRepository.findAll().stream()
-                .filter(sub -> "FROZEN".equals(sub.getStatus()))
-                .filter(sub -> sub.getUnfreezesAt() != null)
-                .filter(sub -> sub.getUnfreezesAt().isBefore(now) || sub.getUnfreezesAt().isEqual(now))
-                .toList();
+        List<Subscription> expiredFrozenSubs = subscriptionRepository.findExpiredFrozen(now);
 
         for (Subscription subscription : expiredFrozenSubs) {
             subscription.setStatus("ACTIVE");
@@ -426,25 +421,13 @@ public class UserSubscriptionService {
     }
 
     public List<Long> getUserIdsByDurationMonths(int durationMonths) {
-        return subscriptionRepository.findAll().stream()
-                .filter(sub -> "ACTIVE".equals(sub.getStatus()) || "FROZEN".equals(sub.getStatus()))
-                .filter(sub -> {
-                    if (sub.getStartAt() == null || sub.getEndAt() == null) return false;
-                    long months = java.time.temporal.ChronoUnit.MONTHS.between(sub.getStartAt(), sub.getEndAt());
-                    if (months == 0) months = 1;
-                    return (int) months == durationMonths;
-                })
-                .map(Subscription::getUserId)
-                .toList();
+        return subscriptionRepository.findUserIdsByDurationMonths(durationMonths);
     }
 
     public List<Long> getUserIdsByType(String type) {
         LocalDateTime now = LocalDateTime.now();
         return switch (type.toLowerCase()) {
-            case "all" -> subscriptionRepository.findAll().stream()
-                    .map(Subscription::getUserId)
-                    .distinct()
-                    .toList();
+            case "all" -> subscriptionRepository.findAllUserIds();
             case "active" -> subscriptionRepository.findByStatusIn(List.of("ACTIVE", "FROZEN")).stream()
                     .map(Subscription::getUserId)
                     .distinct()
