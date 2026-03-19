@@ -40,6 +40,10 @@ public record SubscriptionDetailsDto(
     Integer frozenDaysUsed,
     @JsonProperty("allowed_freeze_days")
     Integer allowedFreezeDays,
-    @JsonProperty("remaining_freeze_days")
-    Integer remainingFreezeDays
-) {}
+     @JsonProperty("remaining_freeze_days")
+     Integer remainingFreezeDays,
+     @JsonProperty("option_id")
+     Long optionId,
+     @JsonProperty("benefits")
+     java.util.List<PackageBenefitDto> benefits
+ ) {}

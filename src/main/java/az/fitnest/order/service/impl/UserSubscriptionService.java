@@ -150,6 +150,19 @@ public class UserSubscriptionService {
             Integer remainingFreezeDays = allowedFreezeDays - frozenDaysUsed;
 
             log.info("Building subscription details DTO for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
+            java.util.List<az.fitnest.order.dto.PackageBenefitDto> benefitDtos = java.util.Collections.emptyList();
+            Long optionId = null;
+            if (matchedOption != null) {
+                optionId = matchedOption.getId();
+                if (matchedOption.getBenefits() != null) {
+                    benefitDtos = matchedOption.getBenefits().stream()
+                        .map(b -> az.fitnest.order.dto.PackageBenefitDto.builder()
+                            .logo(b.getLogo())
+                            .description(b.getDescription())
+                            .build())
+                        .toList();
+                }
+            }
             SubscriptionDetailsDto details = SubscriptionDetailsDto.builder()
                     .subscriptionId(subscription.getSubscriptionId())
                     .packageId(pkg.getId().toString())
@@ -166,6 +179,8 @@ public class UserSubscriptionService {
                     .frozenDaysUsed(frozenDaysUsed)
                     .allowedFreezeDays(allowedFreezeDays)
                     .remainingFreezeDays(Math.max(0, remainingFreezeDays))
+                    .optionId(optionId)
+                    .benefits(benefitDtos)
                     .build();
 
             log.info("Returning subscription details for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
