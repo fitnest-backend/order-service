@@ -27,7 +27,7 @@ public class CheckoutController {
 
     private final CheckoutService checkoutService;
 
-    @Operation(summary = "Ödəniş prosesini icra edin", description = "Xüsusi paket üçün ödəniş prosesini başladır. İstifadəçi autentifikasiyadan keçməlidir.")
+    @Operation(summary = "Ödəniş prosesini icra edin", description = "Xüsusi paket üçün ödəniş prosesini başladır. İstifadəçi autentifikasiyadan keçməlidir. Request yalnız package_id, option_id, is_installment qəbul edir. Qiymət, valyuta və dil backend tərəfindən idarə olunur.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Ödəniş uğurla başladıldı",
                     content = @Content(schema = @Schema(implementation = CheckoutResponse.class))),
@@ -38,7 +38,7 @@ public class CheckoutController {
     @PostMapping
     public ResponseEntity<CheckoutResponse> checkout(
             @AuthenticationPrincipal Object principal,
-            @Parameter(description = "Ödəniş üçün paket və ödəniş təfərrüatları") @Valid @RequestBody CheckoutRequest request) {
+            @Parameter(description = "Paket və seçim üçün ödəniş təfərrüatları (yalnız package_id, option_id, is_installment)") @Valid @RequestBody CheckoutRequest request) {
         Long userId = extractUserId(principal);
         if (userId == null) {
             throw new RuntimeException("User must be authenticated");

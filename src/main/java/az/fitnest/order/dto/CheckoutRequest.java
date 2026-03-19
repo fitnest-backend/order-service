@@ -15,24 +15,9 @@ public record CheckoutRequest(
     @JsonProperty("option_id")
     Long option_id,
 
-    @Schema(description = "Ödəniş məbləği", example = "99.99")
-    Double amount,
-
-    @Schema(description = "Valyuta", example = "AZN")
-    String currency,
-
-    @Schema(hidden = true)
-    String description,
-
-    @Schema(description = "Dil", example = "az")
-    String language,
-
-    @Schema(description = "Taksit", example = "0")
-    Integer is_installment,
-
-    @Schema(description = "Refund", example = "0")
-    Integer refund,
-
-    @Schema(description = "Əlavə atributlar")
-    java.util.List<String> other_attr
+    /**
+     * Taksit: 0 (no installment), 1 (installment). Boolean as integer.
+     */
+    @Schema(description = "Taksit (0: yox, 1: bəli)", example = "0")
+    Integer is_installment
 ) {}

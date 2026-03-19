@@ -25,33 +25,28 @@ public class CheckoutServiceImpl implements CheckoutService {
     @Override
     public CheckoutResponse processCheckout(Long userId, CheckoutRequest request) {
         Long packageId = Long.parseLong(request.package_id());
-
         SubscriptionPackage pkg = packageRepository.findById(packageId)
                 .filter(SubscriptionPackage::getIsActive)
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
-
         PackageOption option = pkg.getOptions().stream()
                 .filter(o -> o.getId().equals(request.option_id()))
                 .findFirst()
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.duration_config_not_found"));
-
         BigDecimal amount = option.getPriceDiscounted() != null ? option.getPriceDiscounted() : option.getPriceStandard();
-
         String orderId = "ord_" + UUID.randomUUID().toString().substring(0, 8);
-
+        // Language: get from user context or default
+        String language = "az"; // TODO: fetch from user profile/context if available
         az.fitnest.order.dto.epoint.EpointPaymentRequest paymentRequest = az.fitnest.order.dto.epoint.EpointPaymentRequest.builder()
                 .order_id(orderId)
                 .amount(amount.doubleValue())
                 .currency(pkg.getCurrency())
                 .description(pkg.getName() + " - " + option.getDurationMonths() + " months")
-                .language(request.language() != null ? request.language() : "az")
+                .language(language)
                 .is_installment(request.is_installment() != null ? request.is_installment() : 0)
-                .refund(request.refund() != null ? request.refund() : 0)
-                .other_attr(request.other_attr() != null ? (java.util.List) request.other_attr() : java.util.Collections.emptyList())
+                .refund(0)
+                .other_attr(java.util.Collections.emptyList())
                 .build();
-
         az.fitnest.order.dto.epoint.EpointResponse epointResponse = paymentGrpcClient.initiatePayment(paymentRequest);
-
         if (epointResponse == null || !"success".equalsIgnoreCase(epointResponse.status())) {
             throw new RuntimeException("Payment initiation failed: " + (epointResponse != null ? epointResponse.message() : "Unknown error"));
         }
