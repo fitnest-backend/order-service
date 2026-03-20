@@ -18,12 +18,25 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class SubscriptionPackageAdminService {
+            @Transactional(readOnly = true)
+            public az.fitnest.order.dto.PaginatedResponse<az.fitnest.order.dto.AdminSubscriptionPackageResponse> getAllPackagesPagedResponse(int page, int size) {
+                org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(Math.max(0, page), Math.max(1, size));
+                org.springframework.data.domain.Page<az.fitnest.order.dto.AdminSubscriptionPackageResponse> result = packageRepository.findAllWithOptions(pageable)
+                        .map(this::toAdminPackageResponse);
+                return az.fitnest.order.dto.PaginatedResponse.of(result);
+            }
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<az.fitnest.order.dto.AdminSubscriptionPackageResponse> getAllPackagesPaged(int page, int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(Math.max(0, page), Math.max(1, size));
+        return packageRepository.findAllWithOptions(pageable)
+                .map(this::toAdminPackageResponse);
+    }
 
     private final SubscriptionPackageRepository packageRepository;
 
     @Transactional(readOnly = true)
     public List<az.fitnest.order.dto.AdminSubscriptionPackageResponse> getAllPackages() {
-        return packageRepository.findAll().stream()
+        return packageRepository.findAllWithOptions().stream()
                 .map(this::toAdminPackageResponse)
                 .toList();
     }
@@ -92,8 +105,8 @@ public class SubscriptionPackageAdminService {
             }
         }
         if (!pkg.getOptions().isEmpty()) {
-            PackageOption first = pkg.getOptions().stream().findFirst().orElse(null);
-            if (first != null && first.getDurationMonths() != null && first.getDurationMonths() > 0 && first.getPriceStandard() != null) {
+            PackageOption first = pkg.getOptions().iterator().next();
+            if (first.getDurationMonths() != null && first.getDurationMonths() > 0 && first.getPriceStandard() != null) {
                 BigDecimal monthly = first.getPriceStandard().divide(new BigDecimal(first.getDurationMonths()), 4, RoundingMode.HALF_UP);
                 pkg.setPrice(monthly);
             }
@@ -147,8 +160,8 @@ public class SubscriptionPackageAdminService {
         }
 
         if (!pkg.getOptions().isEmpty()) {
-            PackageOption first = pkg.getOptions().stream().findFirst().orElse(null);
-            if (first != null && first.getDurationMonths() != null && first.getDurationMonths() > 0 && first.getPriceStandard() != null) {
+            PackageOption first = pkg.getOptions().iterator().next();
+            if (first.getDurationMonths() != null && first.getDurationMonths() > 0 && first.getPriceStandard() != null) {
                 BigDecimal monthly = first.getPriceStandard().divide(new BigDecimal(first.getDurationMonths()), 4, RoundingMode.HALF_UP);
                 pkg.setPrice(monthly);
             }

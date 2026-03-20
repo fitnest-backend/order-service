@@ -18,6 +18,15 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Subscription Package Admin", description = "Abunəlik paketlərini idarə etmək üçün administrativ ucluqlar")
 public class SubscriptionPackageAdminController {
+    @Operation(summary = "Bütün paketləri səhifələmə ilə əldə edin", description = "Bütün abunəlik paketlərini variantları ilə birlikdə səhifələmə ilə qaytarır.")
+    @GetMapping("/paged")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<az.fitnest.order.dto.PaginatedResponse<AdminSubscriptionPackageResponse>>> getAllPackagesPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        az.fitnest.order.dto.PaginatedResponse<AdminSubscriptionPackageResponse> result = subscriptionPackageAdminService.getAllPackagesPagedResponse(page, size);
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
 
     private final SubscriptionPackageAdminService subscriptionPackageAdminService;
 
