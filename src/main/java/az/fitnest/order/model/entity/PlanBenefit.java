@@ -11,6 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PlanBenefit {
 
-    private String logo;
     private String description;
 }

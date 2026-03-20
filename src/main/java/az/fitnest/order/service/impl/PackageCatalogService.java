@@ -135,7 +135,6 @@ public class PackageCatalogService {
         List<PackageBenefitDto> benefits = option.getBenefits() != null ?
                 option.getBenefits().stream()
                         .map(b -> PackageBenefitDto.builder()
-                                .logo(b.getLogo())
                                 .description(b.getDescription())
                                 .build())
                         .collect(Collectors.toList()) :
@@ -185,7 +184,6 @@ public class PackageCatalogService {
             if (option.getBenefits() != null) {
                 benefits = option.getBenefits().stream()
                         .map(b -> PackageBenefitDto.builder()
-                                .logo(b.getLogo())
                                 .description(b.getDescription())
                                 .build())
                         .collect(Collectors.toList());

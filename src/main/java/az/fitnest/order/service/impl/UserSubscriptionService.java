@@ -157,7 +157,6 @@ public class UserSubscriptionService {
                 if (matchedOption.getBenefits() != null && !matchedOption.getBenefits().isEmpty()) {
                     benefitDtos = matchedOption.getBenefits().stream()
                         .map(b -> az.fitnest.order.dto.PackageBenefitDto.builder()
-                            .logo(b.getLogo())
                             .description(b.getDescription())
                             .build())
                         .toList();

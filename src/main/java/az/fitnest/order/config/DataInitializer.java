@@ -44,8 +44,8 @@ public class DataInitializer {
         if (packageRepository.count() == 0) {
 
             List<PlanBenefit> bronzeBenefits = Arrays.asList(
-                    new PlanBenefit("https://img.icons8.com/color/96/medal-bronze.png", "Access to 5 gyms"),
-                    new PlanBenefit("https://img.icons8.com/color/96/customer-support.png", "Email support")
+                    new PlanBenefit("Access to 5 gyms"),
+                    new PlanBenefit("Email support")
             );
             List<String> bronzeServices = Arrays.asList("GYM");
 
@@ -55,9 +55,9 @@ public class DataInitializer {
             createSubscriptionPackage("Bronze", new BigDecimal("179.99"), 12, 1, 120, 14, bronzeBenefits, bronzeServices);
 
             List<PlanBenefit> silverBenefits = Arrays.asList(
-                    new PlanBenefit("https://img.icons8.com/color/96/medal-silver.png", "Access to 15 gyms"),
-                    new PlanBenefit("https://img.icons8.com/color/96/customer-support.png", "Priority email support"),
-                    new PlanBenefit("https://img.icons8.com/color/96/sauna.png", "Sauna access")
+                    new PlanBenefit("Access to 15 gyms"),
+                    new PlanBenefit("Priority email support"),
+                    new PlanBenefit("Sauna access")
             );
             List<String> silverServices = Arrays.asList("GYM", "SAUNA");
 
@@ -67,10 +67,10 @@ public class DataInitializer {
             createSubscriptionPackage("Silver", new BigDecimal("359.99"), 12, 2, 240, 28, silverBenefits, silverServices);
 
             List<PlanBenefit> goldBenefits = Arrays.asList(
-                    new PlanBenefit("https://img.icons8.com/color/96/medal-gold.png", "Access to all gyms"),
-                    new PlanBenefit("https://img.icons8.com/color/96/customer-support.png", "24/7 support"),
-                    new PlanBenefit("https://img.icons8.com/color/96/swimming-pool.png", "Pool access"),
-                    new PlanBenefit("https://img.icons8.com/color/96/personal-trainer.png", "1 monthly personal trainer session")
+                    new PlanBenefit("Access to all gyms"),
+                    new PlanBenefit("24/7 support"),
+                    new PlanBenefit("Pool access"),
+                    new PlanBenefit("1 monthly personal trainer session")
             );
             List<String> goldServices = Arrays.asList("GYM", "SAUNA", "POOL");
 
@@ -80,10 +80,10 @@ public class DataInitializer {
             createSubscriptionPackage("Gold", new BigDecimal("629.99"), 12, 3, 360, 42, goldBenefits, goldServices);
 
             List<PlanBenefit> platinumBenefits = Arrays.asList(
-                    new PlanBenefit("https://img.icons8.com/color/96/diamond.png", "Unlimited access to all gyms"),
-                    new PlanBenefit("https://img.icons8.com/color/96/conference-call.png", "Dedicated account manager"),
-                    new PlanBenefit("https://img.icons8.com/color/96/vip.png", "VIP lounge access"),
-                    new PlanBenefit("https://img.icons8.com/color/96/personal-trainer.png", "Weekly personal trainer sessions")
+                    new PlanBenefit("Unlimited access to all gyms"),
+                    new PlanBenefit("Dedicated account manager"),
+                    new PlanBenefit("VIP lounge access"),
+                    new PlanBenefit("Weekly personal trainer sessions")
             );
             List<String> platinumServices = Arrays.asList("GYM", "SAUNA", "POOL", "SPA", "VIP");
 
