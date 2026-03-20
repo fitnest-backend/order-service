@@ -61,7 +61,44 @@ public class SubscriptionPackageAdminService {
 
     @Transactional
     public void addPackageWithOptions(SubscriptionPackageWithOptionsRequest request) {
-        throw new UnsupportedOperationException("Use createPackage and addOptionToPackage separately.");
+        List<String> allowedNames = List.of("Bronze", "Silver", "Gold", "Platinum");
+        if (request.name() == null || request.name().isBlank() || !allowedNames.contains(request.name())) {
+            throw new az.fitnest.order.exception.BadRequestException("error.invalid_package_name");
+        }
+        SubscriptionPackage pkg = new SubscriptionPackage();
+        pkg.setName(request.name());
+        pkg.setCurrency(request.currency() != null ? request.currency() : "AZN");
+        pkg.setBillingPeriod(request.billingPeriod() != null ? request.billingPeriod() : BillingPeriod.MONTHLY);
+        pkg.setIsActive(request.isActive() != null ? request.isActive() : true);
+        pkg.setSortOrder(request.sortOrder() != null ? request.sortOrder() : 1);
+        pkg.setPrice(BigDecimal.ZERO);
+        if (request.options() != null) {
+            for (PackageOptionEntityDto dto : request.options()) {
+                PackageOption opt = new PackageOption();
+                opt.setSubscriptionPackage(pkg);
+                opt.setDurationMonths(dto.durationMonths());
+                opt.setPriceStandard(dto.priceStandard());
+                opt.setPriceDiscounted(dto.priceDiscounted());
+                opt.setEntryLimit(dto.entryLimit());
+                opt.setFreezeDays(dto.freezeDays());
+                if (dto.benefits() != null) {
+                    List<az.fitnest.order.model.entity.PlanBenefit> benefits = new ArrayList<>();
+                    for (az.fitnest.order.model.entity.PlanBenefit pb : dto.benefits()) {
+                        benefits.add(pb);
+                    }
+                    opt.setBenefits(benefits);
+                }
+                pkg.getOptions().add(opt);
+            }
+        }
+        if (!pkg.getOptions().isEmpty()) {
+            PackageOption first = pkg.getOptions().stream().findFirst().orElse(null);
+            if (first != null && first.getDurationMonths() != null && first.getDurationMonths() > 0 && first.getPriceStandard() != null) {
+                BigDecimal monthly = first.getPriceStandard().divide(new BigDecimal(first.getDurationMonths()), 4, RoundingMode.HALF_UP);
+                pkg.setPrice(monthly);
+            }
+        }
+        packageRepository.save(pkg);
     }
 
     @Transactional

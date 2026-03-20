@@ -49,10 +49,10 @@ public class DataInitializer {
             );
             List<String> bronzeServices = Arrays.asList("GYM");
 
-            createSubscriptionPackage("Bronze Membership", new BigDecimal("19.99"), 1, 1,  10,  2, bronzeBenefits, bronzeServices);
-            createSubscriptionPackage("Bronze Membership", new BigDecimal("54.99"), 3, 1,  30,  4, bronzeBenefits, bronzeServices);
-            createSubscriptionPackage("Bronze Membership", new BigDecimal("99.99"), 6, 1,  60,  7, bronzeBenefits, bronzeServices);
-            createSubscriptionPackage("Bronze Membership", new BigDecimal("179.99"), 12, 1, 120, 14, bronzeBenefits, bronzeServices);
+            createSubscriptionPackage("Bronze", new BigDecimal("19.99"), 1, 1,  10,  2, bronzeBenefits, bronzeServices);
+            createSubscriptionPackage("Bronze", new BigDecimal("54.99"), 3, 1,  30,  4, bronzeBenefits, bronzeServices);
+            createSubscriptionPackage("Bronze", new BigDecimal("99.99"), 6, 1,  60,  7, bronzeBenefits, bronzeServices);
+            createSubscriptionPackage("Bronze", new BigDecimal("179.99"), 12, 1, 120, 14, bronzeBenefits, bronzeServices);
 
             List<PlanBenefit> silverBenefits = Arrays.asList(
                     new PlanBenefit("https://img.icons8.com/color/96/medal-silver.png", "Access to 15 gyms"),
@@ -61,10 +61,10 @@ public class DataInitializer {
             );
             List<String> silverServices = Arrays.asList("GYM", "SAUNA");
 
-            createSubscriptionPackage("Silver Membership", new BigDecimal("39.99"), 1, 2,  20,  4, silverBenefits, silverServices);
-            createSubscriptionPackage("Silver Membership", new BigDecimal("109.99"), 3, 2,  60,  8, silverBenefits, silverServices);
-            createSubscriptionPackage("Silver Membership", new BigDecimal("199.99"), 6, 2, 120, 14, silverBenefits, silverServices);
-            createSubscriptionPackage("Silver Membership", new BigDecimal("359.99"), 12, 2, 240, 28, silverBenefits, silverServices);
+            createSubscriptionPackage("Silver", new BigDecimal("39.99"), 1, 2,  20,  4, silverBenefits, silverServices);
+            createSubscriptionPackage("Silver", new BigDecimal("109.99"), 3, 2,  60,  8, silverBenefits, silverServices);
+            createSubscriptionPackage("Silver", new BigDecimal("199.99"), 6, 2, 120, 14, silverBenefits, silverServices);
+            createSubscriptionPackage("Silver", new BigDecimal("359.99"), 12, 2, 240, 28, silverBenefits, silverServices);
 
             List<PlanBenefit> goldBenefits = Arrays.asList(
                     new PlanBenefit("https://img.icons8.com/color/96/medal-gold.png", "Access to all gyms"),
@@ -74,10 +74,10 @@ public class DataInitializer {
             );
             List<String> goldServices = Arrays.asList("GYM", "SAUNA", "POOL");
 
-            createSubscriptionPackage("Gold Membership", new BigDecimal("69.99"), 1, 3,  30,  6, goldBenefits, goldServices);
-            createSubscriptionPackage("Gold Membership", new BigDecimal("189.99"), 3, 3,  90, 12, goldBenefits, goldServices);
-            createSubscriptionPackage("Gold Membership", new BigDecimal("349.99"), 6, 3, 180, 21, goldBenefits, goldServices);
-            createSubscriptionPackage("Gold Membership", new BigDecimal("629.99"), 12, 3, 360, 42, goldBenefits, goldServices);
+            createSubscriptionPackage("Gold", new BigDecimal("69.99"), 1, 3,  30,  6, goldBenefits, goldServices);
+            createSubscriptionPackage("Gold", new BigDecimal("189.99"), 3, 3,  90, 12, goldBenefits, goldServices);
+            createSubscriptionPackage("Gold", new BigDecimal("349.99"), 6, 3, 180, 21, goldBenefits, goldServices);
+            createSubscriptionPackage("Gold", new BigDecimal("629.99"), 12, 3, 360, 42, goldBenefits, goldServices);
 
             List<PlanBenefit> platinumBenefits = Arrays.asList(
                     new PlanBenefit("https://img.icons8.com/color/96/diamond.png", "Unlimited access to all gyms"),
@@ -87,10 +87,10 @@ public class DataInitializer {
             );
             List<String> platinumServices = Arrays.asList("GYM", "SAUNA", "POOL", "SPA", "VIP");
 
-            createSubscriptionPackage("Platinum Membership", new BigDecimal("99.99"), 1, 4,  40,  8, platinumBenefits, platinumServices);
-            createSubscriptionPackage("Platinum Membership", new BigDecimal("269.99"), 3, 4, 120, 16, platinumBenefits, platinumServices);
-            createSubscriptionPackage("Platinum Membership", new BigDecimal("499.99"), 6, 4, 240, 30, platinumBenefits, platinumServices);
-            createSubscriptionPackage("Platinum Membership", new BigDecimal("899.99"), 12, 4, 480, 60, platinumBenefits, platinumServices);
+            createSubscriptionPackage("Platinum", new BigDecimal("99.99"), 1, 4,  40,  8, platinumBenefits, platinumServices);
+            createSubscriptionPackage("Platinum", new BigDecimal("269.99"), 3, 4, 120, 16, platinumBenefits, platinumServices);
+            createSubscriptionPackage("Platinum", new BigDecimal("499.99"), 6, 4, 240, 30, platinumBenefits, platinumServices);
+            createSubscriptionPackage("Platinum", new BigDecimal("899.99"), 12, 4, 480, 60, platinumBenefits, platinumServices);
         }
     }
 
