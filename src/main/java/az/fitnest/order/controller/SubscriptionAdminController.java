@@ -59,4 +59,19 @@ public class SubscriptionAdminController {
         userSubscriptionService.revokeSubscription(userId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @Operation(
+        summary = "Remove all current subscriptions of a user",
+        description = "Admin can remove all current subscriptions of a user (sets status to CANCELLED, does not delete records)."
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "All subscriptions removed (cancelled) for user"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found or no subscriptions")
+    })
+    @DeleteMapping("/users/{userId}/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> removeAllSubscriptionsOfUser(@PathVariable Long userId) {
+        userSubscriptionService.removeAllSubscriptionsOfUser(userId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }

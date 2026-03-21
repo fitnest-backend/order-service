@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,16 +23,28 @@ public class CheckInService {
 
     @Transactional
     public CheckInResponse checkIn(Long userId, Long gymId) {
-        Subscription subscription = subscriptionRepository
-                .findByUserIdAndStatus(userId, "ACTIVE")
-                .orElse(null);
-
-        if (subscription == null) {
+        List<Subscription> activeSubs = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE");
+        if (activeSubs.isEmpty()) {
             return CheckInResponse.builder()
                     .success(false)
                     .message(messageSource.getMessage("error.no_active_membership_found", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()))
                     .build();
         }
+        Subscription subscription = activeSubs.stream()
+                .max((a, b) -> {
+                    if (a.getEndAt() != null && b.getEndAt() != null) {
+                        return a.getEndAt().compareTo(b.getEndAt());
+                    } else if (a.getEndAt() != null) {
+                        return 1;
+                    } else if (b.getEndAt() != null) {
+                        return -1;
+                    } else if (a.getStartAt() != null && b.getStartAt() != null) {
+                        return a.getStartAt().compareTo(b.getStartAt());
+                    } else {
+                        return 0;
+                    }
+                })
+                .get();
 
         boolean gymSupportsPlan = catalogServiceGrpcClient.gymSupportsPlan(gymId, subscription.getPackageId());
         if (!gymSupportsPlan) {

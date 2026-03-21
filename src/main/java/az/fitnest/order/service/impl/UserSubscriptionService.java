@@ -32,8 +32,25 @@ public class UserSubscriptionService {
 
     @Transactional
     public boolean checkIn(Long userId, Long gymId) {
-        Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
-                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.no_active_subscription"));
+        List<Subscription> activeSubs = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE");
+        if (activeSubs.isEmpty()) {
+            throw new az.fitnest.order.exception.ResourceNotFoundException("error.no_active_subscription");
+        }
+        Subscription subscription = activeSubs.stream()
+                .max((a, b) -> {
+                    if (a.getEndAt() != null && b.getEndAt() != null) {
+                        return a.getEndAt().compareTo(b.getEndAt());
+                    } else if (a.getEndAt() != null) {
+                        return 1;
+                    } else if (b.getEndAt() != null) {
+                        return -1;
+                    } else if (a.getStartAt() != null && b.getStartAt() != null) {
+                        return a.getStartAt().compareTo(b.getStartAt());
+                    } else {
+                        return 0;
+                    }
+                })
+                .get();
 
         if (subscription.getEndAt() != null && subscription.getEndAt().isBefore(LocalDateTime.now())) {
             throw new az.fitnest.order.exception.BadRequestException("error.membership_expired");
@@ -69,32 +86,32 @@ public class UserSubscriptionService {
         org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserSubscriptionService.class);
         try {
             log.info("Fetching active subscription for userId={}", userId);
-            Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
-                    .orElse(null);
+            Subscription subscription = null;
             String subscriptionStatus = null;
-            if (subscription == null) {
+            List<Subscription> activeSubs = subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(userId, "ACTIVE");
+            if (!activeSubs.isEmpty()) {
+                subscription = activeSubs.get(0);
+                subscriptionStatus = "active";
+                if ("NO_LIMITS".equals(subscription.getStatus())) {
+                    subscriptionStatus = "no_limits";
+                }
+                log.info("Found ACTIVE subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
+            } else {
                 // Check for NO_LIMITS if no ACTIVE subscription
-                subscription = subscriptionRepository.findByUserIdAndStatus(userId, "NO_LIMITS")
-                        .orElse(null);
-                if (subscription != null) {
+                List<Subscription> noLimitSubs = subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(userId, "NO_LIMITS");
+                if (!noLimitSubs.isEmpty()) {
+                    subscription = noLimitSubs.get(0);
                     subscriptionStatus = "no_limits";
                     log.info("Found NO_LIMITS subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
                 } else {
                     log.info("No ACTIVE or NO_LIMITS subscription found for userId={}, checking FROZEN", userId);
-                    subscription = subscriptionRepository.findByUserIdAndStatus(userId, "FROZEN")
-                            .orElse(null);
-                    if (subscription != null) {
+                    List<Subscription> frozenSubs = subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(userId, "FROZEN");
+                    if (!frozenSubs.isEmpty()) {
+                        subscription = frozenSubs.get(0);
                         subscriptionStatus = "frozen";
                         log.info("Found FROZEN subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
                     }
                 }
-            } else {
-                if ("NO_LIMITS".equals(subscription.getStatus())) {
-                    subscriptionStatus = "no_limits";
-                } else {
-                    subscriptionStatus = "active";
-                }
-                log.info("Found ACTIVE subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
             }
 
             if (subscription == null) {
@@ -217,8 +234,25 @@ public class UserSubscriptionService {
 
     @Transactional
     public void freezeSubscription(Long userId) {
-        Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
-                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.no_active_subscription"));
+        List<Subscription> activeSubs = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE");
+        if (activeSubs.isEmpty()) {
+            throw new az.fitnest.order.exception.ResourceNotFoundException("error.no_active_subscription");
+        }
+        Subscription subscription = activeSubs.stream()
+                .max((a, b) -> {
+                    if (a.getEndAt() != null && b.getEndAt() != null) {
+                        return a.getEndAt().compareTo(b.getEndAt());
+                    } else if (a.getEndAt() != null) {
+                        return 1;
+                    } else if (b.getEndAt() != null) {
+                        return -1;
+                    } else if (a.getStartAt() != null && b.getStartAt() != null) {
+                        return a.getStartAt().compareTo(b.getStartAt());
+                    } else {
+                        return 0;
+                    }
+                })
+                .get();
 
         if (subscription.getEndAt() != null && subscription.getEndAt().isBefore(LocalDateTime.now())) {
             throw new az.fitnest.order.exception.BadRequestException("error.membership_expired_cannot_freeze");
@@ -278,8 +312,25 @@ public class UserSubscriptionService {
 
     @Transactional
     public void unfreezeSubscription(Long userId) {
-        Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "FROZEN")
-                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.no_frozen_subscription"));
+        List<Subscription> frozenSubs = subscriptionRepository.findByUserIdAndStatus(userId, "FROZEN");
+        if (frozenSubs.isEmpty()) {
+            throw new az.fitnest.order.exception.ResourceNotFoundException("error.no_frozen_subscription");
+        }
+        Subscription subscription = frozenSubs.stream()
+                .max((a, b) -> {
+                    if (a.getEndAt() != null && b.getEndAt() != null) {
+                        return a.getEndAt().compareTo(b.getEndAt());
+                    } else if (a.getEndAt() != null) {
+                        return 1;
+                    } else if (b.getEndAt() != null) {
+                        return -1;
+                    } else if (a.getStartAt() != null && b.getStartAt() != null) {
+                        return a.getStartAt().compareTo(b.getStartAt());
+                    } else {
+                        return 0;
+                    }
+                })
+                .get();
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime frozenAt = subscription.getFrozenAt();
@@ -372,25 +423,35 @@ public class UserSubscriptionService {
                 .findFirst()
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.duration_config_not_found"));
 
-        subscriptionRepository.findByUserIdAndStatus(request.userId(), "ACTIVE")
-                .ifPresent(existing -> {
-                    existing.setStatus("CANCELLED");
-                    subscriptionRepository.save(existing);
-                    log.info("Admin cancelled existing ACTIVE subscription {} for user {}",
-                            existing.getSubscriptionId(), request.userId());
-                    subscriptionEventPublisher.publishSubscriptionEvent(request.userId(), "CANCELLED", existing.getSubscriptionId());
-                });
+        // Enforce only one subscription per user (except CANCELLED/EXPIRED)
+        List<Subscription> existingSubs = subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(request.userId(), "ACTIVE");
+        existingSubs.addAll(subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(request.userId(), "NO_LIMITS"));
+        existingSubs.addAll(subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(request.userId(), "FROZEN"));
+        existingSubs.addAll(subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(request.userId(), "PENDING"));
+        existingSubs.removeIf(s -> "CANCELLED".equals(s.getStatus()) || "EXPIRED".equals(s.getStatus()));
+        if (!existingSubs.isEmpty()) {
+            throw new az.fitnest.order.exception.BadRequestException("error.user_already_has_subscription");
+        }
 
-        subscriptionRepository.findByUserIdAndStatus(request.userId(), "FROZEN")
-                .ifPresent(existing -> {
-                    existing.setStatus("CANCELLED");
-                    existing.setFrozenAt(null);
-                    existing.setUnfreezesAt(null);
-                    subscriptionRepository.save(existing);
-                    log.info("Admin cancelled existing FROZEN subscription {} for user {}",
-                            existing.getSubscriptionId(), request.userId());
-                    subscriptionEventPublisher.publishSubscriptionEvent(request.userId(), "CANCELLED", existing.getSubscriptionId());
-                });
+        List<Subscription> activeSubs = subscriptionRepository.findByUserIdAndStatus(request.userId(), "ACTIVE");
+        for (Subscription existing : activeSubs) {
+            existing.setStatus("CANCELLED");
+            subscriptionRepository.save(existing);
+            log.info("Admin cancelled existing ACTIVE subscription {} for user {}",
+                    existing.getSubscriptionId(), request.userId());
+            subscriptionEventPublisher.publishSubscriptionEvent(request.userId(), "CANCELLED", existing.getSubscriptionId());
+        }
+
+        List<Subscription> frozenSubs = subscriptionRepository.findByUserIdAndStatus(request.userId(), "FROZEN");
+        for (Subscription existing : frozenSubs) {
+            existing.setStatus("CANCELLED");
+            existing.setFrozenAt(null);
+            existing.setUnfreezesAt(null);
+            subscriptionRepository.save(existing);
+            log.info("Admin cancelled existing FROZEN subscription {} for user {}",
+                    existing.getSubscriptionId(), request.userId());
+            subscriptionEventPublisher.publishSubscriptionEvent(request.userId(), "CANCELLED", existing.getSubscriptionId());
+        }
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime endAt = now.plusMonths(option.getDurationMonths());
@@ -426,8 +487,25 @@ public class UserSubscriptionService {
 
     @Transactional
     public void revokeSubscription(Long userId) {
-        Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
-                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.no_active_subscription"));
+        List<Subscription> activeSubs = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE");
+        if (activeSubs.isEmpty()) {
+            throw new az.fitnest.order.exception.ResourceNotFoundException("error.no_active_subscription");
+        }
+        Subscription subscription = activeSubs.stream()
+                .max((a, b) -> {
+                    if (a.getEndAt() != null && b.getEndAt() != null) {
+                        return a.getEndAt().compareTo(b.getEndAt());
+                    } else if (a.getEndAt() != null) {
+                        return 1;
+                    } else if (b.getEndAt() != null) {
+                        return -1;
+                    } else if (a.getStartAt() != null && b.getStartAt() != null) {
+                        return a.getStartAt().compareTo(b.getStartAt());
+                    } else {
+                        return 0;
+                    }
+                })
+                .get();
 
         subscription.setStatus("CANCELLED");
         subscription.setFrozenAt(null);
@@ -435,6 +513,26 @@ public class UserSubscriptionService {
         subscriptionRepository.save(subscription);
         log.info("Admin revoked subscription {} for user {}", subscription.getSubscriptionId(), userId);
         subscriptionEventPublisher.publishSubscriptionEvent(userId, "REVOKED", subscription.getSubscriptionId());
+    }
+
+    /**
+     * Admin: Remove all current subscriptions for a user (set status to CANCELLED, do not delete)
+     */
+    @Transactional
+    public void removeAllSubscriptionsOfUser(Long userId) {
+        List<Subscription> allSubs = subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(userId, "ACTIVE");
+        allSubs.addAll(subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(userId, "NO_LIMITS"));
+        allSubs.addAll(subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(userId, "FROZEN"));
+        allSubs.addAll(subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(userId, "PENDING"));
+        for (Subscription sub : allSubs) {
+            if (!"CANCELLED".equals(sub.getStatus()) && !"EXPIRED".equals(sub.getStatus())) {
+                sub.setStatus("CANCELLED");
+                sub.setFrozenAt(null);
+                sub.setUnfreezesAt(null);
+                subscriptionRepository.save(sub);
+                subscriptionEventPublisher.publishSubscriptionEvent(userId, "CANCELLED", sub.getSubscriptionId());
+            }
+        }
     }
 
     public List<Long> getUserIdsByPackageId(Long packageId) {

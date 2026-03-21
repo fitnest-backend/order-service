@@ -27,9 +27,26 @@ public class UpgradeService {
 
     @Transactional(readOnly = true)
     public UpgradeOptionsResponse getUpgradeOptions(Long userId, Integer targetDurationMonths) {
-        Subscription currentSub = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
-                .orElseThrow(() -> new ServiceException("error.no_active_subscription",
-                        "NO_ACTIVE_SUBSCRIPTION", org.springframework.http.HttpStatus.CONFLICT));
+        List<Subscription> activeSubs = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE");
+        if (activeSubs.isEmpty()) {
+            throw new ServiceException("error.no_active_subscription",
+                    "NO_ACTIVE_SUBSCRIPTION", org.springframework.http.HttpStatus.CONFLICT);
+        }
+        Subscription currentSub = activeSubs.stream()
+                .max((a, b) -> {
+                    if (a.getEndAt() != null && b.getEndAt() != null) {
+                        return a.getEndAt().compareTo(b.getEndAt());
+                    } else if (a.getEndAt() != null) {
+                        return 1;
+                    } else if (b.getEndAt() != null) {
+                        return -1;
+                    } else if (a.getStartAt() != null && b.getStartAt() != null) {
+                        return a.getStartAt().compareTo(b.getStartAt());
+                    } else {
+                        return 0;
+                    }
+                })
+                .get();
 
         SubscriptionPackage currentPackage = packageRepository.findById(currentSub.getPackageId())
                 .orElseThrow(() -> new ServiceException("error.plan_not_found",
