@@ -71,19 +71,24 @@ public class UserSubscriptionService {
             log.info("Fetching active subscription for userId={}", userId);
             Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE")
                     .orElse(null);
-
             String subscriptionStatus = null;
-
             if (subscription == null) {
-                log.info("No ACTIVE subscription found for userId={}, checking FROZEN", userId);
-                subscription = subscriptionRepository.findByUserIdAndStatus(userId, "FROZEN")
+                // Check for NO_LIMITS if no ACTIVE subscription
+                subscription = subscriptionRepository.findByUserIdAndStatus(userId, "NO_LIMITS")
                         .orElse(null);
                 if (subscription != null) {
-                    subscriptionStatus = "frozen";
-                    log.info("Found FROZEN subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
+                    subscriptionStatus = "no_limits";
+                    log.info("Found NO_LIMITS subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
+                } else {
+                    log.info("No ACTIVE or NO_LIMITS subscription found for userId={}, checking FROZEN", userId);
+                    subscription = subscriptionRepository.findByUserIdAndStatus(userId, "FROZEN")
+                            .orElse(null);
+                    if (subscription != null) {
+                        subscriptionStatus = "frozen";
+                        log.info("Found FROZEN subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
+                    }
                 }
             } else {
-                // Map NO_LIMITS to no_limits for API/gRPC
                 if ("NO_LIMITS".equals(subscription.getStatus())) {
                     subscriptionStatus = "no_limits";
                 } else {
