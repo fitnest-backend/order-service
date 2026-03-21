@@ -41,9 +41,14 @@ public class UserSubscriptionService {
 
         if (subscription.getRemainingLimit() != null) {
             if (subscription.getRemainingLimit() <= 0) {
+                subscription.setStatus("NO_LIMITS");
+                subscriptionRepository.save(subscription);
                 throw new az.fitnest.order.exception.BadRequestException("error.no_remaining_visits");
             }
             subscription.setRemainingLimit(subscription.getRemainingLimit() - 1);
+            if (subscription.getRemainingLimit() == 0) {
+                subscription.setStatus("NO_LIMITS");
+            }
             subscriptionRepository.save(subscription);
             subscriptionEventPublisher.publishSubscriptionEvent(userId, "CHECKIN", subscription.getSubscriptionId());
         }
@@ -78,7 +83,12 @@ public class UserSubscriptionService {
                     log.info("Found FROZEN subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
                 }
             } else {
-                subscriptionStatus = "active";
+                // Map NO_LIMITS to no_limits for API/gRPC
+                if ("NO_LIMITS".equals(subscription.getStatus())) {
+                    subscriptionStatus = "no_limits";
+                } else {
+                    subscriptionStatus = "active";
+                }
                 log.info("Found ACTIVE subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
             }
 
@@ -386,7 +396,11 @@ public class UserSubscriptionService {
         Subscription subscription = new Subscription();
         subscription.setUserId(request.userId());
         subscription.setPackageId(request.planId());
-        subscription.setStatus("ACTIVE");
+        if (entryLimit != null && entryLimit == 0) {
+            subscription.setStatus("NO_LIMITS");
+        } else {
+            subscription.setStatus("ACTIVE");
+        }
         subscription.setStartAt(now);
         subscription.setEndAt(endAt);
         subscription.setTotalLimit(entryLimit);
