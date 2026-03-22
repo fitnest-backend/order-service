@@ -13,11 +13,6 @@ public record AdminSubscriptionPackageResponse(
 
     String name,
 
-    String currency,
-
-    @JsonProperty("billing_period")
-    String billingPeriod,
-
     @JsonProperty("is_active")
     Boolean isActive,
 

@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -64,8 +65,6 @@ public class SubscriptionPackageAdminService {
         return az.fitnest.order.dto.AdminSubscriptionPackageResponse.builder()
                 .packageId(pkg.getId())
                 .name(pkg.getName())
-                .currency(pkg.getCurrency())
-                .billingPeriod(pkg.getBillingPeriod() != null ? pkg.getBillingPeriod().name() : null)
                 .isActive(pkg.getIsActive())
                 .sortOrder(pkg.getSortOrder())
                 .durationOptions(options)
@@ -78,30 +77,45 @@ public class SubscriptionPackageAdminService {
         if (request.name() == null || request.name().isBlank() || !allowedNames.contains(request.name())) {
             throw new az.fitnest.order.exception.BadRequestException("error.invalid_package_name");
         }
-        SubscriptionPackage pkg = new SubscriptionPackage();
-        pkg.setName(request.name());
-        pkg.setCurrency(request.currency() != null ? request.currency() : "AZN");
-        pkg.setBillingPeriod(request.billingPeriod() != null ? request.billingPeriod() : BillingPeriod.MONTHLY);
-        pkg.setIsActive(request.isActive() != null ? request.isActive() : true);
-        pkg.setSortOrder(request.sortOrder() != null ? request.sortOrder() : 1);
-        pkg.setPrice(BigDecimal.ZERO);
+        // Try to find existing package by name
+        SubscriptionPackage pkg = packageRepository.findAllWithOptions().stream()
+            .filter(p -> p.getName().equals(request.name()))
+            .findFirst()
+            .orElse(null);
+
+        if (pkg == null) {
+            pkg = new SubscriptionPackage();
+            pkg.setName(request.name());
+            pkg.setCurrency("AZN");
+            pkg.setBillingPeriod(az.fitnest.order.model.enums.BillingPeriod.ONE_TIME);
+            pkg.setIsActive(request.isActive() != null ? request.isActive() : true);
+            pkg.setSortOrder(request.sortOrder() != null ? request.sortOrder() : 1);
+            pkg.setPrice(BigDecimal.ZERO);
+        }
+
         if (request.options() != null) {
             for (PackageOptionEntityDto dto : request.options()) {
-                PackageOption opt = new PackageOption();
-                opt.setSubscriptionPackage(pkg);
-                opt.setDurationMonths(dto.durationMonths());
-                opt.setPriceStandard(dto.priceStandard());
-                opt.setPriceDiscounted(dto.priceDiscounted());
-                opt.setEntryLimit(dto.entryLimit());
-                opt.setFreezeDays(dto.freezeDays());
-                if (dto.benefits() != null) {
-                    List<az.fitnest.order.model.entity.PlanBenefit> benefits = new ArrayList<>();
-                    for (az.fitnest.order.model.entity.PlanBenefit pb : dto.benefits()) {
-                        benefits.add(pb);
+                // Check if option with same duration already exists for this package
+                boolean exists = pkg.getOptions().stream().anyMatch(opt ->
+                    Objects.equals(opt.getDurationMonths(), dto.durationMonths())
+                );
+                if (!exists) {
+                    PackageOption opt = new PackageOption();
+                    opt.setSubscriptionPackage(pkg);
+                    opt.setDurationMonths(dto.durationMonths());
+                    opt.setPriceStandard(dto.priceStandard());
+                    opt.setPriceDiscounted(dto.priceDiscounted());
+                    opt.setEntryLimit(dto.entryLimit());
+                    opt.setFreezeDays(dto.freezeDays());
+                    if (dto.benefits() != null) {
+                        List<az.fitnest.order.model.entity.PlanBenefit> benefits = new ArrayList<>();
+                        for (az.fitnest.order.model.entity.PlanBenefit pb : dto.benefits()) {
+                            benefits.add(pb);
+                        }
+                        opt.setBenefits(benefits);
                     }
-                    opt.setBenefits(benefits);
+                    pkg.getOptions().add(opt);
                 }
-                pkg.getOptions().add(opt);
             }
         }
         if (!pkg.getOptions().isEmpty()) {
@@ -138,10 +152,8 @@ public class SubscriptionPackageAdminService {
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
 
         pkg.setName(request.name());
-        pkg.setCurrency(request.currency() != null ? request.currency() : pkg.getCurrency());
-        if (request.billingPeriod() != null) {
-            pkg.setBillingPeriod(request.billingPeriod());
-        }
+        pkg.setCurrency("AZN");
+        pkg.setBillingPeriod(az.fitnest.order.model.enums.BillingPeriod.ONE_TIME);
         pkg.setIsActive(request.isActive() != null ? request.isActive() : pkg.getIsActive());
         pkg.setSortOrder(request.sortOrder() != null ? request.sortOrder() : pkg.getSortOrder());
 
