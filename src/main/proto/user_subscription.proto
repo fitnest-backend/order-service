@@ -20,6 +20,10 @@ message GetActiveSubscriptionRequest {
 message ActiveSubscriptionResponse {
   string package_name = 1;
   string subscription_status = 2;  // ACTIVE, FROZEN, or empty for no subscription
+  int64 package_id = 3;
+  int32 total_limit = 4;
+  int32 remaining_limit = 5;
+  string expires_at = 6;
 }
 
 message GetUserIdsByPackageIdRequest {
