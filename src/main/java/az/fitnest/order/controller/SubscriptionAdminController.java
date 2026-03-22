@@ -46,21 +46,6 @@ public class SubscriptionAdminController {
     }
 
     @Operation(
-            summary = "İstifadəçinin abunəliyini ləğv edin",
-            description = "Admin tərəfindən istifadəçinin aktiv və ya dondurulmuş abunəliyini ləğv edir."
-    )
-    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Abunəlik uğurla ləğv edildi"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Aktiv abunəlik tapılmadı")
-    })
-    @DeleteMapping("/users/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Void>> revokeSubscription(@PathVariable Long userId) {
-        userSubscriptionService.revokeSubscription(userId);
-        return ResponseEntity.ok(ApiResponse.success(null));
-    }
-
-    @Operation(
         summary = "Remove all current subscriptions of a user",
         description = "Admin can remove all current subscriptions of a user (sets status to CANCELLED, does not delete records)."
     )

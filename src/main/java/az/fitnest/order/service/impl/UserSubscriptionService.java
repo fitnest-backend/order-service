@@ -97,7 +97,6 @@ public class UserSubscriptionService {
                 }
                 log.info("Found ACTIVE subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
             } else {
-                // Check for NO_LIMITS if no ACTIVE subscription
                 List<Subscription> noLimitSubs = subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(userId, "NO_LIMITS");
                 if (!noLimitSubs.isEmpty()) {
                     subscription = noLimitSubs.get(0);
@@ -423,7 +422,6 @@ public class UserSubscriptionService {
                 .findFirst()
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.duration_config_not_found"));
 
-        // Enforce only one subscription per user (except CANCELLED/EXPIRED)
         List<Subscription> existingSubs = subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(request.userId(), "ACTIVE");
         existingSubs.addAll(subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(request.userId(), "NO_LIMITS"));
         existingSubs.addAll(subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(request.userId(), "FROZEN"));
@@ -515,9 +513,6 @@ public class UserSubscriptionService {
         subscriptionEventPublisher.publishSubscriptionEvent(userId, "REVOKED", subscription.getSubscriptionId());
     }
 
-    /**
-     * Admin: Remove all current subscriptions for a user (set status to CANCELLED, do not delete)
-     */
     @Transactional
     public void removeAllSubscriptionsOfUser(Long userId) {
         List<Subscription> allSubs = subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(userId, "ACTIVE");
