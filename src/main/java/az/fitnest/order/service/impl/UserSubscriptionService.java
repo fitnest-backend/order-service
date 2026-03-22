@@ -85,34 +85,15 @@ public class UserSubscriptionService {
     public ActiveSubscriptionResponse getActiveSubscription(Long userId) {
         org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserSubscriptionService.class);
         try {
-            log.info("Fetching active subscription for userId={}", userId);
+            log.info("Fetching latest subscription for userId={}", userId);
             Subscription subscription = null;
             String subscriptionStatus = null;
-            List<Subscription> activeSubs = subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(userId, "ACTIVE");
-            if (!activeSubs.isEmpty()) {
-                subscription = activeSubs.get(0);
-                subscriptionStatus = "active";
-                if ("NO_LIMITS".equals(subscription.getStatus())) {
-                    subscriptionStatus = "no_limits";
-                }
-                log.info("Found ACTIVE subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
-            } else {
-                List<Subscription> noLimitSubs = subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(userId, "NO_LIMITS");
-                if (!noLimitSubs.isEmpty()) {
-                    subscription = noLimitSubs.get(0);
-                    subscriptionStatus = "no_limits";
-                    log.info("Found NO_LIMITS subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
-                } else {
-                    log.info("No ACTIVE or NO_LIMITS subscription found for userId={}, checking FROZEN", userId);
-                    List<Subscription> frozenSubs = subscriptionRepository.findByUserIdAndStatusOrderByStartAtDesc(userId, "FROZEN");
-                    if (!frozenSubs.isEmpty()) {
-                        subscription = frozenSubs.get(0);
-                        subscriptionStatus = "frozen";
-                        log.info("Found FROZEN subscription for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
-                    }
-                }
+            List<Subscription> allSubs = subscriptionRepository.findAllByUserIdOrderByStartAtDesc(userId);
+            if (!allSubs.isEmpty()) {
+                subscription = allSubs.get(0);
+                subscriptionStatus = subscription.getStatus() != null ? subscription.getStatus().toLowerCase() : "unknown";
+                log.info("Found latest subscription for userId={}, subscriptionId={}, status={}", userId, subscription.getSubscriptionId(), subscriptionStatus);
             }
-
             if (subscription == null) {
                 log.info("No subscription found for userId={}, returning No Plan", userId);
                 SubscriptionDetailsDto noPlanDetails = SubscriptionDetailsDto.builder()
@@ -121,83 +102,47 @@ public class UserSubscriptionService {
                         .allowedFreezeDays(0)
                         .remainingFreezeDays(0)
                         .build();
-
                 return ActiveSubscriptionResponse.builder()
                         .status("none")
                         .subscription(noPlanDetails)
                         .build();
             }
-
-            if (subscription.getEndAt() != null && subscription.getEndAt().isBefore(java.time.LocalDateTime.now())) {
-                log.info("Subscription expired for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
-                SubscriptionDetailsDto noPlanDetails = SubscriptionDetailsDto.builder()
-                        .packageName("No Plan")
-                        .frozenDaysUsed(0)
-                        .allowedFreezeDays(0)
-                        .remainingFreezeDays(0)
-                        .build();
-
-                return ActiveSubscriptionResponse.builder()
-                        .status("none")
-                        .subscription(noPlanDetails)
-                        .build();
-            }
-
-            log.info("Fetching package for subscriptionId={}, packageId={}", subscription.getSubscriptionId(), subscription.getPackageId());
+            // If expired, still return as latest, but can set a flag if needed
             SubscriptionPackage pkg = packageRepository.findFullById(subscription.getPackageId())
                     .orElse(null);
             if (pkg == null) {
                 log.error("Package not found for packageId={} (userId={})", subscription.getPackageId(), userId);
                 throw new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found");
             }
-
             long durationMonths = 1;
-            if (subscription.getEndAt() != null) {
+            if (subscription.getEndAt() != null && subscription.getStartAt() != null) {
                 durationMonths = java.time.temporal.ChronoUnit.MONTHS.between(subscription.getStartAt(), subscription.getEndAt());
                 if (durationMonths == 0) durationMonths = 1;
             }
             Integer duration = (int) durationMonths;
-
-            log.info("Looking for package option with duration={} months in packageId={}", duration, pkg.getId());
             java.math.BigDecimal effectivePrice = java.math.BigDecimal.ZERO;
             PackageOption matchedOption = pkg.getOptions() != null ? pkg.getOptions().stream()
                     .filter(o -> o.getDurationMonths().equals(duration))
                     .findFirst()
                     .orElse(null) : null;
-            if (matchedOption == null) {
-                log.warn("No matching package option found for duration={} months in packageId={} (userId={})", duration, pkg.getId(), userId);
-            }
-
             if (matchedOption != null) {
                 effectivePrice = matchedOption.getPriceDiscounted() != null
                         ? matchedOption.getPriceDiscounted()
                         : matchedOption.getPriceStandard();
             }
-
             Integer allowedFreezeDays = matchedOption != null && matchedOption.getFreezeDays() != null
                     ? matchedOption.getFreezeDays()
                     : 0;
             Integer frozenDaysUsed = subscription.getFrozenDaysUsed() != null ? subscription.getFrozenDaysUsed() : 0;
             Integer remainingFreezeDays = allowedFreezeDays - frozenDaysUsed;
-
-            log.info("Building subscription details DTO for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
-            Long optionId = null;
+            Long optionId = matchedOption != null ? matchedOption.getId() : null;
             java.util.List<az.fitnest.order.dto.PackageBenefitDto> benefitDtos = java.util.Collections.emptyList();
-            if (matchedOption != null) {
-                optionId = matchedOption.getId();
-                if (matchedOption.getBenefits() != null && !matchedOption.getBenefits().isEmpty()) {
-                    benefitDtos = matchedOption.getBenefits().stream()
+            if (matchedOption != null && matchedOption.getBenefits() != null && !matchedOption.getBenefits().isEmpty()) {
+                benefitDtos = matchedOption.getBenefits().stream()
                         .map(b -> az.fitnest.order.dto.PackageBenefitDto.builder()
-                            .description(b.getDescription())
-                            .build())
+                                .description(b.getDescription())
+                                .build())
                         .toList();
-                }
-            }
-            if (optionId == null && pkg.getOptions() != null && !pkg.getOptions().isEmpty()) {
-                PackageOption firstOption = pkg.getOptions().stream().findFirst().orElse(null);
-                if (firstOption != null) {
-                    optionId = firstOption.getId();
-                }
             }
             SubscriptionDetailsDto details = SubscriptionDetailsDto.builder()
                     .subscriptionId(subscription.getSubscriptionId())
@@ -218,8 +163,7 @@ public class UserSubscriptionService {
                     .optionId(optionId)
                     .benefits(benefitDtos)
                     .build();
-
-            log.info("Returning subscription details for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
+            log.info("Returning latest subscription details for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
             return ActiveSubscriptionResponse.builder()
                     .status(subscriptionStatus)
                     .subscription(details)
