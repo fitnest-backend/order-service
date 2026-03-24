@@ -27,14 +27,16 @@ public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserS
             if (dto.status() != null) {
                 grpcResponse.setSubscriptionStatus(dto.status());
             }
-
-            if (dto.subscription() != null && dto.subscription().packageName() != null) {
-                grpcResponse.setPackageName(dto.subscription().packageName());
+            if (dto.subscription() != null) {
+                var sub = dto.subscription();
+                if (sub.packageName() != null) grpcResponse.setPackageName(sub.packageName());
+                if (sub.packageId() != null) grpcResponse.setPackageId(Long.parseLong(sub.packageId()));
+                if (sub.totalLimit() != null) grpcResponse.setTotalLimit(sub.totalLimit());
+                if (sub.remainingLimit() != null) grpcResponse.setRemainingLimit(sub.remainingLimit());
+                if (sub.endAt() != null) grpcResponse.setExpiresAt(sub.endAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
             }
-
             responseObserver.onNext(grpcResponse.build());
             responseObserver.onCompleted();
-
         } catch (Exception e) {
             responseObserver.onError(io.grpc.Status.INTERNAL
                     .withDescription("Failed to get active subscription: " + e.getMessage())
