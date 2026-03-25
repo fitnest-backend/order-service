@@ -91,7 +91,13 @@ public class UserSubscriptionService {
             List<Subscription> allSubs = subscriptionRepository.findAllByUserIdOrderByStartAtDesc(userId);
             if (!allSubs.isEmpty()) {
                 subscription = allSubs.get(0);
-                subscriptionStatus = subscription.getStatus() != null ? subscription.getStatus().toLowerCase() : "unknown";
+                String rawStatus = subscription.getStatus() != null ? subscription.getStatus().toLowerCase() : "unknown";
+                // Capitalize first letter, rest lowercase (handles underscores as in 'no_limits')
+                if (rawStatus.length() > 0) {
+                    subscriptionStatus = rawStatus.substring(0, 1).toUpperCase() + rawStatus.substring(1);
+                } else {
+                    subscriptionStatus = rawStatus;
+                }
                 log.info("Found latest subscription for userId={}, subscriptionId={}, status={}", userId, subscription.getSubscriptionId(), subscriptionStatus);
             }
             if (subscription == null) {
@@ -103,7 +109,7 @@ public class UserSubscriptionService {
                         .remainingFreezeDays(0)
                         .build();
                 return ActiveSubscriptionResponse.builder()
-                        .status("none")
+                        .status("None")
                         .subscription(noPlanDetails)
                         .build();
             }
