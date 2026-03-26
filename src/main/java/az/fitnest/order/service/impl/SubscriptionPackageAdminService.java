@@ -77,7 +77,6 @@ public class SubscriptionPackageAdminService {
         if (request.name() == null || request.name().isBlank() || !allowedNames.contains(request.name())) {
             throw new az.fitnest.order.exception.BadRequestException("error.invalid_package_name");
         }
-        // Try to find existing package by name
         SubscriptionPackage pkg = packageRepository.findAllWithOptions().stream()
             .filter(p -> p.getName().equals(request.name()))
             .findFirst()
@@ -95,7 +94,6 @@ public class SubscriptionPackageAdminService {
 
         if (request.options() != null) {
             for (PackageOptionEntityDto dto : request.options()) {
-                // Check if option with same duration already exists for this package
                 boolean exists = pkg.getOptions().stream().anyMatch(opt ->
                     Objects.equals(opt.getDurationMonths(), dto.durationMonths())
                 );

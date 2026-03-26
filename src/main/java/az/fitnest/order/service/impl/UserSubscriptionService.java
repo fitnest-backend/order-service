@@ -92,7 +92,6 @@ public class UserSubscriptionService {
             if (!allSubs.isEmpty()) {
                 subscription = allSubs.get(0);
                 String rawStatus = subscription.getStatus() != null ? subscription.getStatus().toLowerCase() : "unknown";
-                // Capitalize first letter, rest lowercase (handles underscores as in 'no_limits')
                 if (rawStatus.length() > 0) {
                     subscriptionStatus = rawStatus.substring(0, 1).toUpperCase() + rawStatus.substring(1);
                 } else {
