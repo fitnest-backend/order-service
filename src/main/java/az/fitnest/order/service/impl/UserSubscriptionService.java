@@ -139,7 +139,7 @@ public class UserSubscriptionService {
                     : 0;
             Integer frozenDaysUsed = subscription.getFrozenDaysUsed() != null ? subscription.getFrozenDaysUsed() : 0;
             Integer remainingFreezeDays = allowedFreezeDays - frozenDaysUsed;
-            Long optionId = matchedOption != null ? matchedOption.getId() : null;
+            Long optionId = matchedOption != null ? matchedOption.getId() : -1L; // Default to -1 if no matched option
             java.util.List<az.fitnest.order.dto.PackageBenefitDto> benefitDtos = java.util.Collections.emptyList();
             if (matchedOption != null && matchedOption.getBenefits() != null && !matchedOption.getBenefits().isEmpty()) {
                 benefitDtos = matchedOption.getBenefits().stream()
