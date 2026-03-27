@@ -27,6 +27,9 @@ public class Subscription {
     @Column(name = "plan_id", nullable = false)
     private Long packageId;
 
+    @Column(name = "option_id")
+    private Long optionId;
+
     @Column(name = "status", nullable = false)
     private String status;
 

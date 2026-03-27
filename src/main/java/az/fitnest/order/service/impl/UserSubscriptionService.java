@@ -125,10 +125,20 @@ public class UserSubscriptionService {
             }
             Integer duration = (int) durationMonths;
             java.math.BigDecimal effectivePrice = java.math.BigDecimal.ZERO;
-            PackageOption matchedOption = pkg.getOptions() != null ? pkg.getOptions().stream()
-                    .filter(o -> o.getDurationMonths().equals(duration))
-                    .findFirst()
-                    .orElse(null) : null;
+            PackageOption matchedOption = null;
+            final Long assignedOptionId = subscription.getOptionId();
+            if (pkg.getOptions() != null && assignedOptionId != null) {
+                matchedOption = pkg.getOptions().stream()
+                        .filter(o -> o.getId().equals(assignedOptionId))
+                        .findFirst()
+                        .orElse(null);
+            }
+            if (matchedOption == null && pkg.getOptions() != null) {
+                matchedOption = pkg.getOptions().stream()
+                        .filter(o -> o.getDurationMonths().equals(duration))
+                        .findFirst()
+                        .orElse(null);
+            }
             if (matchedOption != null) {
                 effectivePrice = matchedOption.getPriceDiscounted() != null
                         ? matchedOption.getPriceDiscounted()
@@ -139,7 +149,7 @@ public class UserSubscriptionService {
                     : 0;
             Integer frozenDaysUsed = subscription.getFrozenDaysUsed() != null ? subscription.getFrozenDaysUsed() : 0;
             Integer remainingFreezeDays = allowedFreezeDays - frozenDaysUsed;
-            Long optionId = matchedOption != null ? matchedOption.getId() : -1L; // Default to -1 if no matched option
+            Long optionId = matchedOption != null ? matchedOption.getId() : -1L;
             java.util.List<az.fitnest.order.dto.PackageBenefitDto> benefitDtos = java.util.Collections.emptyList();
             if (matchedOption != null && matchedOption.getBenefits() != null && !matchedOption.getBenefits().isEmpty()) {
                 benefitDtos = matchedOption.getBenefits().stream()
@@ -394,6 +404,7 @@ public class UserSubscriptionService {
         Subscription subscription = new Subscription();
         subscription.setUserId(request.userId());
         subscription.setPackageId(request.planId());
+        subscription.setOptionId(option.getId());
         if (entryLimit != null && entryLimit == 0) {
             subscription.setStatus("NO_LIMITS");
         } else {
