@@ -1,12 +1,13 @@
 package az.fitnest.order.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import lombok.Builder;
 
+@JsonInclude(JsonInclude.Include.ALWAYS)
 @Builder
 public record SubscriptionDetailsDto(
     @JsonProperty("subscription_id")
