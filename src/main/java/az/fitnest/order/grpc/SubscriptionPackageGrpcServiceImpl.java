@@ -108,6 +108,31 @@ public class SubscriptionPackageGrpcServiceImpl extends SubscriptionPackageServi
         responseObserver.onCompleted();
     }
 
+    @Override
+    public void checkOptionInPackageExists(az.fitnest.order.grpc.CheckOptionInPackageExistsRequest request, StreamObserver<az.fitnest.order.grpc.CheckOptionInPackageExistsResponse> responseObserver) {
+        boolean exists = false;
+        try {
+            var opt = packageRepository.findFullById(request.getPackageId());
+            if (opt.isPresent()) {
+                var pkg = opt.get();
+                if (pkg.getOptions() != null) {
+                    exists = pkg.getOptions().stream().anyMatch(option -> option.getId().equals(request.getOptionId()));
+                }
+            }
+            az.fitnest.order.grpc.CheckOptionInPackageExistsResponse response = az.fitnest.order.grpc.CheckOptionInPackageExistsResponse.newBuilder()
+                .setExists(exists)
+                .build();
+            responseObserver.onNext(response);
+        } catch (Exception e) {
+            responseObserver.onError(io.grpc.Status.INTERNAL
+                .withDescription("Failed to check option in package: " + e.getMessage())
+                .withCause(e)
+                .asRuntimeException());
+            return;
+        }
+        responseObserver.onCompleted();
+    }
+
     private SubscriptionPackageInfo mapPackageToGrpc(SubscriptionPackage pkg) {
         SubscriptionPackageInfo.Builder pkgBuilder = SubscriptionPackageInfo.newBuilder()
                 .setPackageId(pkg.getId())
