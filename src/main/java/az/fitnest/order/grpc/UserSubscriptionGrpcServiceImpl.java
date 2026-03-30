@@ -98,4 +98,27 @@ public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserS
                 .asRuntimeException());
         }
     }
+
+    @Override
+    public void assignSubscriptionToUser(az.fitnest.order.grpc.AssignSubscriptionToUserRequest request, StreamObserver<az.fitnest.order.grpc.AssignSubscriptionToUserResponse> responseObserver) {
+        try {
+            var assignRequest = az.fitnest.order.dto.AdminAssignSubscriptionRequest.builder()
+                .userId(request.getUserId())
+                .planId(request.getPlanId())
+                .optionId(request.getOptionId())
+                .build();
+            var result = subscriptionService.assignSubscriptionToUser(assignRequest);
+            az.fitnest.order.grpc.AssignSubscriptionToUserResponse response = az.fitnest.order.grpc.AssignSubscriptionToUserResponse.newBuilder()
+                .setSubscriptionId(result.subscriptionId())
+                .setUserId(result.userId())
+                .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(io.grpc.Status.INTERNAL
+                .withDescription("Failed to assign subscription: " + e.getMessage())
+                .withCause(e)
+                .asRuntimeException());
+        }
+    }
 }
