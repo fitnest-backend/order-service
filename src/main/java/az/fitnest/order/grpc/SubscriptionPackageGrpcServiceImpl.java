@@ -133,6 +133,43 @@ public class SubscriptionPackageGrpcServiceImpl extends SubscriptionPackageServi
         responseObserver.onCompleted();
     }
 
+    @Override
+    public void getOptionDetails(GetOptionDetailsRequest request, StreamObserver<GetOptionDetailsResponse> responseObserver) {
+        try {
+            var opt = packageRepository.findFullById(request.getPackageId());
+            if (opt.isPresent()) {
+                var pkg = opt.get();
+                if (pkg.getOptions() != null) {
+                    var option = pkg.getOptions().stream()
+                        .filter(o -> o.getId().equals(request.getOptionId()))
+                        .findFirst();
+                    if (option.isPresent()) {
+                        var optEntity = option.get();
+                        double amount = optEntity.getPriceDiscounted() != null ?
+                            optEntity.getPriceDiscounted().doubleValue() :
+                            (optEntity.getPriceStandard() != null ? optEntity.getPriceStandard().doubleValue() : 0.0);
+                        String currency = pkg.getCurrency() != null ? pkg.getCurrency() : "AZN";
+                        GetOptionDetailsResponse response = GetOptionDetailsResponse.newBuilder()
+                            .setAmount(amount)
+                            .setCurrency(currency)
+                            .build();
+                        responseObserver.onNext(response);
+                        responseObserver.onCompleted();
+                        return;
+                    }
+                }
+            }
+            responseObserver.onError(io.grpc.Status.NOT_FOUND
+                .withDescription("Option or package not found")
+                .asRuntimeException());
+        } catch (Exception e) {
+            responseObserver.onError(io.grpc.Status.INTERNAL
+                .withDescription("Failed to get option details: " + e.getMessage())
+                .withCause(e)
+                .asRuntimeException());
+        }
+    }
+
     private SubscriptionPackageInfo mapPackageToGrpc(SubscriptionPackage pkg) {
         SubscriptionPackageInfo.Builder pkgBuilder = SubscriptionPackageInfo.newBuilder()
                 .setPackageId(pkg.getId())
