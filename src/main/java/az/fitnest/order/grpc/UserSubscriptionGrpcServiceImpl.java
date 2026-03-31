@@ -5,6 +5,8 @@ import az.fitnest.order.service.impl.UserSubscriptionService;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -12,7 +14,7 @@ import java.util.List;
 @GrpcService
 @RequiredArgsConstructor
 public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserSubscriptionServiceGrpc.UserSubscriptionServiceImplBase {
-
+    private static final Logger log = LoggerFactory.getLogger(UserSubscriptionGrpcServiceImpl.class);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
     private final UserSubscriptionService subscriptionService;
 
@@ -101,6 +103,7 @@ public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserS
 
     @Override
     public void assignSubscriptionToUser(az.fitnest.order.grpc.AssignSubscriptionToUserRequest request, StreamObserver<az.fitnest.order.grpc.AssignSubscriptionToUserResponse> responseObserver) {
+        log.info("[gRPC] Received AssignSubscriptionToUser request: userId={}, planId={}, optionId={}", request.getUserId(), request.getPlanId(), request.getOptionId());
         try {
             var assignRequest = az.fitnest.order.dto.AdminAssignSubscriptionRequest.builder()
                 .userId(request.getUserId())
@@ -112,9 +115,11 @@ public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserS
                 .setSubscriptionId(result.subscriptionId())
                 .setUserId(result.userId())
                 .build();
+            log.info("[gRPC] Successfully assigned subscription: subscriptionId={}, userId={}, planId={}, optionId={}", result.subscriptionId(), result.userId(), request.getPlanId(), request.getOptionId());
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Exception e) {
+            log.error("[gRPC] Failed to assign subscription: userId={}, planId={}, optionId={}", request.getUserId(), request.getPlanId(), request.getOptionId(), e);
             responseObserver.onError(io.grpc.Status.INTERNAL
                 .withDescription("Failed to assign subscription: " + e.getMessage())
                 .withCause(e)
