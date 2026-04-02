@@ -12,6 +12,8 @@ public record PackageOptionDto(
     Long optionId,
     @JsonProperty("duration_months")
     Integer durationMonths,
+    @JsonProperty("duration_label")
+    String durationLabel,
     PackagePriceDto price,
     String badge,
     @JsonProperty("visit_limit")

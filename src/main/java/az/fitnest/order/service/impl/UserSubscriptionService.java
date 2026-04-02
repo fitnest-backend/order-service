@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import az.fitnest.order.util.UserContext;
 import az.fitnest.order.event.SubscriptionEventPublisher;
+import az.fitnest.order.service.TranslationService;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,7 @@ public class UserSubscriptionService {
     private final az.fitnest.order.repository.GymVisitRepository gymVisitRepository;
     private final az.fitnest.order.repository.OrderRepository orderRepository;
     private final SubscriptionEventPublisher subscriptionEventPublisher;
+    private final TranslationService translationService;
 
     @Transactional
     public boolean checkIn(Long userId, Long gymId) {
@@ -85,24 +87,28 @@ public class UserSubscriptionService {
     public ActiveSubscriptionResponse getActiveSubscription(Long userId) {
         org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserSubscriptionService.class);
         try {
-            log.info("Fetching latest subscription for userId={}", userId);
+            String lang = UserContext.getCurrentLanguage();
+            log.info("Fetching latest subscription for userId={}, lang={}", userId, lang);
             Subscription subscription = null;
             String subscriptionStatus = null;
             List<Subscription> allSubs = subscriptionRepository.findAllByUserIdOrderByStartAtDesc(userId);
             if (!allSubs.isEmpty()) {
                 subscription = allSubs.get(0);
-                String rawStatus = subscription.getStatus() != null ? subscription.getStatus().toLowerCase() : "unknown";
-                if (rawStatus.length() > 0) {
-                    subscriptionStatus = rawStatus.substring(0, 1).toUpperCase() + rawStatus.substring(1);
-                } else {
-                    subscriptionStatus = rawStatus;
+                String rawStatus = subscription.getStatus();
+                subscriptionStatus = translationService.getTranslatedValue("SUBSCRIPTION_STATUS", rawStatus, "name", lang);
+                if (subscriptionStatus == null || subscriptionStatus.isEmpty()) {
+                    subscriptionStatus = rawStatus != null ? rawStatus.toLowerCase() : "unknown";
+                    if (subscriptionStatus.length() > 0) {
+                        subscriptionStatus = subscriptionStatus.substring(0, 1).toUpperCase() + subscriptionStatus.substring(1);
+                    }
                 }
                 log.info("Found latest subscription for userId={}, subscriptionId={}, status={}", userId, subscription.getSubscriptionId(), subscriptionStatus);
             }
             if (subscription == null) {
                 log.info("No subscription found for userId={}, returning No Plan", userId);
+                String noPlanLabel = translationService.getTranslatedValue("SUBSCRIPTION_STATUS", "NONE", "name", lang);
                 SubscriptionDetailsDto noPlanDetails = SubscriptionDetailsDto.builder()
-                        .packageName("No Plan")
+                        .packageName(noPlanLabel != null ? noPlanLabel : "No Plan")
                         .frozenDaysUsed(0)
                         .allowedFreezeDays(0)
                         .remainingFreezeDays(0)
@@ -150,19 +156,32 @@ public class UserSubscriptionService {
             Integer frozenDaysUsed = subscription.getFrozenDaysUsed() != null ? subscription.getFrozenDaysUsed() : 0;
             Integer remainingFreezeDays = allowedFreezeDays - frozenDaysUsed;
             Long optionId = matchedOption != null ? matchedOption.getId() : -1L;
+            String localizedPackageName = translationService.getTranslatedValue("SUBSCRIPTIONPACKAGE", pkg.getId().toString(), "name", lang);
+            if (localizedPackageName == null || localizedPackageName.isEmpty()) localizedPackageName = pkg.getName();
+
             java.util.List<az.fitnest.order.dto.PackageBenefitDto> benefitDtos = java.util.Collections.emptyList();
             if (matchedOption != null && matchedOption.getBenefits() != null && !matchedOption.getBenefits().isEmpty()) {
+                final Long optId = matchedOption.getId();
                 benefitDtos = matchedOption.getBenefits().stream()
-                        .map(b -> az.fitnest.order.dto.PackageBenefitDto.builder()
-                                .description(b.getDescription())
-                                .build())
+                        .map(b -> {
+                            String ebId = optId + "_" + b.getDescription();
+                            String localizedBenefit = translationService.getTranslatedValue("PLANBENEFIT", ebId, "description", lang);
+                            return az.fitnest.order.dto.PackageBenefitDto.builder()
+                                    .description(localizedBenefit != null ? localizedBenefit : b.getDescription())
+                                    .build();
+                        })
                         .toList();
             }
+
+            String durationLabel = translationService.getTranslatedValue("DURATION", duration.toString(), "label", lang);
+            if (durationLabel == null || durationLabel.isEmpty()) durationLabel = duration + " ay";
+
             SubscriptionDetailsDto details = SubscriptionDetailsDto.builder()
                     .subscriptionId(subscription.getSubscriptionId())
                     .packageId(pkg.getId().toString())
-                    .packageName(pkg.getName())
+                    .packageName(localizedPackageName)
                     .durationMonths(duration)
+                    .durationLabel(durationLabel)
                     .effectivePrice(effectivePrice)
                     .currency(pkg.getCurrency())
                     .totalLimit(subscription.getTotalLimit())

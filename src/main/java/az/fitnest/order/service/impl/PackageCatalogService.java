@@ -3,6 +3,8 @@ package az.fitnest.order.service.impl;
 import az.fitnest.order.dto.*;
 import az.fitnest.order.model.entity.*;
 import az.fitnest.order.repository.SubscriptionPackageRepository;
+import az.fitnest.order.util.UserContext;
+import az.fitnest.order.service.TranslationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 public class PackageCatalogService {
 
     private final SubscriptionPackageRepository packageRepository;
+    private final TranslationService translationService;
 
     @Transactional(readOnly = true)
     public PackageListResponse getAllPackages(boolean activeOnly) {
@@ -105,13 +108,17 @@ public class PackageCatalogService {
     }
 
     private SubscriptionPackageResponse mapToPackageResponse(SubscriptionPackage pkg) {
+        String lang = UserContext.getCurrentLanguage();
+        String localizedName = translationService.getTranslatedValue("SUBSCRIPTIONPACKAGE", pkg.getId().toString(), "name", lang);
+        if (localizedName == null || localizedName.isEmpty()) localizedName = pkg.getName();
+
         List<PackageOptionDto> options = pkg.getOptions().stream()
                 .map(o -> mapToOptionDto(pkg, o))
                 .collect(Collectors.toList());
 
         return SubscriptionPackageResponse.builder()
                 .packageId(pkg.getId().toString())
-                .name(pkg.getName())
+                .name(localizedName)
                 .isActive(pkg.getIsActive())
                 .discountPercent(pkg.getServiceDiscountPercent())
                 .options(options)
@@ -119,6 +126,7 @@ public class PackageCatalogService {
     }
 
     private PackageOptionDto mapToOptionDto(SubscriptionPackage pkg, PackageOption option) {
+        String lang = UserContext.getCurrentLanguage();
         BigDecimal base = option.getPriceStandard();
         BigDecimal discount = option.getPriceDiscounted();
         BigDecimal effective = discount != null ? discount : base;
@@ -134,15 +142,20 @@ public class PackageCatalogService {
 
         List<PackageBenefitDto> benefits = option.getBenefits() != null ?
                 option.getBenefits().stream()
-                        .map(b -> PackageBenefitDto.builder()
-                                .description(b.getDescription())
-                                .build())
+                        .map(b -> {
+                            String entityId = option.getId() + "_" + b.getDescription();
+                            String localizedBenefit = translationService.getTranslatedValue("PLANBENEFIT", entityId, "description", lang);
+                            return PackageBenefitDto.builder()
+                                    .description(localizedBenefit != null ? localizedBenefit : b.getDescription())
+                                    .build();
+                        })
                         .collect(Collectors.toList()) :
                 List.of();
 
         return PackageOptionDto.builder()
                 .optionId(option.getId())
                 .durationMonths(option.getDurationMonths())
+                .durationLabel(getDurationLabel(option.getDurationMonths(), lang))
                 .price(priceDto)
                 .badge(badge)
                 .visitLimit(option.getEntryLimit() != null ? option.getEntryLimit() : 0)
@@ -152,17 +165,23 @@ public class PackageCatalogService {
     }
 
     private SubscriptionPackageDto mapToDto(SubscriptionPackage pkg, PackageOption option) {
+        String lang = UserContext.getCurrentLanguage();
+        String localizedPkgName = translationService.getTranslatedValue("SUBSCRIPTIONPACKAGE", pkg.getId().toString(), "name", lang);
+        if (localizedPkgName == null || localizedPkgName.isEmpty()) localizedPkgName = pkg.getName();
+
         PackagePriceDto priceDto = null;
         String badge = null;
         Integer visitLimit = 0;
         Integer freezeDays = 0;
         Integer durationMonths = null;
+        String durationLabel = null;
         Long optionId = null;
         List<PackageBenefitDto> benefits = List.of();
 
         if (option != null) {
             optionId = option.getId();
             durationMonths = option.getDurationMonths();
+            durationLabel = getDurationLabel(durationMonths, lang);
             BigDecimal base = option.getPriceStandard();
             BigDecimal discount = option.getPriceDiscounted();
             BigDecimal effective = discount != null ? discount : base;
@@ -183,9 +202,13 @@ public class PackageCatalogService {
 
             if (option.getBenefits() != null) {
                 benefits = option.getBenefits().stream()
-                        .map(b -> PackageBenefitDto.builder()
-                                .description(b.getDescription())
-                                .build())
+                        .map(b -> {
+                            String entityId = option.getId() + "_" + b.getDescription();
+                            String localizedBenefit = translationService.getTranslatedValue("PLANBENEFIT", entityId, "description", lang);
+                            return PackageBenefitDto.builder()
+                                    .description(localizedBenefit != null ? localizedBenefit : b.getDescription())
+                                    .build();
+                        })
                         .collect(Collectors.toList());
             }
         }
@@ -193,8 +216,9 @@ public class PackageCatalogService {
         return SubscriptionPackageDto.builder()
                 .packageId(pkg.getId().toString())
                 .optionId(optionId)
-                .name(pkg.getName())
+                .name(localizedPkgName)
                 .durationMonths(durationMonths)
+                .durationLabel(durationLabel)
                 .isActive(pkg.getIsActive())
                 .price(priceDto)
                 .badge(badge)
@@ -202,5 +226,14 @@ public class PackageCatalogService {
                 .freezeDays(freezeDays)
                 .benefits(benefits)
                 .build();
+    }
+
+    private String getDurationLabel(Integer months, String lang) {
+        if (months == null) return null;
+        String label = translationService.getTranslatedValue("DURATION", months.toString(), "label", lang);
+        if (label == null || label.isEmpty()) {
+            return months + " ay";
+        }
+        return label;
     }
 }

@@ -23,4 +23,18 @@ public class UserContext {
         }
         return null;
     }
+
+    public static String getCurrentLanguage() {
+        org.springframework.web.context.request.ServletRequestAttributes attributes =
+                (org.springframework.web.context.request.ServletRequestAttributes)
+                        org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            jakarta.servlet.http.HttpServletRequest request = attributes.getRequest();
+            String lang = request.getHeader("X-User-Language");
+            if (lang != null && !lang.isBlank()) {
+                return lang.toUpperCase();
+            }
+        }
+        return "AZ";
+    }
 }

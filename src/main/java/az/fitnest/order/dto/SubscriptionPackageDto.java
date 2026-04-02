@@ -20,6 +20,9 @@ public record SubscriptionPackageDto(
     @JsonProperty("duration_months")
     Integer durationMonths,
 
+    @JsonProperty("duration_label")
+    String durationLabel,
+
     @JsonProperty("is_active")
     Boolean isActive,
 

@@ -18,6 +18,8 @@ public record SubscriptionDetailsDto(
     String packageName,
     @JsonProperty("duration_months")
     Integer durationMonths,
+    @JsonProperty("duration_label")
+    String durationLabel,
     @JsonProperty("effective_price")
     BigDecimal effectivePrice,
     String currency,
