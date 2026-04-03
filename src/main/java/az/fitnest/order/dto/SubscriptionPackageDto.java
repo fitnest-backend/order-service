@@ -2,7 +2,6 @@ package az.fitnest.order.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.math.BigDecimal;
 import java.util.List;
 import lombok.Builder;
 
@@ -34,9 +33,6 @@ public record SubscriptionPackageDto(
 
     @JsonProperty("freeze_days")
     Integer freezeDays,
-
-    @JsonProperty("discount_percent")
-    BigDecimal discountPercent,
 
     List<PackageBenefitDto> benefits
 ) {}

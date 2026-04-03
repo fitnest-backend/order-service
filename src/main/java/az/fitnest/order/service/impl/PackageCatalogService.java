@@ -120,7 +120,6 @@ public class PackageCatalogService {
                 .packageId(pkg.getId().toString())
                 .name(localizedName)
                 .isActive(pkg.getIsActive())
-                .discountPercent(pkg.getServiceDiscountPercent())
                 .options(options)
                 .build();
     }
