@@ -97,23 +97,24 @@ public class SubscriptionPackageAdminService {
                 boolean exists = pkg.getOptions().stream().anyMatch(opt ->
                     Objects.equals(opt.getDurationMonths(), dto.durationMonths())
                 );
-                if (!exists) {
-                    PackageOption opt = new PackageOption();
-                    opt.setSubscriptionPackage(pkg);
-                    opt.setDurationMonths(dto.durationMonths());
-                    opt.setPriceStandard(dto.priceStandard());
-                    opt.setPriceDiscounted(dto.priceDiscounted());
-                    opt.setEntryLimit(dto.entryLimit());
-                    opt.setFreezeDays(dto.freezeDays());
-                    if (dto.benefits() != null) {
-                        List<az.fitnest.order.model.entity.PlanBenefit> benefits = new ArrayList<>();
-                        for (az.fitnest.order.model.entity.PlanBenefit pb : dto.benefits()) {
-                            benefits.add(pb);
-                        }
-                        opt.setBenefits(benefits);
-                    }
-                    pkg.getOptions().add(opt);
+                if (exists) {
+                    throw new az.fitnest.order.exception.BadRequestException("error.duration_already_exists");
                 }
+                PackageOption opt = new PackageOption();
+                opt.setSubscriptionPackage(pkg);
+                opt.setDurationMonths(dto.durationMonths());
+                opt.setPriceStandard(dto.priceStandard());
+                opt.setPriceDiscounted(dto.priceDiscounted());
+                opt.setEntryLimit(dto.entryLimit());
+                opt.setFreezeDays(dto.freezeDays());
+                if (dto.benefits() != null) {
+                    List<az.fitnest.order.model.entity.PlanBenefit> benefits = new ArrayList<>();
+                    for (az.fitnest.order.model.entity.PlanBenefit pb : dto.benefits()) {
+                        benefits.add(pb);
+                    }
+                    opt.setBenefits(benefits);
+                }
+                pkg.getOptions().add(opt);
             }
         }
         if (!pkg.getOptions().isEmpty()) {
@@ -184,6 +185,14 @@ public class SubscriptionPackageAdminService {
     public Long addOptionToPackage(Long packageId, az.fitnest.order.dto.PackageOptionEntityDto dto) {
         SubscriptionPackage pkg = packageRepository.findById(packageId)
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
+
+        boolean exists = pkg.getOptions().stream().anyMatch(opt ->
+                Objects.equals(opt.getDurationMonths(), dto.durationMonths())
+        );
+        if (exists) {
+            throw new az.fitnest.order.exception.BadRequestException("error.duration_already_exists");
+        }
+
         PackageOption opt = new PackageOption();
         opt.setSubscriptionPackage(pkg);
         opt.setDurationMonths(dto.durationMonths());
