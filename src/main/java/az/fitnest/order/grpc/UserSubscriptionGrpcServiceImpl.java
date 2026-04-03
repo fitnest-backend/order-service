@@ -109,6 +109,7 @@ public class UserSubscriptionGrpcServiceImpl extends az.fitnest.order.grpc.UserS
                 .userId(request.getUserId())
                 .planId(request.getPlanId())
                 .optionId(request.getOptionId())
+                .autoPaymentEnabled(request.getAutoPaymentEnabled())
                 .build();
             var result = subscriptionService.assignSubscriptionToUser(assignRequest);
             az.fitnest.order.grpc.AssignSubscriptionToUserResponse response = az.fitnest.order.grpc.AssignSubscriptionToUserResponse.newBuilder()

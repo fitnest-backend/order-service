@@ -45,4 +45,22 @@ public class PaymentGrpcClient {
                 .message(grpcResponse.getMessage())
                 .build();
     }
+
+    public az.fitnest.payment.grpc.PayWithCardResponse payWithCard(Long userId, String cardId, Long packageId, Long optionId) {
+        az.fitnest.payment.grpc.PayWithCardRequest request = az.fitnest.payment.grpc.PayWithCardRequest.newBuilder()
+                .setUserId(userId)
+                .setCardId(cardId)
+                .setPackageId(packageId)
+                .setOptionId(optionId)
+                .build();
+        return paymentServiceStub.payWithCard(request);
+    }
+
+    public List<az.fitnest.payment.grpc.UserCardDto> getUserCards(Long userId) {
+        az.fitnest.payment.grpc.GetUserCardsRequest request = az.fitnest.payment.grpc.GetUserCardsRequest.newBuilder()
+                .setUserId(userId)
+                .build();
+        az.fitnest.payment.grpc.GetUserCardsResponse response = paymentServiceStub.getUserCards(request);
+        return response.getCardsList();
+    }
 }

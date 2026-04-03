@@ -152,6 +152,7 @@ public class SubscriptionPackageGrpcServiceImpl extends SubscriptionPackageServi
                         GetOptionDetailsResponse response = GetOptionDetailsResponse.newBuilder()
                             .setAmount(amount)
                             .setCurrency(currency)
+                            .setDurationMonths(optEntity.getDurationMonths() != null ? optEntity.getDurationMonths() : 0)
                             .build();
                         responseObserver.onNext(response);
                         responseObserver.onCompleted();

@@ -16,5 +16,8 @@ public record AdminAssignSubscriptionRequest(
 
     @NotNull(message = "error.missing_field")
     @JsonProperty("option_id")
-    Long optionId
+    Long optionId,
+
+    @JsonProperty("auto_payment_enabled")
+    Boolean autoPaymentEnabled
 ) {}

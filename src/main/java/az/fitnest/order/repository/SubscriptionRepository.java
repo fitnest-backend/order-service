@@ -25,6 +25,7 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     List<Subscription> findByStatus(String status);
     List<Subscription> findByPackageId(Long packageId);
     List<Subscription> findByIsUpgraded(Boolean isUpgraded);
+    List<Subscription> findByStatusAndAutoPaymentEnabledAndEndAtBetween(String status, Boolean autoPaymentEnabled, LocalDateTime start, LocalDateTime end);
     @org.springframework.data.jpa.repository.Query("SELECT s FROM Subscription s WHERE s.userId = :userId AND s.status = :status ORDER BY s.startAt DESC, s.subscriptionId DESC")
     List<Subscription> findByUserIdAndStatusOrderByStartAtDesc(Long userId, String status);
     @org.springframework.data.jpa.repository.Query("SELECT s FROM Subscription s WHERE s.userId = :userId ORDER BY s.startAt DESC, s.subscriptionId DESC")

@@ -59,4 +59,7 @@ public class Subscription {
 
     @Column(name = "is_upgraded")
     private Boolean isUpgraded = false;
+    
+    @Column(name = "auto_payment_enabled")
+    private Boolean autoPaymentEnabled = false;
 }

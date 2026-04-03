@@ -21,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Translation Management", description = "Tərcümələri idarə etmək üçün ucluqlar")
 public class TranslationAdminController {
-    
+
     private final TranslationRepository translationRepository;
 
     @Operation(summary = "Tərcümə yaradın və ya yeniləyin", description = "Verilmiş obyekt, dil və sahə üçün yeni tərcümə yaradır və ya mövcud olanı yeniləyir.")

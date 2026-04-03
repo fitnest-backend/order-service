@@ -19,6 +19,10 @@ import java.util.List;
 import az.fitnest.order.util.UserContext;
 import az.fitnest.order.event.SubscriptionEventPublisher;
 import az.fitnest.order.service.TranslationService;
+import az.fitnest.order.grpc.PaymentGrpcClient;
+import az.fitnest.order.grpc.NotificationGrpcClient;
+import java.util.Optional;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +35,8 @@ public class UserSubscriptionService {
     private final az.fitnest.order.repository.OrderRepository orderRepository;
     private final SubscriptionEventPublisher subscriptionEventPublisher;
     private final TranslationService translationService;
+    private final PaymentGrpcClient paymentGrpcClient;
+    private final NotificationGrpcClient notificationGrpcClient;
 
     @Transactional
     public boolean checkIn(Long userId, Long gymId) {
@@ -383,6 +389,87 @@ public class UserSubscriptionService {
         }
     }
 
+    @Scheduled(cron = "0 0 1 * * *")
+    @Transactional
+    public void autoRenewSubscriptions() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime tomorrow = now.plusDays(1);
+        
+        List<Subscription> eligibleSubs = subscriptionRepository.findByStatusAndAutoPaymentEnabledAndEndAtBetween(
+                "ACTIVE", true, now, tomorrow);
+
+        log.info("Checking {} subscriptions for auto-renewal", eligibleSubs.size());
+
+        for (Subscription sub : eligibleSubs) {
+            try {
+                processAutoRenewal(sub);
+            } catch (Exception e) {
+                log.error("Failed to auto-renew subscription {} for user {}: {}", 
+                        sub.getSubscriptionId(), sub.getUserId(), e.getMessage());
+                notificationGrpcClient.sendPushNotification(sub.getUserId(), 
+                        "Subscription Renewal Failed", 
+                        "We couldn't renew your subscription. Please check your payment method.");
+            }
+        }
+    }
+
+    private void processAutoRenewal(Subscription sub) {
+        Long userId = sub.getUserId();
+        List<az.fitnest.payment.grpc.UserCardDto> cards = paymentGrpcClient.getUserCards(userId);
+        
+        if (cards.isEmpty()) {
+            throw new RuntimeException("No saved cards found for user");
+        }
+
+        // Try the first available card
+        String cardId = cards.get(0).getCardId();
+        var paymentResult = paymentGrpcClient.payWithCard(userId, cardId, sub.getPackageId(), sub.getOptionId());
+
+        if ("success".equalsIgnoreCase(paymentResult.getStatus())) {
+            renewSubscription(sub);
+            notificationGrpcClient.sendPushNotification(userId, 
+                    "Subscription Renewed", 
+                    "Your subscription has been automatically renewed successfully.");
+            log.info("Successfully auto-renewed subscription {} for user {}", sub.getSubscriptionId(), userId);
+        } else {
+            throw new RuntimeException("Payment failed: " + paymentResult.getMessage());
+        }
+    }
+
+    private void renewSubscription(Subscription current) {
+        // Finish current
+        current.setStatus("FINISHED");
+        subscriptionRepository.save(current);
+        subscriptionEventPublisher.publishSubscriptionEvent(current.getUserId(), "FINISHED", current.getSubscriptionId());
+
+        // Create new
+        SubscriptionPackage pkg = packageRepository.findById(current.getPackageId())
+                .orElseThrow(() -> new RuntimeException("Package not found"));
+        PackageOption option = pkg.getOptions().stream()
+                .filter(o -> o.getId().equals(current.getOptionId()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Option not found"));
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime endAt = now.plusMonths(option.getDurationMonths());
+
+        Subscription next = new Subscription();
+        next.setUserId(current.getUserId());
+        next.setPackageId(current.getPackageId());
+        next.setOptionId(current.getOptionId());
+        next.setStatus(option.getEntryLimit() != null && option.getEntryLimit() == 0 ? "NO_LIMITS" : "ACTIVE");
+        next.setStartAt(now);
+        next.setEndAt(endAt);
+        next.setTotalLimit(option.getEntryLimit());
+        next.setRemainingLimit(option.getEntryLimit());
+        next.setFrozenDaysUsed(0);
+        next.setAllowedFreezeDays(option.getFreezeDays() != null ? option.getFreezeDays() : 0);
+        next.setAutoPaymentEnabled(true);
+
+        Subscription saved = subscriptionRepository.save(next);
+        subscriptionEventPublisher.publishSubscriptionEvent(saved.getUserId(), "ASSIGNED", saved.getSubscriptionId());
+    }
+
     @Transactional
     public az.fitnest.order.dto.AdminAssignSubscriptionResponse assignSubscriptionToUser(
             az.fitnest.order.dto.AdminAssignSubscriptionRequest request) {
@@ -435,6 +522,14 @@ public class UserSubscriptionService {
         subscription.setRemainingLimit(entryLimit);
         subscription.setFrozenDaysUsed(0);
         subscription.setAllowedFreezeDays(freezeDays);
+        if (request.autoPaymentEnabled() != null && request.autoPaymentEnabled()) {
+            if (option.getDurationMonths() != 1) {
+                throw new az.fitnest.order.exception.BadRequestException("error.auto_payment_only_for_1_month");
+            }
+            subscription.setAutoPaymentEnabled(true);
+        } else {
+            subscription.setAutoPaymentEnabled(false);
+        }
 
         Subscription saved = subscriptionRepository.save(subscription);
         log.info("Admin assigned plan {} option {} (duration={} months) to user {}, subscriptionId={}",
