@@ -394,7 +394,7 @@ public class UserSubscriptionService {
     public void autoRenewSubscriptions() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime tomorrow = now.plusDays(1);
-        
+
         List<Subscription> eligibleSubs = subscriptionRepository.findByStatusAndAutoPaymentEnabledAndEndAtBetween(
                 "ACTIVE", true, now, tomorrow);
 
@@ -404,10 +404,10 @@ public class UserSubscriptionService {
             try {
                 processAutoRenewal(sub);
             } catch (Exception e) {
-                log.error("Failed to auto-renew subscription {} for user {}: {}", 
+                log.error("Failed to auto-renew subscription {} for user {}: {}",
                         sub.getSubscriptionId(), sub.getUserId(), e.getMessage());
-                notificationGrpcClient.sendPushNotification(sub.getUserId(), 
-                        "Subscription Renewal Failed", 
+                notificationGrpcClient.sendPushNotification(sub.getUserId(),
+                        "Subscription Renewal Failed",
                         "We couldn't renew your subscription. Please check your payment method.");
             }
         }
@@ -416,19 +416,18 @@ public class UserSubscriptionService {
     private void processAutoRenewal(Subscription sub) {
         Long userId = sub.getUserId();
         List<az.fitnest.payment.grpc.UserCardDto> cards = paymentGrpcClient.getUserCards(userId);
-        
+
         if (cards.isEmpty()) {
             throw new RuntimeException("No saved cards found for user");
         }
 
-        // Try the first available card
         String cardId = cards.get(0).getCardId();
         var paymentResult = paymentGrpcClient.payWithCard(userId, cardId, sub.getPackageId(), sub.getOptionId());
 
         if ("success".equalsIgnoreCase(paymentResult.getStatus())) {
             renewSubscription(sub);
-            notificationGrpcClient.sendPushNotification(userId, 
-                    "Subscription Renewed", 
+            notificationGrpcClient.sendPushNotification(userId,
+                    "Subscription Renewed",
                     "Your subscription has been automatically renewed successfully.");
             log.info("Successfully auto-renewed subscription {} for user {}", sub.getSubscriptionId(), userId);
         } else {
@@ -436,13 +435,44 @@ public class UserSubscriptionService {
         }
     }
 
+    @Transactional
+    public void disableAutoPayment(Long userId) {
+        List<Subscription> activeSubs = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE");
+        if (activeSubs.isEmpty()) {
+            throw new az.fitnest.order.exception.ResourceNotFoundException("error.no_active_subscription");
+        }
+        Subscription sub = activeSubs.get(0);
+        sub.setAutoPaymentEnabled(false);
+        subscriptionRepository.save(sub);
+        log.info("Disabled auto-payment for user {}, subscription ID: {}", userId, sub.getSubscriptionId());
+    }
+
+    @Transactional
+    public void enableAutoPayment(Long userId) {
+        List<Subscription> activeSubs = subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE");
+        if (activeSubs.isEmpty()) {
+            throw new az.fitnest.order.exception.ResourceNotFoundException("error.no_active_subscription");
+        }
+        Subscription sub = activeSubs.get(0);
+
+        PackageOption option = packageRepository.findById(sub.getPackageId())
+                .flatMap(pkg -> pkg.getOptions().stream().filter(o -> o.getId().equals(sub.getOptionId())).findFirst())
+                .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.duration_config_not_found"));
+
+        if (option.getDurationMonths() != 1) {
+            throw new az.fitnest.order.exception.BadRequestException("error.auto_payment_only_for_1_month");
+        }
+
+        sub.setAutoPaymentEnabled(true);
+        subscriptionRepository.save(sub);
+        log.info("Enabled auto-payment for user {}, subscription ID: {}", userId, sub.getSubscriptionId());
+    }
+
     private void renewSubscription(Subscription current) {
-        // Finish current
         current.setStatus("FINISHED");
         subscriptionRepository.save(current);
         subscriptionEventPublisher.publishSubscriptionEvent(current.getUserId(), "FINISHED", current.getSubscriptionId());
 
-        // Create new
         SubscriptionPackage pkg = packageRepository.findById(current.getPackageId())
                 .orElseThrow(() -> new RuntimeException("Package not found"));
         PackageOption option = pkg.getOptions().stream()

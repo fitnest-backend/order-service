@@ -63,4 +63,32 @@ public class UserSubscriptionController {
         subscriptionService.unfreezeSubscription(userId);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "Avtomatik ödənişi söndürün",
+               description = "Cari istifadəçinin aktiv abunəliyi üçün avtomatik yenilənməni söndürür.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Avtomatik ödəniş söndürüldü"),
+            @ApiResponse(responseCode = "400", description = "Aktiv abunəlik yoxdur"),
+            @ApiResponse(responseCode = "401", description = "İcazə verilmədi")
+    })
+    @PostMapping("/auto-payment/disable")
+    public ResponseEntity<Void> disableAutoPayment() {
+        Long userId = az.fitnest.order.util.UserContext.getCurrentUserId();
+        subscriptionService.disableAutoPayment(userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Avtomatik ödənişi aktivləşdirin",
+               description = "Cari istifadəçinin aktiv abunəliyi üçün avtomatik yenilənməni aktivləşdirir (Yalnız 1 aylıq paketlər).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Avtomatik ödəniş aktivləşdirildi"),
+            @ApiResponse(responseCode = "400", description = "Aktiv abunəlik yoxdur və ya 1 aylıq paket deyil"),
+            @ApiResponse(responseCode = "401", description = "İcazə verilmədi")
+    })
+    @PostMapping("/auto-payment/enable")
+    public ResponseEntity<Void> enableAutoPayment() {
+        Long userId = az.fitnest.order.util.UserContext.getCurrentUserId();
+        subscriptionService.enableAutoPayment(userId);
+        return ResponseEntity.ok().build();
+    }
 }
