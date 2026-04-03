@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -44,12 +45,32 @@ public class PackageCatalogService {
     }
 
     @Transactional(readOnly = true)
-    public PackagePlanListResponse getUniquePlans() {
+    public PackagePlanListResponse getUniquePlans(String order, String name) {
         List<SubscriptionPackage> packages = packageRepository.findAll();
 
-        List<SubscriptionPackageResponse> dtos = packages.stream()
-                .map(this::mapToPackageResponse)
-                .collect(Collectors.toList());
+        List<String> orderList = List.of("bronze", "silver", "gold", "platinum");
+        boolean isDesc = "desc".equalsIgnoreCase(order);
+
+        packages.sort((p1, p2) -> {
+            int i1 = orderList.indexOf(p1.getName().toLowerCase());
+            int i2 = orderList.indexOf(p2.getName().toLowerCase());
+
+            if (i1 == -1) i1 = orderList.size();
+            if (i2 == -1) i2 = orderList.size();
+
+            int cmp = Integer.compare(i1, i2);
+            return isDesc ? -cmp : cmp;
+        });
+
+        Stream<SubscriptionPackageResponse> stream = packages.stream()
+                .map(p -> mapToPackageResponse(p, order));
+
+        if (name != null && !name.isBlank()) {
+            String lowerName = name.toLowerCase();
+            stream = stream.filter(dto -> dto.name() != null && dto.name().toLowerCase().contains(lowerName));
+        }
+
+        List<SubscriptionPackageResponse> dtos = stream.collect(Collectors.toList());
 
         return PackagePlanListResponse.builder()
                 .items(dtos)
@@ -70,7 +91,7 @@ public class PackageCatalogService {
     public SubscriptionPackageResponse getPlanById(Long packageId) {
         SubscriptionPackage pkg = packageRepository.findById(packageId)
                 .orElseThrow(() -> new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found"));
-        return mapToPackageResponse(pkg);
+        return mapToPackageResponse(pkg, "asc");
     }
 
     @Transactional(readOnly = true)
@@ -107,13 +128,19 @@ public class PackageCatalogService {
         throw new az.fitnest.order.exception.ResourceNotFoundException("error.plan_not_found");
     }
 
-    private SubscriptionPackageResponse mapToPackageResponse(SubscriptionPackage pkg) {
+    private SubscriptionPackageResponse mapToPackageResponse(SubscriptionPackage pkg, String order) {
         String lang = UserContext.getCurrentLanguage();
         String localizedName = translationService.getTranslatedValue("SUBSCRIPTIONPACKAGE", pkg.getId().toString(), "name", lang);
         if (localizedName == null || localizedName.isEmpty()) localizedName = pkg.getName();
 
+        boolean isDesc = "desc".equalsIgnoreCase(order);
+
         List<PackageOptionDto> options = pkg.getOptions().stream()
                 .map(o -> mapToOptionDto(pkg, o))
+                .sorted((o1, o2) -> {
+                    int cmp = Integer.compare(o1.durationMonths(), o2.durationMonths());
+                    return isDesc ? -cmp : cmp;
+                })
                 .collect(Collectors.toList());
 
         return SubscriptionPackageResponse.builder()

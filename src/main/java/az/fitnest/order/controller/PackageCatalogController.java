@@ -1,6 +1,5 @@
 package az.fitnest.order.controller;
 
-import az.fitnest.order.dto.PackageListResponse;
 import az.fitnest.order.dto.PackageNameDto;
 import az.fitnest.order.dto.PackagePlanListResponse;
 import az.fitnest.order.dto.SubscriptionPackageDto;
@@ -30,8 +29,10 @@ public class PackageCatalogController {
                     content = @Content(schema = @Schema(implementation = PackagePlanListResponse.class)))
     })
     @GetMapping
-    public ResponseEntity<PackagePlanListResponse> getAllPackages() {
-        return ResponseEntity.ok(packageCatalogService.getUniquePlans());
+    public ResponseEntity<PackagePlanListResponse> getAllPackages(
+            @RequestParam(required = false, defaultValue = "asc") String order,
+            @RequestParam(required = false) String name) {
+        return ResponseEntity.ok(packageCatalogService.getUniquePlans(order, name));
     }
 
     @Operation(summary = "Paket təfərrüatlarını əldə edin", description = "Xüsusi abunəlik paketinin təfərrüatlarını package ID ilə qaytarır.")
