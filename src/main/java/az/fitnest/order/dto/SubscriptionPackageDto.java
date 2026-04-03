@@ -35,8 +35,6 @@ public record SubscriptionPackageDto(
     @JsonProperty("freeze_days")
     Integer freezeDays,
 
-    List<PackageServiceDto> services,
-
     @JsonProperty("discount_percent")
     BigDecimal discountPercent,
 

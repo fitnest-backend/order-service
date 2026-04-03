@@ -20,6 +20,5 @@ public record PackageOptionDto(
     Integer visitLimit,
     @JsonProperty("freeze_days")
     Integer freezeDays,
-    List<PackageServiceDto> services,
     List<PackageBenefitDto> benefits
 ) {}
