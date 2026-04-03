@@ -30,9 +30,8 @@ public class PackageCatalogController {
     })
     @GetMapping
     public ResponseEntity<PackagePlanListResponse> getAllPackages(
-            @RequestParam(required = false, defaultValue = "asc") String order,
-            @RequestParam(required = false) String name) {
-        return ResponseEntity.ok(packageCatalogService.getUniquePlans(order, name));
+            @RequestParam(required = false, defaultValue = "asc") String order) {
+        return ResponseEntity.ok(packageCatalogService.getUniquePlans(order));
     }
 
     @Operation(summary = "Paket təfərrüatlarını əldə edin", description = "Xüsusi abunəlik paketinin təfərrüatlarını package ID ilə qaytarır.")

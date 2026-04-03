@@ -45,7 +45,7 @@ public class PackageCatalogService {
     }
 
     @Transactional(readOnly = true)
-    public PackagePlanListResponse getUniquePlans(String order, String name) {
+    public PackagePlanListResponse getUniquePlans(String order) {
         List<SubscriptionPackage> packages = packageRepository.findAll();
 
         List<String> orderList = List.of("bronze", "silver", "gold", "platinum");
@@ -62,15 +62,9 @@ public class PackageCatalogService {
             return isDesc ? -cmp : cmp;
         });
 
-        Stream<SubscriptionPackageResponse> stream = packages.stream()
-                .map(p -> mapToPackageResponse(p, order));
-
-        if (name != null && !name.isBlank()) {
-            String lowerName = name.toLowerCase();
-            stream = stream.filter(dto -> dto.name() != null && dto.name().toLowerCase().contains(lowerName));
-        }
-
-        List<SubscriptionPackageResponse> dtos = stream.collect(Collectors.toList());
+        List<SubscriptionPackageResponse> dtos = packages.stream()
+                .map(p -> mapToPackageResponse(p, order))
+                .collect(Collectors.toList());
 
         return PackagePlanListResponse.builder()
                 .items(dtos)
