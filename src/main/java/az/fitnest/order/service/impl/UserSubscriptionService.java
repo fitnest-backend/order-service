@@ -118,6 +118,7 @@ public class UserSubscriptionService {
                         .frozenDaysUsed(0)
                         .allowedFreezeDays(0)
                         .remainingFreezeDays(0)
+                        .automaticPaymentEnabled(false)
                         .build();
                 return ActiveSubscriptionResponse.builder()
                         .status("None")
@@ -201,6 +202,7 @@ public class UserSubscriptionService {
                     .remainingFreezeDays(Math.max(0, remainingFreezeDays))
                     .optionId(optionId)
                     .benefits(benefitDtos)
+                    .automaticPaymentEnabled(Boolean.TRUE.equals(subscription.getAutoPaymentEnabled()))
                     .build();
             log.info("Returning latest subscription details for userId={}, subscriptionId={}", userId, subscription.getSubscriptionId());
             return ActiveSubscriptionResponse.builder()

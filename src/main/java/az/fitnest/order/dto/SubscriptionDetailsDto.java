@@ -48,5 +48,7 @@ public record SubscriptionDetailsDto(
      @JsonProperty("option_id")
      Long optionId,
      @JsonProperty("benefits")
-     java.util.List<PackageBenefitDto> benefits
+     java.util.List<PackageBenefitDto> benefits,
+     @JsonProperty("automatic_payment_enabled")
+     Boolean automaticPaymentEnabled
  ) {}
