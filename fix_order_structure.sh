@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order
+cd /Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order
 
 # Wait, looking at the ls -R output from previously, the files are ALREADY moved into the new flat directories:
 # config, controller, criteria, dto, entity, exception, repository, security, service

@@ -4,102 +4,102 @@
 > Task :generateProto
 
 > Task :compileJava FAILED
-/Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/dto/ErrorResponse.java:19: warning: @Builder.Default requires an initializing expression (' = something;').
+/Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/dto/ErrorResponse.java:19: warning: @Builder.Default requires an initializing expression (' = something;').
         @Builder.Default
         ^
-/Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:26: error: cannot find symbol
+/Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:26: error: cannot find symbol
             if (dto.getSubscription() != null) {
                    ^
   symbol:   method getSubscription()
   location: variable dto of type ActiveSubscriptionResponse
-/Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:27: error: cannot find symbol
+/Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:27: error: cannot find symbol
                 az.fitnest.order.dto.SubscriptionDetailsDto info = dto.getSubscription();
                                                                       ^
   symbol:   method getSubscription()
   location: variable dto of type ActiveSubscriptionResponse
-/Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:28: error: cannot find symbol
+/Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:28: error: cannot find symbol
                 if (info.getPackageName() != null) grpcResponse.setPackageName(info.getPackageName());
                         ^
   symbol:   method getPackageName()
   location: variable info of type SubscriptionDetailsDto
-/Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:28: error: cannot find symbol
+/Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:28: error: cannot find symbol
                 if (info.getPackageName() != null) grpcResponse.setPackageName(info.getPackageName());
                                                                                    ^
   symbol:   method getPackageName()
   location: variable info of type SubscriptionDetailsDto
-/Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/service/impl/UpgradeService.java:205: error: cannot find symbol
+/Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/service/impl/UpgradeService.java:205: error: cannot find symbol
         if ("success".equals(paymentResult.getStatus())) {
                                           ^
   symbol:   method getStatus()
   location: variable paymentResult of type PaymentResultDto
-/Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/service/impl/UpgradeService.java:233: error: cannot find symbol
+/Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/service/impl/UpgradeService.java:233: error: cannot find symbol
                 .subscriptionUnchanged(!"success".equals(paymentResult.getStatus()))
                                                                       ^
   symbol:   method getStatus()
   location: variable paymentResult of type PaymentResultDto
-/Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/exception/GlobalExceptionHandler.java:42: error: cannot find symbol
+/Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/exception/GlobalExceptionHandler.java:42: error: cannot find symbol
                 detailBuilder.details(details);
                              ^
   symbol:   method details(Map<String,Object>)
   location: variable detailBuilder of type ErrorDetailBuilder
-/Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/exception/GlobalExceptionHandler.java:69: error: cannot find symbol
+/Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/exception/GlobalExceptionHandler.java:69: error: cannot find symbol
                         .details(details)
                         ^
   symbol:   method details(Map<String,Object>)
   location: class ErrorDetailBuilder
-Note: /Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/config/DataInitializer.java uses or overrides a deprecated API.
+Note: /Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/config/DataInitializer.java uses or overrides a deprecated API.
 Note: Recompile with -Xlint:deprecation for details.
 8 errors
 1 warning
 
-[Incubating] Problems report is available at: file:///Users/aousganeh/Desktop/fitnest/code/order-service/build/reports/problems/problems-report.html
+[Incubating] Problems report is available at: file:///Users/aousganeh/Desktop/fitnest/code/order-backend/build/reports/problems/problems-report.html
 
 FAILURE: Build failed with an exception.
 
 * What went wrong:
 Execution failed for task ':compileJava'.
 > Compilation failed; see the compiler output below.
-  Note: /Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/config/DataInitializer.java uses or overrides a deprecated API.
-  /Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/dto/ErrorResponse.java:19: warning: @Builder.Default requires an initializing expression (' = something;').
+  Note: /Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/config/DataInitializer.java uses or overrides a deprecated API.
+  /Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/dto/ErrorResponse.java:19: warning: @Builder.Default requires an initializing expression (' = something;').
           @Builder.Default
           ^
   Note: Recompile with -Xlint:deprecation for details.
-  /Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:26: error: cannot find symbol
+  /Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:26: error: cannot find symbol
               if (dto.getSubscription() != null) {
                      ^
     symbol:   method getSubscription()
     location: variable dto of type ActiveSubscriptionResponse
-  /Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:27: error: cannot find symbol
+  /Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:27: error: cannot find symbol
                   az.fitnest.order.dto.SubscriptionDetailsDto info = dto.getSubscription();
                                                                         ^
     symbol:   method getSubscription()
     location: variable dto of type ActiveSubscriptionResponse
-  /Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:28: error: cannot find symbol
+  /Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:28: error: cannot find symbol
                   if (info.getPackageName() != null) grpcResponse.setPackageName(info.getPackageName());
                           ^
     symbol:   method getPackageName()
     location: variable info of type SubscriptionDetailsDto
-  /Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:28: error: cannot find symbol
+  /Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/grpc/UserSubscriptionGrpcServiceImpl.java:28: error: cannot find symbol
                   if (info.getPackageName() != null) grpcResponse.setPackageName(info.getPackageName());
                                                                                      ^
     symbol:   method getPackageName()
     location: variable info of type SubscriptionDetailsDto
-  /Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/service/impl/UpgradeService.java:205: error: cannot find symbol
+  /Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/service/impl/UpgradeService.java:205: error: cannot find symbol
           if ("success".equals(paymentResult.getStatus())) {
                                             ^
     symbol:   method getStatus()
     location: variable paymentResult of type PaymentResultDto
-  /Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/service/impl/UpgradeService.java:233: error: cannot find symbol
+  /Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/service/impl/UpgradeService.java:233: error: cannot find symbol
                   .subscriptionUnchanged(!"success".equals(paymentResult.getStatus()))
                                                                         ^
     symbol:   method getStatus()
     location: variable paymentResult of type PaymentResultDto
-  /Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/exception/GlobalExceptionHandler.java:42: error: cannot find symbol
+  /Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/exception/GlobalExceptionHandler.java:42: error: cannot find symbol
                   detailBuilder.details(details);
                                ^
     symbol:   method details(Map<String,Object>)
     location: variable detailBuilder of type ErrorDetailBuilder
-  /Users/aousganeh/Desktop/fitnest/code/order-service/src/main/java/az/fitnest/order/exception/GlobalExceptionHandler.java:69: error: cannot find symbol
+  /Users/aousganeh/Desktop/fitnest/code/order-backend/src/main/java/az/fitnest/order/exception/GlobalExceptionHandler.java:69: error: cannot find symbol
                           .details(details)
                           ^
     symbol:   method details(Map<String,Object>)
