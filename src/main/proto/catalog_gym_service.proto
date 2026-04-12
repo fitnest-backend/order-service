@@ -1,4 +1,4 @@
-// Copied from catalog-service for cross-service gRPC
+// Copied from catalog-backend for cross-service gRPC
 syntax = "proto3";
 
 package catalog;
