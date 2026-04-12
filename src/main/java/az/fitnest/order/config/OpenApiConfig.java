@@ -23,9 +23,9 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         OpenAPI openAPI = new OpenAPI()
                 .info(new Info()
-                        .title("Subscriptions Service API")
+                        .title("Order Backend API")
                         .version("1.0.0")
-                        .description("Fitnest Subscriptions Service endpoints")
+                        .description("Fitnest Order Backend endpoints")
                         .contact(new Contact()
                                 .name("FitNest Team")
                                 .email("support@fitnest.az")))

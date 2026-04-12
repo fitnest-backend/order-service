@@ -15,7 +15,7 @@ import java.util.Map;
 @Slf4j
 public class NotificationGrpcClient {
 
-    @GrpcClient("notifications-service")
+    @GrpcClient("notifications-backend")
     private NotificationsServiceGrpc.NotificationsServiceBlockingStub notificationsStub;
 
     public void sendPushNotification(Long userId, String title, String body) {

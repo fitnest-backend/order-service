@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Service
 public class PaymentGrpcClient {
 
-    @GrpcClient("payment-service")
+    @GrpcClient("payment-backend")
     private PaymentServiceGrpc.PaymentServiceBlockingStub paymentServiceStub;
 
     public EpointResponse initiatePayment(EpointPaymentRequest request) {

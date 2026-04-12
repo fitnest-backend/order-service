@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CatalogServiceGrpcClient {
-    @GrpcClient("catalog-service")
+    @GrpcClient("catalog-backend")
     private GymServiceGrpc.GymServiceBlockingStub blockingStub;
 
     public boolean gymSupportsPlan(Long gymId, Long planId) {
