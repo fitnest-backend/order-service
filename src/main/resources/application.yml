@@ -183,5 +183,5 @@ grpc:
   client:
     # ✅ Updated gRPC client from payment-service to payment-backend
     payment-backend:
-      address: 'dns:///payment-backend.fitnest-development.svc.cluster.local:9091'
+      address: 'dns:///payment-backend.fitnest-development.svc.cluster.local:9090'
       negotiation-type: plaintext
