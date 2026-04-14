@@ -119,7 +119,9 @@ public class GlobalExceptionHandler {
     }
 
     private String getLocalizedMessage(String errorCode, String defaultMessage) {
-        String key = "error." + errorCode.toLowerCase();
+        if (errorCode == null) return safeMessage(defaultMessage);
+        
+        String key = errorCode.startsWith("error.") ? errorCode : "error." + errorCode.toLowerCase();
         try {
             return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
         } catch (org.springframework.context.NoSuchMessageException e1) {
@@ -148,7 +150,12 @@ public class GlobalExceptionHandler {
         try {
             return messageSource.getMessage(code, null, LocaleContextHolder.getLocale());
         } catch (org.springframework.context.NoSuchMessageException e) {
-            return code;
+            if (code.startsWith("error.")) return code;
+            try {
+                return messageSource.getMessage("error.unexpected", null, LocaleContextHolder.getLocale());
+            } catch (Exception ex) {
+                return code;
+            }
         }
     }
 }
